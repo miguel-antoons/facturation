@@ -1,0 +1,151 @@
+tr:hover {
+    background-color: #ECEFF1;
+    cursor: pointer;
+}
+
+svg {
+    display: inline-block;
+}
+
+.quick_actions {
+    width: 95%;
+    border: none;
+    background-color: #dadbdd;
+    color: #082542;
+    border-radius: 100px;
+}
+
+.quick_actions:hover {
+    background-color:  #082542;
+    color: white;
+}
+
+.last_column {
+    width: 23%;
+}
+
+.button_container {
+    padding: 0;
+}
+
+.delete {
+    width: 95%;
+    border: none;
+    background-color: #dadbdd;
+    color: red;
+    border-radius: 100px;
+}
+
+.delete:hover {
+    background-color: red;
+    color: white;
+}
+
+.add_project {
+    border: none !important;
+    color: #082542 !important;
+    border-radius: 17px !important;
+    height: 56px !important;
+    width: 135px !important;
+    margin: auto !important;
+    padding: 12px 8px 8px 8px !important;
+}
+
+.newDevis {
+    background-color: #ffcc33;
+}
+
+.newArticle {
+    background-color: #00b4fc;
+}
+
+.newFacture {
+    background-color: red !important;
+}
+
+.newClient {
+    background-color: #228b22;
+}
+
+.newEtiquette {
+    background-color: orange;
+}
+
+.newRgie {
+    background-color: #9932cc;
+}
+
+.add_project:hover {
+    background-color:  #082542;
+    color: white;
+}
+
+
+/**Page principale**/
+.form-control {
+    display: inline-block !important;
+    border: 0 !important;
+}
+
+.recherche {
+    width: 100% !important;
+    margin: 3px !important;
+    border-radius: 50px !important;
+
+}
+
+.filtre {
+    width: auto !important;
+    margin: 3px !important;
+    margin-top: 1px !important;
+    background: rgba(0,0,0,0) !important;
+    font-weight: bold !important;
+    display: inline-block !important;
+}
+
+.filtre:focus, .filtre:active {
+    background-color: #eee;
+}
+
+.jumbotron {
+    height: 20%;
+    padding: 1%;
+}
+
+.devis{
+    background-color: #eae0c8;
+}
+
+.articles {
+    background-color: #bcd4e6;
+}
+
+.facture {
+    background-color: #f0a8a8;
+}
+
+.client {
+    background-color: #d0f0c0;
+}
+
+.etiquette {
+    background-color: #ffc87c;
+}
+
+.rgie {
+    background-color: #d8bfd8;
+}
+
+.suivi {
+    background-color: #db13e2;
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.shortcutButton {
+    margin-right: 1px;
+    margin-left: 1px;
+}

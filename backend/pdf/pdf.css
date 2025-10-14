@@ -1,0 +1,204 @@
+@font-face {
+    src: url('fonts/Roboto-Thin.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 100;
+}
+
+@font-face {
+    src: url('fonts/Roboto-ExtraLight.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 200;
+}
+
+@font-face {
+    src: url('fonts/Roboto-Light.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 300;
+}
+
+@font-face {
+    src: url('fonts/Roboto-Regular.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+}
+
+@font-face {
+    src: url('fonts/Roboto-Medium.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+}
+
+@font-face {
+    src: url('fonts/Roboto-SemiBold.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 600;
+}
+
+@font-face {
+    src: url('fonts/Roboto-Bold.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 700;
+}
+
+@font-face {
+    src: url('fonts/Roboto-ExtraBold.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 800;
+}
+
+@font-face {
+    src: url('fonts/Roboto-Black.ttf');
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 900;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 15mm
+}
+
+body, p, ol, ul, td {
+    font-family: 'Roboto', sans-serif;
+    font-size: 11px;
+    vertical-align: top;
+}
+
+.logo {
+    width: 50mm;
+    height: 25mm;
+    background: url('./img/logo.png') no-repeat center;
+    background-size: 100%;
+}
+
+h1 {
+    color: #ef7d00;
+    font-family: 'Roboto';
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+table.header {
+    width: 100%;
+}
+
+table.header tr td {
+    width: 50%;
+    padding: 15px 0px;
+}
+
+table.details {
+    border-top: 1px solid #ccc;
+    width: 100%;
+}
+
+table.details tr td {
+    width: 50%;
+    padding: 15px 0px;
+}
+
+table.payment {
+    width: 100%;
+    padding: 15px 0px;
+}
+
+table.contact {
+    border-top: 1px solid #ccc;
+    width: 100%;
+    padding: 15px 0px;
+}
+
+table.list {
+    width: 100%;
+}
+
+table.list tbody tr td {
+    padding: 6px 6px;
+    font-size: 11px;
+}
+
+table.list thead th {
+    font-weight: bolder;
+    text-transform: uppercase;
+    background: #004B72;
+    color: #fff;
+    padding: 6px 6px;
+    font-size: 11px;
+}
+
+table.list tbody tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+table.list tbody tr:nth-child(odd) {
+    background: #ffffffff;
+}
+
+table.list .last {
+    background: #004B72;
+    color: #fff;
+    font-weight: bolder;
+}
+
+table.list .sum {
+    text-transform: uppercase;
+    text-align: right;
+    font-size: 11px;
+    padding: 6px 6px;
+}
+
+table.list .align-right {
+    text-align: right;
+}
+
+table.list .align-left {
+    text-align: left;
+}
+
+.qr {
+    display: block;
+    float: right;
+}
+
+tr {
+    page-break-inside: avoid !important;
+}
+
+thead.headerGroup {
+    display: table-header-group;
+    break-inside:avoid;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    flex: 1;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.content {
+    flex: 1 1 auto;
+}
+
+.footer {
+    page-break-inside: avoid;
+}
+
+body {
+    width: 180mm;
+    height: 267mm;
+}
+
+table {
+  border-collapse: collapse;
+  border: none;
+}
