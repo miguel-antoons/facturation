@@ -107,7 +107,11 @@ const Billing = () => {
           setExpiryDate(parseDate(data.ExpiryDate.split("T")[0]));
           setDeliveryDate(parseDate(data.DeliveryDate.split("T")[0]));
           setVat(data.VentilationCode);
-          setIsSent(data.CurrentDocumentDeliveryDetails.IsDocumentDelivered);
+          setIsSent(
+            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered ||
+              data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
+                "Pending",
+          );
           setOrderLines(
             data.OrderLines.map((line: any, index: number) => ({
               key: index,

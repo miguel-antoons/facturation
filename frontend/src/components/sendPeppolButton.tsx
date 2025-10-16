@@ -65,31 +65,31 @@ const SendPeppolButton = ({
     setIsLoading(false);
   };
 
-  return billSaved && clientHasVAT ? (
-    <Tooltip content={tooltipText} placement="top">
-      <Button
-        className="mr-2"
-        color="primary"
-        isDisabled={false}
-        isLoading={isLoading}
-        radius="lg"
-        startContent={<IoGlobe size={20} />}
-        variant={isAlreadySent ? "light" : "solid"}
-        onPress={() => sendToPeppol()}
-      >
-        Peppol
-      </Button>
-    </Tooltip>
+  return billSaved && clientHasVAT && !isAlreadySent ? (
+    <Button
+      className="mr-2"
+      color="primary"
+      isDisabled={false}
+      isLoading={isLoading}
+      radius="lg"
+      startContent={<IoGlobe size={20} />}
+      variant={isAlreadySent ? "light" : "solid"}
+      onPress={() => sendToPeppol()}
+    >
+      Peppol
+    </Button>
   ) : (
     <Tooltip content={tooltipText} placement="top">
       <div>
         <Button
           className="mr-2"
           color="primary"
-          isDisabled={true}
+          isDisabled={!(billSaved && clientHasVAT)}
           isLoading={isLoading}
           radius="lg"
           startContent={<IoGlobe size={20} />}
+          variant={isAlreadySent ? "light" : "solid"}
+          onPress={() => sendToPeppol()}
         >
           Peppol
         </Button>
