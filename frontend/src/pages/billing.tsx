@@ -370,7 +370,7 @@ const Billing = () => {
     if (!differentFromLastSave) setSaved(true);
     // if already loading, do nothing (prevents double click)
     if ((isLoadingBill || !differentFromLastSave) && printMe)
-      printElement(Number(customerId));
+      printElement(Number(billId));
     if (isLoadingBill || !differentFromLastSave) return;
 
     setIsLoadingBill(true);
