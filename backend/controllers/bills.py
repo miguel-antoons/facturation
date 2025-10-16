@@ -1,9 +1,12 @@
+import base64
+
 from flask import jsonify
 import requests
 from dotenv import dotenv_values
 
 from models import customers as mcust
 from controllers import customers as cctrl
+from controllers import bill_gen as bgen
 
 
 def get_bills():
@@ -78,6 +81,25 @@ def delete_bill(bill_id):
     return jsonify({"status": "deleted" if response.content == b'true' else "failed"})
 
 
+def send_peppol(bill_id):
+    url = f"{dotenv_values('.env')['URL']}/orders/commands/send"
+    headers = get_headers()
+    payload = {
+        "OrderIDs": [bill_id],
+        "SendMethod": "Peppol",
+    }
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code in [200, 201]:
+        return jsonify({"status": "success"})
+    else:
+        print(response.text)
+        return jsonify({
+            "status": "failed",
+            "message": response.json()
+                .get('errors', 'Erreur lors de l\'envoi Peppol.')[0]
+                .get('Description', 'Erreur lors de l\'envoi Peppol.')
+        })
+
 def format_client(customer_id):
     customer = mcust.get_customers(
         [
@@ -147,6 +169,18 @@ def format_client(customer_id):
                 "CountryCode": "BE"
             }
         ],
+    }
+
+
+def format_pdf(order_id):
+    req_data = get_bill(order_id)
+    filename = bgen.create_bill(req_data)
+    with open(filename, "rb") as pdf_file:
+        encoded_string = base64.b64encode(pdf_file.read()).decode('utf-8')
+    return {
+        "FileName": filename.split('/')[-1],
+        "FileContent": encoded_string,
+        "FileType": "PDF"
     }
 
 

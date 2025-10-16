@@ -4,7 +4,7 @@ import re
 
 
 def get_customers():
-    customers = model.get_customers(['Numero', 'Nom', 'Prenom', 'Societe', 'Commentaire', 'Codepostal', 'Localite'])
+    customers = model.get_customers(['Numero', 'Nom', 'Prenom', 'Societe', 'Commentaire', 'Codepostal', 'Localite', 'TVA'])
     formatted = []
     for customer in customers:
         formatted.append({
@@ -14,6 +14,7 @@ def get_customers():
             'company': customer[3],
             'phones': detect_phones(customer[4]) + detect_mobiles(customer[4]),
             'hasEmail': len(detect_emails(customer[4])) > 0,
+            'hasVAT': customer[7] is not None and customer[7] != '',
             'postal_code': customer[5],
             'city': customer[6],
         })
@@ -76,8 +77,6 @@ def create_customer(json):
 
 
 def update_customer(customer_id, json):
-    print(json.get('number'))
-    print(json.get('street'))
     updated_customer = {
         'Nom': json.get('name'),
         'Prenom': json.get('surname'),

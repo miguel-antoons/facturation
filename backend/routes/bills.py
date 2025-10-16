@@ -23,3 +23,10 @@ def bill_route(bill_id):
     elif request.method == 'DELETE':
         return ctrl.delete_bill(bill_id)
     return None
+
+
+@bills.route('/api/bills/sendPeppol/<int:bill_id>', methods=['POST'])
+def bill_sendPeppol(bill_id):
+    if request.method == 'POST':
+        return ctrl.send_peppol(bill_id)
+    return None

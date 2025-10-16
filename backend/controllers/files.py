@@ -1,5 +1,3 @@
-import base64
-
 from flask import make_response, json
 from models import customers as model
 from reportlab.pdfgen.canvas import Canvas

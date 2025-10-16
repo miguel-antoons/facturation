@@ -135,6 +135,7 @@ const ProjectTable = ({
     <Table
       isStriped
       isVirtualized
+      aria-label="Project Table"
       maxTableHeight={height}
       onRowAction={(key) => navigate(`${pathname}/${key}`)}
     >
