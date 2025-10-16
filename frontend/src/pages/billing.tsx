@@ -23,6 +23,7 @@ import { DatePicker } from "@heroui/date-picker";
 import { addToast } from "@heroui/toast";
 
 import OrderLine from "@/components/orderLine.tsx";
+import SendPeppolButton from "@/components/sendPeppolButton.tsx";
 
 const Billing = () => {
   // icons for save status
@@ -78,9 +79,15 @@ const Billing = () => {
   const [saved, setSaved] = useState(false); // save icon state of the page
   const [modalText, setModalText] = useState(<></>); // text to display in the modal
   const [printing, setPrinting] = useState(false); // printing state of the page
-  const [emailPresent, setEmailPresent] = useState({});
+  const [emailPresent, setEmailPresent] = useState<{ [key: string]: boolean }>(
+    {},
+  );
+  const [clientHasVat, setClientHasVat] = useState<{ [key: string]: boolean }>(
+    {},
+  );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
+  const [isSent, setIsSent] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
 
   /**
@@ -100,6 +107,7 @@ const Billing = () => {
           setExpiryDate(parseDate(data.ExpiryDate.split("T")[0]));
           setDeliveryDate(parseDate(data.DeliveryDate.split("T")[0]));
           setVat(data.VentilationCode);
+          setIsSent(data.CurrentDocumentDeliveryDetails.IsDocumentDelivered);
           setOrderLines(
             data.OrderLines.map((line: any, index: number) => ({
               key: index,
@@ -134,11 +142,12 @@ const Billing = () => {
               "Impossible de retrouver les informations de la facture. Veuillez réessayer plus tard.",
             color: "danger",
           });
+          // eslint-disable-next-line
           console.log(e);
           setIsLoadingBill(false);
         });
     }
-  }, []);
+  }, [billId]);
 
   /**
    * Fetch the customers for the autocomplete
@@ -154,6 +163,7 @@ const Billing = () => {
           key: string;
         }[] = [];
         const emailDict: { [key: string]: boolean } = {};
+        const vatDict: { [key: string]: boolean } = {};
 
         // sort data based on id
         data.sort((a: { id: number }, b: { id: number }) => b.id - a.id);
@@ -165,6 +175,7 @@ const Billing = () => {
             name: string;
             surname: string;
             hasEmail: boolean;
+            hasVAT: boolean;
           }) => {
             if (
               element.id === 0 ||
@@ -187,11 +198,13 @@ const Billing = () => {
               key: String(element.id),
             });
             emailDict[String(element.id)] = element.hasEmail;
+            vatDict[String(element.id)] = element.hasVAT;
           },
         );
         // @ts-ignore
         setCustomers(formattedData);
         setEmailPresent(emailDict);
+        setClientHasVat(vatDict);
         setIsLoadingCustomers(false);
       })
       .catch((e) => {
@@ -201,6 +214,7 @@ const Billing = () => {
             "Impossible de retrouver la liste de clients. Veuillez réessayer plus tard.",
           color: "danger",
         });
+        // eslint-disable-next-line
         console.log(e);
         setIsLoadingBill(false);
       });
@@ -355,7 +369,8 @@ const Billing = () => {
 
     if (!differentFromLastSave) setSaved(true);
     // if already loading, do nothing (prevents double click)
-    if ((isLoadingBill || !differentFromLastSave) && printMe) printElement(Number(customerId));
+    if ((isLoadingBill || !differentFromLastSave) && printMe)
+      printElement(Number(customerId));
     if (isLoadingBill || !differentFromLastSave) return;
 
     setIsLoadingBill(true);
@@ -408,6 +423,7 @@ const Billing = () => {
           "Impossible d'enregistrer la facture. Veuillez réessayer plus tard.",
         color: "danger",
       });
+      // eslint-disable-next-line
       console.log(error);
     };
 
@@ -539,15 +555,27 @@ const Billing = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
           <LinkContainer to="/billlist">
-            <Button>
+            <Button radius="lg">
               <IoArrowBackCircle size={20} />
               Retour
             </Button>
           </LinkContainer>
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
+          <SendPeppolButton
+            billSaved={saved}
+            clientHasVAT={
+              customerId !== "0" || customerId === undefined
+                ? clientHasVat[customerId]
+                : false
+            }
+            isAlreadySent={isSent}
+            orderId={billId}
+            setIsAlreadySent={setIsSent}
+          />
           <Button
             className="mr-2"
+            radius="lg"
             onPress={() => {
               verifyAndSave(true);
             }}
@@ -555,7 +583,12 @@ const Billing = () => {
             <IoPrint size={20} />
             Imprimer
           </Button>
-          <Button color="success" onPress={() => verifyAndSave()}>
+          <Button
+            color="success"
+            radius="lg"
+            variant={saved ? "light" : "solid"}
+            onPress={() => verifyAndSave()}
+          >
             <IoSave size={20} />
             Enregistrer
           </Button>
@@ -668,16 +701,17 @@ const Billing = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/2 md:basis-1/4 p-2">
-          <Button color="primary" onPress={addLine}>
+          <Button color="primary" radius="lg" onPress={addLine}>
             Ajouter Ligne
           </Button>
-          <Button className="ml-2" color="danger" onPress={delLine}>
+          <Button className="ml-2" color="danger" radius="lg" onPress={delLine}>
             Supprimer Ligne
           </Button>
         </div>
         <div className="basis-1/2 md:basis-1/4 p-2 flex justify-end">
           <Button
             className="mr-2"
+            radius="lg"
             onPress={() => {
               verifyAndSave(true);
             }}
@@ -685,7 +719,12 @@ const Billing = () => {
             <IoPrint size={20} />
             Imprimer
           </Button>
-          <Button color="success" onPress={() => verifyAndSave()}>
+          <Button
+            color="success"
+            radius="lg"
+            variant={saved ? "light" : "solid"}
+            onPress={() => verifyAndSave()}
+          >
             <IoSave size={20} />
             Enregistrer
           </Button>

@@ -1,6 +1,6 @@
-import {Input} from "@heroui/input";
-import SearchIcon from "@/components/searchIcon";
+import { Input } from "@heroui/input";
 
+import SearchIcon from "@/components/searchIcon";
 
 const SearchBar = () => {
   return (

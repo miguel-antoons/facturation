@@ -289,6 +289,7 @@ const ProjectPage = ({
     try {
       sortContent(content);
     } catch (e) {
+      // eslint-disable-next-line
       console.log(e);
     }
   }, [sort, search, content]);
@@ -334,7 +335,12 @@ const ProjectPage = ({
         <div className="d-flex justify-content-center flex flex-row">
           <div className="basis-3/16">
             <LinkContainer to="/">
-              <Button size="lg" variant="light">
+              <Button
+                className="text-white"
+                radius="full"
+                size="lg"
+                variant="light"
+              >
                 <IoArrowBackCircle size={30} />
                 Retour
               </Button>
@@ -347,7 +353,12 @@ const ProjectPage = ({
           </div>
           <div className="align-right basis-3/16">
             <LinkContainer to={`${instancePath}/0`}>
-              <Button size="lg" variant="light">
+              <Button
+                className="text-white"
+                radius="full"
+                size="lg"
+                variant="light"
+              >
                 <icon.IoAddCircle size={30} />
                 Nouveau
               </Button>

@@ -59,6 +59,7 @@ const CustomerList = () => {
           "Impossible de retrouver la liste de clients. Veuillez réessayer plus tard.",
         color: "danger",
       });
+      // eslint-disable-next-line
       console.log(e);
     }
 

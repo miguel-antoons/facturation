@@ -59,6 +59,7 @@ const BillingList = () => {
           "Impossible de retrouver la liste de factures. Veuillez réessayer plus tard.",
         color: "danger",
       });
+      // eslint-disable-next-line
       console.log(e);
     }
 

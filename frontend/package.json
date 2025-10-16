@@ -31,6 +31,7 @@
     "@heroui/table": "^2.2.24",
     "@heroui/theme": "^2.4.22",
     "@heroui/toast": "^2.0.16",
+    "@heroui/tooltip": "^2.2.24",
     "@heroui/use-theme": "2.1.10",
     "@internationalized/date": "^3.9.0",
     "@react-aria/i18n": "^3.12.12",

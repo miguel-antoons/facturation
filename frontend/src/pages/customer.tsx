@@ -90,7 +90,6 @@ const Customer = () => {
             architect_name: string;
             comment: string;
           }) => {
-            console.log(data);
             setLastName(data.name ?? "");
             setSurname(data.surname ?? "");
             setCompany(data.company ?? "");
@@ -125,6 +124,7 @@ const Customer = () => {
             description: `Impossible de charger le client avec l'ID ${customerId}. Veuillez réessayer plus tard.`,
             color: "danger",
           });
+          // eslint-disable-next-line
           console.log(error);
         });
     }
@@ -211,7 +211,8 @@ const Customer = () => {
 
     if (!differentFromLastSave) setSaved(true);
     // if already loading, do nothing (prevents double click)
-    if ((isLoading || !differentFromLastSave) && printMe) printElement(customerId);
+    if ((isLoading || !differentFromLastSave) && printMe)
+      printElement(customerId);
     if (isLoading || !differentFromLastSave) return;
 
     setIsLoading(true);
@@ -268,6 +269,7 @@ const Customer = () => {
           "Impossible d'enregistrer' le client. Veuillez réessayer plus tard.",
         color: "danger",
       });
+      // eslint-disable-next-line
       console.log(error);
     };
 
@@ -410,7 +412,7 @@ const Customer = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
           <LinkContainer to="/customerlist">
-            <Button>
+            <Button radius="lg">
               <IoArrowBackCircle size={20} />
               Retour
             </Button>
@@ -419,6 +421,7 @@ const Customer = () => {
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
           <Button
             className="mr-2"
+            radius="lg"
             onPress={() => {
               verifyAndSave(true);
             }}
@@ -426,7 +429,12 @@ const Customer = () => {
             <IoPrint size={20} />
             Imprimer
           </Button>
-          <Button color="success" onPress={() => verifyAndSave()}>
+          <Button
+            color="success"
+            radius="lg"
+            variant={saved ? "light" : "solid"}
+            onPress={() => verifyAndSave()}
+          >
             <IoSave size={20} />
             Enregistrer
           </Button>
@@ -549,9 +557,7 @@ const Customer = () => {
             classNames="max-w-xs"
             label="Langue"
             selectedKeys={[language]}
-            onChange={(event) =>
-              change(setLanguage, event.target.value)
-            }
+            onChange={(event) => change(setLanguage, event.target.value)}
           >
             {languageOptions.map((option) => (
               // @ts-ignore
@@ -581,7 +587,12 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-1/2 p-2 flex justify-end">
-          <Button color="success" onPress={() => verifyAndSave()}>
+          <Button
+            color="success"
+            radius="lg"
+            variant={saved ? "light" : "solid"}
+            onPress={() => verifyAndSave()}
+          >
             <IoSave size={20} />
             Enregistrer
           </Button>

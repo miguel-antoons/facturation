@@ -19,7 +19,10 @@ const Home = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/2 md:basis-1/4 p-2">
           <LinkContainer to="/billlist">
-            <Button className="text-2xl font-bold bg-linear-to-tr from-pink-500 to-yellow-500 text-white shadow-lg w-1/1 h-auto">
+            <Button
+              className="text-2xl font-bold bg-linear-to-tr from-pink-500 to-yellow-500 text-white shadow-lg w-1/1 h-auto"
+              radius="lg"
+            >
               <IoDocuments size={200} />
               Factures
             </Button>
@@ -27,7 +30,10 @@ const Home = () => {
         </div>
         <div className="basis-1/2 md:basis-1/4 p-2">
           <LinkContainer to="/customerlist">
-            <Button className="text-2xl font-bold bg-linear-to-tr from-green-400 to-blue-500 text-white shadow-lg w-1/1 h-auto">
+            <Button
+              className="text-2xl font-bold bg-linear-to-tr from-green-400 to-blue-500 text-white shadow-lg w-1/1 h-auto"
+              radius="lg"
+            >
               <IoPeople size={200} />
               Clients
             </Button>
