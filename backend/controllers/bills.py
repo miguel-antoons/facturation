@@ -100,6 +100,7 @@ def send_peppol(bill_id):
                 .get('Description', 'Erreur lors de l\'envoi Peppol.')
         })
 
+
 def format_client(customer_id):
     customer = mcust.get_customers(
         [
