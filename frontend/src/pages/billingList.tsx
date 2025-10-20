@@ -16,7 +16,9 @@ const BillingList = () => {
     try {
       const response = await fetch("/api/bills");
       const dataJson = await response.json();
-      const data = dataJson.Items;
+      const dataAll: any[] = dataJson.Items;
+      // only keep items where OrderDirection is "Income"
+      const data = dataAll.filter((item) => item.OrderDirection === "Income");
 
       data.forEach(
         (element: {
