@@ -20,7 +20,7 @@ const SendPeppolButton = ({
   const [isLoading, setIsLoading] = useState(false);
   let tooltipText = "";
 
-  if (!billSaved) tooltipText = "Veuillez d'abord sauvegarder la facture.";
+  if (!billSaved) tooltipText = "Veuillez d'abord enregistrer la facture.";
   else if (!clientHasVAT)
     tooltipText =
       "Le client doit avoir un numéro de TVA pour envoyer la facture via Peppol.";

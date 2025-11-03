@@ -2,11 +2,6 @@ import { Input } from "@heroui/input";
 import { useEffect, useState } from "react";
 import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
-import { IoSave, IoArrowBackCircle, IoPrint } from "react-icons/io5";
-// @ts-ignore
-import { LinkContainer } from "react-router-bootstrap";
-import { CircularProgress } from "@heroui/progress";
-import { IoCheckmarkDoneCircle, IoCloseCircle } from "react-icons/io5";
 import {
   Modal,
   ModalBody,
@@ -21,40 +16,25 @@ import { getLocalTimeZone, today, parseDate } from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
 import { DatePicker } from "@heroui/date-picker";
 import { addToast } from "@heroui/toast";
+import { IoArrowDown, IoArrowUp } from "react-icons/io5";
 
 import OrderLine from "@/components/orderLine.tsx";
 import SendPeppolButton from "@/components/sendPeppolButton.tsx";
+import SaveStatus from "@/components/saveStatus.tsx";
+import ReturnButton from "@/components/returnButton.tsx";
+import PrintButton from "@/components/printButton.tsx";
+import SaveButton from "@/components/saveButton.tsx";
 
 const Billing = () => {
-  // icons for save status
-  // saved: green checkmark
-  // not saved: red cross
-  const saveIcons = {
-    saved: (
-      <>
-        <h2 className="font-bold text-gray-900 sm:truncate text-xl sm:tracking-tight">
-          Enregistré
-        </h2>{" "}
-        <IoCheckmarkDoneCircle color="green" size={30} />
-      </>
-    ),
-    notSaved: (
-      <>
-        <h2 className="font-bold text-gray-900 sm:truncate text-xl sm:tracking-tight">
-          Pas Enregistré
-        </h2>{" "}
-        <IoCloseCircle color="red" size={30} />
-      </>
-    ),
-  };
   const [billId, setBillId] = useState(Number(useParams().id));
-  const [shownBillId, setShownBillId] = useState(0);
+  const [shownBillId, setShownBillId] = useState("");
+  const [billNumber, setBillNumber] = useState("");
   const [heading, setHeading] = useState(""); // heading of the page
   const [customerId, setCustomerId] = useState("");
   const [orderTitle, setOrderTitle] = useState("");
   const [orderDate, setOrderDate] = useState(today(getLocalTimeZone()));
   const [expiryDate, setExpiryDate] = useState(
-    today(getLocalTimeZone()).add({ days: 15 }),
+    today(getLocalTimeZone()).add({ days: 14 }),
   );
   const [deliveryDate, setDeliveryDate] = useState(today(getLocalTimeZone()));
   const vatOptions = [
@@ -101,6 +81,7 @@ const Billing = () => {
         .then((data) => {
           // set the state with the fetched data
           setShownBillId(data.OrderNumber);
+          setBillNumber(data.OrderNumber);
           setCustomerId(data.CounterParty.Nr);
           setOrderTitle(data.OrderTitle);
           setOrderDate(parseDate(data.OrderDate.split("T")[0]));
@@ -123,21 +104,24 @@ const Billing = () => {
           );
           setSaved(true);
           setIsLoadingBill(false);
-          setLastSave({
-            customerId: data.CounterParty.Nr,
-            orderTitle: data.OrderTitle,
-            orderDate: parseDate(data.OrderDate.split("T")[0]),
-            expiryDate: parseDate(data.ExpiryDate.split("T")[0]),
-            deliveryDate: parseDate(data.DeliveryDate.split("T")[0]),
-            vat: data.VentilationCode,
-            orderLines: data.OrderLines.map((line: any, index: number) => ({
-              key: index,
-              description: line.Description,
-              quantity: line.Quantity,
-              unitPrice: line.UnitPriceExcl,
-              unit: line.Unit,
-            })),
-          });
+          setLastSave(
+            JSON.stringify({
+              customerId: data.CounterParty.Nr,
+              orderTitle: data.OrderTitle,
+              orderDate: parseDate(data.OrderDate.split("T")[0]),
+              billNumber: data.OrderNumber,
+              expiryDate: parseDate(data.ExpiryDate.split("T")[0]),
+              deliveryDate: parseDate(data.DeliveryDate.split("T")[0]),
+              vat: data.VentilationCode,
+              orderLines: data.OrderLines.map((line: any, index: number) => ({
+                key: index,
+                description: line.Description,
+                quantity: line.Quantity,
+                unitPrice: String(line.UnitPriceExcl),
+                unit: line.Unit,
+              })),
+            }),
+          );
         })
         .catch((e) => {
           addToast({
@@ -170,7 +154,7 @@ const Billing = () => {
         const vatDict: { [key: string]: boolean } = {};
 
         // sort data based on id
-        data.sort((a: { id: number }, b: { id: number }) => b.id - a.id);
+        data.sort((a: { id: number }, b: { id: number }) => a.id - b.id);
 
         data.forEach(
           (element: {
@@ -291,11 +275,12 @@ const Billing = () => {
         customerId,
         orderTitle,
         orderDate,
+        billNumber,
         expiryDate,
         deliveryDate,
         vat,
         orderLines,
-      }) !== JSON.stringify(lastSave)
+      }) !== lastSave
     );
   };
 
@@ -384,7 +369,7 @@ const Billing = () => {
       orderDate: orderDate.toString(),
       expiryDate: expiryDate.toString(),
       deliveryDate: deliveryDate.toString(),
-      orderNumber: shownBillId === 0 ? null : shownBillId,
+      orderNumber: billNumber === "" ? null : billNumber,
       ventilationCode: vat,
       orderLines: orderLines.map((line) => ({
         description: line.description,
@@ -397,19 +382,23 @@ const Billing = () => {
 
     // define behavior on success
     const onSuccess = (id: number) => {
+      setShownBillId(billNumber);
       if (billId === 0 || billId === undefined) navigate(`/bill/${id}`);
       if (printMe) printElement(id);
       if (id !== billId) setBillId(id);
       setSaved(true);
-      setLastSave({
-        customerId,
-        orderTitle,
-        orderDate,
-        expiryDate,
-        deliveryDate,
-        vat,
-        orderLines,
-      });
+      setLastSave(
+        JSON.stringify({
+          customerId,
+          orderTitle,
+          orderDate,
+          billNumber,
+          expiryDate,
+          deliveryDate,
+          vat,
+          orderLines,
+        }),
+      );
       setIsLoadingBill(false);
       addToast({
         title: "Facture Enregistrée",
@@ -495,13 +484,10 @@ const Billing = () => {
           </h1>
         </div>
         <div className="basis-1/4 md:basis-1/8 p-2 flex justify-end">
-          {isLoadingBill || isLoadingCustomers ? (
-            <CircularProgress aria-label="Chargement..." size="md" />
-          ) : saved ? (
-            saveIcons.saved
-          ) : (
-            saveIcons.notSaved
-          )}
+          <SaveStatus
+            isLoading={[isLoadingBill, isLoadingCustomers]}
+            saved={saved}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -558,12 +544,7 @@ const Billing = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
-          <LinkContainer to="/billlist">
-            <Button radius="lg">
-              <IoArrowBackCircle size={20} />
-              Retour
-            </Button>
-          </LinkContainer>
+          <ReturnButton to="/billlist" />
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
           <SendPeppolButton
@@ -577,25 +558,12 @@ const Billing = () => {
             orderId={billId}
             setIsAlreadySent={setIsSent}
           />
-          <Button
-            className="mr-2"
-            radius="lg"
-            onPress={() => {
+          <PrintButton
+            printAction={() => {
               verifyAndSave(true);
             }}
-          >
-            <IoPrint size={20} />
-            Imprimer
-          </Button>
-          <Button
-            color="success"
-            radius="lg"
-            variant={saved ? "light" : "solid"}
-            onPress={() => verifyAndSave()}
-          >
-            <IoSave size={20} />
-            Enregistrer
-          </Button>
+          />
+          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -620,6 +588,19 @@ const Billing = () => {
               </AutocompleteItem>
             )}
           </Autocomplete>
+        </div>
+        <div className="basis-2/8 hidden md:block" />
+      </div>
+
+      <div className="flex flex-row">
+        <div className="basis-2/8 hidden md:block" />
+        <div className="basis-1/1 md:basis-4/8 p-2">
+          <Input
+            label="Numéro de Facture"
+            type="text"
+            value={billNumber}
+            onChange={(e) => change(setBillNumber, e.target.value)}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -706,32 +687,19 @@ const Billing = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/2 md:basis-1/4 p-2">
           <Button color="primary" radius="lg" onPress={addLine}>
-            Ajouter Ligne
+            <IoArrowDown size={20} /> Ajouter Ligne
           </Button>
           <Button className="ml-2" color="danger" radius="lg" onPress={delLine}>
-            Supprimer Ligne
+            <IoArrowUp size={20} /> Supprimer Ligne
           </Button>
         </div>
         <div className="basis-1/2 md:basis-1/4 p-2 flex justify-end">
-          <Button
-            className="mr-2"
-            radius="lg"
-            onPress={() => {
+          <PrintButton
+            printAction={() => {
               verifyAndSave(true);
             }}
-          >
-            <IoPrint size={20} />
-            Imprimer
-          </Button>
-          <Button
-            color="success"
-            radius="lg"
-            variant={saved ? "light" : "solid"}
-            onPress={() => verifyAndSave()}
-          >
-            <IoSave size={20} />
-            Enregistrer
-          </Button>
+          />
+          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>

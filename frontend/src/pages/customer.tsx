@@ -2,12 +2,7 @@ import { Input, Textarea } from "@heroui/input";
 import { useState, useEffect } from "react";
 import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
-import { IoSave, IoArrowBackCircle, IoPrint } from "react-icons/io5";
-// @ts-ignore
-import { LinkContainer } from "react-router-bootstrap";
 import { addToast } from "@heroui/toast";
-import { CircularProgress } from "@heroui/progress";
-import { IoCheckmarkDoneCircle, IoCloseCircle } from "react-icons/io5";
 import {
   Modal,
   ModalBody,
@@ -17,6 +12,11 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { useNavigate, useParams } from "react-router-dom";
+
+import SaveStatus from "@/components/saveStatus.tsx";
+import ReturnButton from "@/components/returnButton.tsx";
+import PrintButton from "@/components/printButton.tsx";
+import SaveButton from "@/components/saveButton.tsx";
 
 const Customer = () => {
   // language options for select
@@ -28,27 +28,6 @@ const Customer = () => {
     { value: "fr", label: "Français", key: "fr" },
     { value: "nl", label: "Néerlandais", key: "nl" },
   ];
-  // icons for save status
-  // saved: green checkmark
-  // not saved: red cross
-  const saveIcons = {
-    saved: (
-      <>
-        <h2 className="font-bold text-gray-900 sm:truncate text-xl sm:tracking-tight">
-          Enregistré
-        </h2>{" "}
-        <IoCheckmarkDoneCircle color="green" size={30} />
-      </>
-    ),
-    notSaved: (
-      <>
-        <h2 className="font-bold text-gray-900 sm:truncate text-xl sm:tracking-tight">
-          Pas Enregistré
-        </h2>{" "}
-        <IoCloseCircle color="red" size={30} />
-      </>
-    ),
-  };
   let customerId = Number(useParams().id); // get customer id from url
   const [heading, setHeading] = useState(""); // heading of the page
   const [lastName, setLastName] = useState(""); // last name of the customer
@@ -346,15 +325,7 @@ const Customer = () => {
           </h1>
         </div>
         <div className="basis-1/4 md:basis-1/8 p-2 flex justify-end">
-          {isLoading ? (
-            <CircularProgress aria-label="Chargement..." size="md" />
-          ) : (
-            saved ? (
-              saveIcons.saved
-            ) : (
-              saveIcons.notSaved
-            )
-          )}
+          <SaveStatus isLoading={[isLoading]} saved={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -411,33 +382,15 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
-          <LinkContainer to="/customerlist">
-            <Button radius="lg">
-              <IoArrowBackCircle size={20} />
-              Retour
-            </Button>
-          </LinkContainer>
+          <ReturnButton to="/customerlist" />
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
-          <Button
-            className="mr-2"
-            radius="lg"
-            onPress={() => {
+          <PrintButton
+            printAction={() => {
               verifyAndSave(true);
             }}
-          >
-            <IoPrint size={20} />
-            Imprimer
-          </Button>
-          <Button
-            color="success"
-            radius="lg"
-            variant={saved ? "light" : "solid"}
-            onPress={() => verifyAndSave()}
-          >
-            <IoSave size={20} />
-            Enregistrer
-          </Button>
+          />
+          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -587,15 +540,7 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-1/2 p-2 flex justify-end">
-          <Button
-            color="success"
-            radius="lg"
-            variant={saved ? "light" : "solid"}
-            onPress={() => verifyAndSave()}
-          >
-            <IoSave size={20} />
-            Enregistrer
-          </Button>
+          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>

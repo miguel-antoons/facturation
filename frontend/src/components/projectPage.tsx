@@ -1,5 +1,4 @@
-// @ts-ignore
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 // eslint-disable-next-line import/order
 import * as icon from "react-icons/io5";
 
@@ -321,10 +320,11 @@ const ProjectPage = ({
   }[] => {
     return unfilteredArray.filter((element) => {
       return (
-        String(element["number"]).toLowerCase().indexOf(search) > -1 ||
+        String(element["number"]).toLowerCase().startsWith(search) ||
         element["attribute1"].toLowerCase().indexOf(search) > -1 ||
-        element["attribute2"].toLowerCase().indexOf(search) > -1 ||
-        element["attribute3"].toLowerCase().indexOf(search) > -1
+        element["attribute2"].toLowerCase().startsWith(search) ||
+        element["attribute3"].toLowerCase().split(",")[0].startsWith(search) ||
+        element["attribute3"].toLowerCase().split(",")[1].indexOf(search) > -1
       );
     });
   };

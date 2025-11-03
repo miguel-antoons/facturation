@@ -20,7 +20,7 @@ const OrderLine = ({
     unit: string;
   };
 }) => {
-  const descriptionLabel = `Ligne ${lineNumber}`;
+  const descriptionLabel = `Ligne de commande ${lineNumber}`;
 
   return (
     <>
@@ -59,6 +59,7 @@ const OrderLine = ({
                 <span className="text-default-400 text-small">€</span>
               </div>
             }
+            step="0.01"
             type="number"
             value={orderInfo.unitPrice}
             onChange={(event) =>
