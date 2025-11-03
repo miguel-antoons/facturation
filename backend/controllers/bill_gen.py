@@ -42,6 +42,19 @@ comments = {
     },
 }
 
+six_percent_certificate = {
+    "NL": "Btw-tarief: Bij gebrek aan schriftelijke betwisting binnen een termijn van één maand vanaf de ontvangst van "
+          "de factuur, wordt de klant geacht te erkennen dat (1) de werken worden verricht aan een woning waarvan de "
+          "eerste ingebruikneming heeft plaatsgevonden in een kalenderjaar dat ten minste tien jaar voorafgaat aan de "
+          "datum van de eerste factuur met betrekking tot die werken, (2) de woning, na uitvoering van die werken, "
+          "uitsluitend of hoofdzakelijk als privé-woning wordt gebruikt en (3) de werken worden versterkt en "
+          "gefactureerd aan een eindverbruiker. Wanneer minstens één van die voorwaarden niet is voldaan, zal het "
+          "normale BTW-tarief van 21 pct. van toepassing zijn en is de afnemer ten aanzien van die voorwaarden "
+          "aansprakelijk voor de betaling van de verschuldigde belasting, interesten en geldboeten.",
+    "FR": "Certificat pour le taux de TVA réduit de 6% pour les travaux de rénovation de logements "
+          "de plus de 10 ans disponible sur demande.",
+}
+
 
 def create_bill(req_data: dict):
     if req_data["CounterParty"]["Language"].upper() == "FR":
@@ -59,14 +72,13 @@ def format_dyn_data(req_data: dict):
             "DeliveryDate": parser.parse(req_data["DeliveryDate"]).strftime("%d/%m/%Y"),
             "ExpiryDate": parser.parse(req_data["ExpiryDate"]).strftime("%d/%m/%Y"),
             "Title": req_data["OrderTitle"],
-            "YourReference": f"FA{req_data['OrderNumber']}",
+            "YourReference": f"{req_data['OrderNumber']}",
             "VAT": '{0:.2f}'.format(req_data["OrderLines"][0]["VATPercentage"]).replace(".", ","),
             "TotalExcl": '{0:.2f}'.format(req_data["TotalExcl"]).replace(".", ","),
             "TotalVAT": '{0:.2f}'.format(req_data["TotalVAT"]).replace(".", ","),
             "TotalIncl": '{0:.2f}'.format(req_data["TotalIncl"]).replace(".", ","),
             "Comments": "",
             "LegalInfo": comments[req_data["CounterParty"]["Language"].upper()][req_data["VentilationCode"]],
-            "SixPercentVatCertificate": "",
             "OGM": req_data["PaymentReference"],
         },
         "Customer": {
@@ -117,6 +129,7 @@ def nl_bill(req_data):
             "OGM": "OGM",
             "Iban": "IBAN",
             "BIC": "BIC",
+            "SixPercentVatCertificate": six_percent_certificate["NL"] if req_data["VentilationCode"] == "2" else "",
         },
         "Me": me
     }
@@ -148,6 +161,7 @@ def fr_bill(req_data):
             "OGM": "OGM",
             "Iban": "IBAN",
             "BIC": "BIC",
+            "SixPercentVatCertificate": six_percent_certificate["FR"] if req_data["VentilationCode"] == "2" else "",
         },
         "Me": me
     }
@@ -173,15 +187,16 @@ def bill_gen(static_data, dyn_data):
 
     order_string = ""
     for line in dyn_data['OrderLines']:
+        price_is_not_zero = line['AmountExcl'] != "0,00"
         line_html = f"""
         <tr>
-            <td class="align-left">{line['Description']}</td>
-            <td class="align-right">€ {line['AmountExcl']}</td>
+            <td class="align-left">{line['Description'].replace("\n", "<br />").replace("/r", "")}</td>
+            <td class="align-right">{"€ " + line['AmountExcl'] if price_is_not_zero else ""}</td>
             <td class="align-right">{line['Quantity']}</td>
             {"" if unit_is_empty else f"<td class =\"align-left\">{line['Unit']}</td>"}
-            <td class="align-right">€ {line['TotalExcl']}</td>
-            <td class="align-right">{line['VATPercentage']} %</td>
-            <td class="align-right">€ {line['TotalIncl']}</td>
+            <td class="align-right">{"€ " + line['TotalExcl'] if price_is_not_zero else ""}</td>
+            <td class="align-right">{line['VATPercentage'] + " %" if price_is_not_zero else ""}</td>
+            <td class="align-right">{"€ " + line['TotalIncl'] if price_is_not_zero else ""}</td>
         </tr>
         """
         order_string += line_html
@@ -301,7 +316,7 @@ def bill_gen(static_data, dyn_data):
                                 <div><strong>{dyn_data["Order"]["Comments"]}</strong></div>
                                 {dyn_data["Order"]["LegalInfo"]}
 
-                                <div>{dyn_data["Order"]["SixPercentVatCertificate"]}</div>
+                                <div>{static_data["Label"]["SixPercentVatCertificate"]}</div>
 
                                 <div>{static_data["Label"]["GeneralConditions"]}</div>
                             </td>
