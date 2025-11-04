@@ -1,22 +1,15 @@
 import { Input, Textarea } from "@heroui/input";
 import { useState, useEffect } from "react";
 import { Select, SelectItem } from "@heroui/select";
-import { Button } from "@heroui/button";
 import { addToast } from "@heroui/toast";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useDisclosure,
-} from "@heroui/modal";
+import { useDisclosure } from "@heroui/modal";
 import { useNavigate, useParams } from "react-router-dom";
 
 import SaveStatus from "@/components/saveStatus.tsx";
 import ReturnButton from "@/components/returnButton.tsx";
 import PrintButton from "@/components/printButton.tsx";
 import SaveButton from "@/components/saveButton.tsx";
+import FormConfirmModal from "@/components/formConfirmModal.tsx";
 
 const Customer = () => {
   // language options for select
@@ -330,54 +323,15 @@ const Customer = () => {
         <div className="basis-2/8 hidden md:block" />
       </div>
 
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Attention!
-              </ModalHeader>
-              <ModalBody>{modalText}</ModalBody>
-              <ModalFooter>
-                <Button
-                  color="default"
-                  onPress={() => {
-                    onClose();
-                    setPrinting(false);
-                    setModalText(<></>);
-                  }}
-                >
-                  Non, Annuler
-                </Button>
-                {printing ? (
-                  <Button
-                    color="success"
-                    onPress={() => {
-                      onClose();
-                      setPrinting(false);
-                      setModalText(<></>);
-                      saveChanges(true);
-                    }}
-                  >
-                    Oui, Continuer
-                  </Button>
-                ) : (
-                  <Button
-                    color="success"
-                    onPress={() => {
-                      onClose();
-                      setModalText(<></>);
-                      saveChanges(false);
-                    }}
-                  >
-                    Oui, Continuer
-                  </Button>
-                )}
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <FormConfirmModal
+        isOpen={isOpen}
+        modalText={modalText}
+        printing={printing}
+        saveChanges={saveChanges}
+        setModalText={setModalText}
+        setPrinting={setPrinting}
+        onOpenChange={onOpenChange}
+      />
 
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />

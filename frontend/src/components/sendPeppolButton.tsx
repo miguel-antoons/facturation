@@ -6,13 +6,13 @@ import { addToast } from "@heroui/toast";
 
 const SendPeppolButton = ({
   orderId,
-  billSaved,
+  orderSaved,
   clientHasVAT,
   isAlreadySent,
   setIsAlreadySent,
 }: {
   orderId: number;
-  billSaved: boolean;
+  orderSaved: boolean;
   clientHasVAT: boolean;
   isAlreadySent: boolean;
   setIsAlreadySent: (value: boolean) => void;
@@ -20,7 +20,7 @@ const SendPeppolButton = ({
   const [isLoading, setIsLoading] = useState(false);
   let tooltipText = "";
 
-  if (!billSaved) tooltipText = "Veuillez d'abord enregistrer la facture.";
+  if (!orderSaved) tooltipText = "Veuillez d'abord enregistrer la facture.";
   else if (!clientHasVAT)
     tooltipText =
       "Le client doit avoir un numéro de TVA pour envoyer la facture via Peppol.";
@@ -65,7 +65,7 @@ const SendPeppolButton = ({
     setIsLoading(false);
   };
 
-  return billSaved && clientHasVAT && !isAlreadySent ? (
+  return orderSaved && clientHasVAT && !isAlreadySent ? (
     <Button
       className="mr-2"
       color="primary"
@@ -84,7 +84,7 @@ const SendPeppolButton = ({
         <Button
           className="mr-2"
           color="primary"
-          isDisabled={!(billSaved && clientHasVAT)}
+          isDisabled={!(orderSaved && clientHasVAT)}
           isLoading={isLoading}
           radius="lg"
           startContent={<IoGlobe size={20} />}

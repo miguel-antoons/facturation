@@ -2,15 +2,7 @@ import { Input } from "@heroui/input";
 import { useEffect, useState } from "react";
 import { Select, SelectItem } from "@heroui/select";
 import { Button } from "@heroui/button";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useDisclosure,
-} from "@heroui/modal";
-import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
+import { useDisclosure } from "@heroui/modal";
 import { useNavigate, useParams } from "react-router-dom";
 import { getLocalTimeZone, today, parseDate } from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
@@ -24,6 +16,8 @@ import SaveStatus from "@/components/saveStatus.tsx";
 import ReturnButton from "@/components/returnButton.tsx";
 import PrintButton from "@/components/printButton.tsx";
 import SaveButton from "@/components/saveButton.tsx";
+import FormConfirmModal from "@/components/formConfirmModal.tsx";
+import ClientAutocomplete from "@/components/clientAutocomplete.tsx";
 
 const Billing = () => {
   const [billId, setBillId] = useState(Number(useParams().id));
@@ -38,13 +32,13 @@ const Billing = () => {
   );
   const [deliveryDate, setDeliveryDate] = useState(today(getLocalTimeZone()));
   const vatOptions = [
-    { value: "1", label: "0%", key: "1" },
+    // { value: "1", label: "0%", key: "1" },
     { value: "2", label: "6%", key: "2" },
     { value: "4", label: "21%", key: "4" },
     { value: "21", label: "Co-contractant", key: "21" },
   ];
   const reverseVat: { [index: string]: number } = {
-    "1": 0.0,
+    // "1": 0.0,
     "2": 6.0,
     "4": 21.0,
     "21": 0.0,
@@ -53,7 +47,6 @@ const Billing = () => {
   const [orderLines, setOrderLines] = useState([
     { key: 0, description: "", quantity: "1", unitPrice: "0.0", unit: "" },
   ]);
-  const [customers, setCustomers] = useState([]);
   const [isLoadingBill, setIsLoadingBill] = useState(false); // loading state of the page
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false); // loading state of the page
   const [saved, setSaved] = useState(false); // save icon state of the page
@@ -136,77 +129,6 @@ const Billing = () => {
         });
     }
   }, [billId]);
-
-  /**
-   * Fetch the customers for the autocomplete
-   */
-  useEffect(() => {
-    // get the clients for the autocomplete
-    setIsLoadingCustomers(true);
-    fetch("/api/customers")
-      .then((response) => response.json())
-      .then((data) => {
-        const formattedData: {
-          label: string;
-          key: string;
-        }[] = [];
-        const emailDict: { [key: string]: boolean } = {};
-        const vatDict: { [key: string]: boolean } = {};
-
-        // sort data based on id
-        data.sort((a: { id: number }, b: { id: number }) => a.id - b.id);
-
-        data.forEach(
-          (element: {
-            id: number;
-            company: string;
-            name: string;
-            surname: string;
-            hasEmail: boolean;
-            hasVAT: boolean;
-          }) => {
-            if (
-              element.id === 0 ||
-              element.id === undefined ||
-              element.id === null
-            )
-              return;
-            let label: string;
-
-            if (element.name === null && element.surname === null) {
-              label = element.company === null ? "N/A" : element.company;
-            } else if (element.company === null) {
-              label = `${element.name === null ? "" : element.name} ${element.surname === null ? "" : element.surname}`;
-            } else {
-              label = `${element.name === null ? "" : element.name} ${element.surname === null ? "" : element.surname}, ${element.company}`;
-            }
-            label = `${element.id}, ${label}`;
-            formattedData.push({
-              label: label,
-              key: String(element.id),
-            });
-            emailDict[String(element.id)] = element.hasEmail;
-            vatDict[String(element.id)] = element.hasVAT;
-          },
-        );
-        // @ts-ignore
-        setCustomers(formattedData);
-        setEmailPresent(emailDict);
-        setClientHasVat(vatDict);
-        setIsLoadingCustomers(false);
-      })
-      .catch((e) => {
-        addToast({
-          title: "Erreur",
-          description:
-            "Impossible de retrouver la liste de clients. Veuillez réessayer plus tard.",
-          color: "danger",
-        });
-        // eslint-disable-next-line
-        console.log(e);
-        setIsLoadingBill(false);
-      });
-  }, []);
 
   /**
    * Set the heading based on the billId
@@ -495,54 +417,15 @@ const Billing = () => {
         <div className="basis-2/8 hidden md:block" />
       </div>
 
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Attention!
-              </ModalHeader>
-              <ModalBody>{modalText}</ModalBody>
-              <ModalFooter>
-                <Button
-                  color="default"
-                  onPress={() => {
-                    onClose();
-                    setPrinting(false);
-                    setModalText(<></>);
-                  }}
-                >
-                  Non, Annuler
-                </Button>
-                {printing ? (
-                  <Button
-                    color="success"
-                    onPress={() => {
-                      onClose();
-                      setPrinting(false);
-                      setModalText(<></>);
-                      saveChanges(true);
-                    }}
-                  >
-                    Oui, Continuer
-                  </Button>
-                ) : (
-                  <Button
-                    color="success"
-                    onPress={() => {
-                      onClose();
-                      setModalText(<></>);
-                      saveChanges(false);
-                    }}
-                  >
-                    Oui, Continuer
-                  </Button>
-                )}
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <FormConfirmModal
+        isOpen={isOpen}
+        modalText={modalText}
+        printing={printing}
+        saveChanges={saveChanges}
+        setModalText={setModalText}
+        setPrinting={setPrinting}
+        onOpenChange={onOpenChange}
+      />
 
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
@@ -551,7 +434,6 @@ const Billing = () => {
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
           <SendPeppolButton
-            billSaved={saved}
             clientHasVAT={
               customerId !== "0" || customerId === undefined
                 ? clientHasVat[customerId]
@@ -559,6 +441,7 @@ const Billing = () => {
             }
             isAlreadySent={isSent}
             orderId={billId}
+            orderSaved={saved}
             setIsAlreadySent={setIsSent}
           />
           <PrintButton
@@ -574,23 +457,13 @@ const Billing = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
-          <Autocomplete
-            defaultItems={customers}
-            label="Choisissez un Client"
-            selectedKey={String(customerId)}
-            // @ts-ignore
-            onSelectionChange={(event) => setCustomerId(event)}
-          >
-            {(customer) => (
-              // @ts-ignore
-              <AutocompleteItem key={customer.key}>
-                {
-                  // @ts-ignore
-                  customer.label
-                }
-              </AutocompleteItem>
-            )}
-          </Autocomplete>
+          <ClientAutocomplete
+            customerId={customerId}
+            setClientHasVat={setClientHasVat}
+            setCustomerId={(newVal: string) => change(setCustomerId, newVal)}
+            setEmailPresent={setEmailPresent}
+            setIsLoadingCustomers={setIsLoadingCustomers}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
