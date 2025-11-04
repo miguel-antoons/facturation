@@ -16,9 +16,13 @@ const BillingList = () => {
     try {
       const response = await fetch("/api/bills");
       const dataJson = await response.json();
-      const dataAll: any[] = dataJson.Items;
-      // only keep items where OrderDirection is "Income"
-      const data = dataAll.filter((item) => item.OrderDirection === "Income");
+      const data: {
+        OrderID: string;
+        OrderNumber: string;
+        CounterParty: { DisplayName: string };
+        OrderTitle: string;
+        OrderDate: string;
+      }[] = dataJson.Items;
 
       data.forEach(
         (element: {
@@ -27,7 +31,6 @@ const BillingList = () => {
           CounterParty: { DisplayName: string };
           OrderTitle: string;
           OrderDate: string;
-          OrderPDF: { FileID: string };
         }) => {
           let attr3: string | Date = element.OrderDate
             ? new Date(element.OrderDate)

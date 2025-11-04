@@ -10,7 +10,7 @@ from controllers import bill_gen as bgen
 
 
 def get_bills():
-    url = f"{dotenv_values(".env")["URL"]}/orders"
+    url = f"{dotenv_values(".env")["URL"]}/orders?$filter=OrderType eq 'Invoice' and OrderDirection eq 'Income'"
     headers = get_headers()
     response = requests.get(url, headers=headers)
     if response.status_code not in [200, 201]:
