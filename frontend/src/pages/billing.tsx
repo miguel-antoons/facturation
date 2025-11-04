@@ -115,7 +115,7 @@ const Billing = () => {
               vat: data.VentilationCode,
               orderLines: data.OrderLines.map((line: any, index: number) => ({
                 key: index,
-                description: line.Description,
+                description: line.Description.replace(/\r/g, ""),
                 quantity: line.Quantity,
                 unitPrice: String(line.UnitPriceExcl),
                 unit: line.Unit,
@@ -372,7 +372,7 @@ const Billing = () => {
       orderNumber: billNumber === "" ? null : billNumber,
       ventilationCode: vat,
       orderLines: orderLines.map((line) => ({
-        description: line.description,
+        description: line.description.replace(/\r/g, ""),
         quantity: Number(line.quantity),
         unitPriceExcl: Number(line.unitPrice),
         unit: line.unit,
