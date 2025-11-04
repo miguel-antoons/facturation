@@ -1,0 +1,54 @@
+@media print {
+    .constructionSite {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        margin-left: 10%
+    }
+
+    .no_print {
+        display: none !important;
+        margin-top: 0 !important;
+    }
+
+    button, .cleanButton {
+        display: none;
+    }
+
+    .newLineColumns {
+        display: none !important;
+        color: white;
+    }
+
+    label {
+        display: none;
+    }
+
+    .tableauxEtiquettes {
+        margin-top: 0;
+        margin-left: 10%;
+    }
+
+    .changementCouleur, .projectStatus {
+        display: none;
+        margin: 0;
+    }
+
+    .etiquettesContainer {
+        width: 100%;
+    }
+
+    table { page-break-inside:auto; }
+    tr    { page-break-inside:avoid; page-break-after:auto }
+    thead { display:table-header-group }
+    tfoot { display:table-footer-group }
+
+    .etiquettesContainer {
+        overflow: visible;
+    }
+
+    h3 {
+        display: none !important;
+        margin: 0;
+        color: white;
+    }
+}

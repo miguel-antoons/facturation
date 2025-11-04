@@ -1,0 +1,90 @@
+.cleanButton{
+    margin: 5%;
+    width: 3.4cm;
+    height: 1.8cm;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18pt;
+    font-style: italic;
+    border-radius: 16px;
+    background-color: #ff4500;
+    color: whitesmoke;
+    font-family: calibri, sans-serif;
+}
+
+.cleanButton:hover{
+    color: #ff4500;
+    background-color: #e5e4e2;
+}
+
+.cleanButton:focus {
+    background-color: #d33800;
+    color: whitesmoke;
+}
+
+.changementCouleur {
+    margin-left: 6%;
+    margin-top: 7%;
+    padding: 10pt;
+    border-radius: 20px;
+    width: 290px;
+}
+
+.titreCouleurs {
+    margin-bottom: 20pt;
+}
+
+.projectStatus {
+    margin-top: 0;
+    margin-left: 7%;
+    padding: 10pt;
+}
+
+.radioContainer {
+    margin-left: 25pt;
+}
+
+.newLineColumns {
+    width: 290px;
+    margin-top: none;
+    margin-left: 7%;
+}
+
+.titreNouvelleColonnes{
+    margin-bottom: 15pt;
+    margin-left: 7%;
+}
+
+.clientInfo {
+    margin-top: 3%;
+    margin-left: 5%;
+}
+
+.saved {
+    color: green;
+    margin-left: 10pt;
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+.unsaved {
+    color: red;
+    margin-left: 10pt;
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+.nOfLines {
+    margin-left: 13pt;
+    font-size: 14pt;
+    font-weight: bold;
+    color: rgb(218, 116, 0);
+}
+
+.events {
+    margin-left: 10pt;
+    font-size: 14pt;
+    font-weight: bold;
+    color: green;
+}
