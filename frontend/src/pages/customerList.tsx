@@ -77,7 +77,7 @@ const CustomerList = () => {
         attr3.split(",")[0].startsWith(searchTerm) ||
         attr3.split(",")[1].indexOf(searchTerm) > -1
       }
-      fadeClass="from-green-400 to-blue-500"
+      fadeClass="bg-linear-to-tr from-green-400 to-blue-500"
       fetchContent={fetchContent}
       instancePath="/customer"
       title="Bienvenue dans Clients"

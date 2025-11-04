@@ -336,7 +336,7 @@ const ProjectPage = ({
 
   return (
     <div style={{ margin: 0, padding: 0 }}>
-      <div ref={ref} className={`bg-linear-to-tr ${fadeClass} jumbotron`}>
+      <div ref={ref} className={`${fadeClass} jumbotron`}>
         <div className="d-flex justify-content-center flex flex-row">
           <div className="basis-3/16">
             <LinkContainer to="/">
