@@ -159,6 +159,10 @@ table.list .align-right {
     text-align: right;
 }
 
+.align-bottom {
+    vertical-align: bottom;
+}
+
 table.list .align-left {
     text-align: left;
 }

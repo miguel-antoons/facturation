@@ -51,8 +51,14 @@ six_percent_certificate = {
           "gefactureerd aan een eindverbruiker. Wanneer minstens één van die voorwaarden niet is voldaan, zal het "
           "normale BTW-tarief van 21 pct. van toepassing zijn en is de afnemer ten aanzien van die voorwaarden "
           "aansprakelijk voor de betaling van de verschuldigde belasting, interesten en geldboeten.",
-    "FR": "Certificat pour le taux de TVA réduit de 6% pour les travaux de rénovation de logements "
-          "de plus de 10 ans disponible sur demande.",
+    "FR": "Taux de TVA: En l'absence de contestation par écrit, dans un délai d'un mois à compter de la réception de la"
+          " facture, le client est présumé reconnaître que (1) les travaux sont effectués dans un bâtiment dont la "
+          "première occupation a eu lieu au cours d'une année civile qui précède d'au moins dix ans de la date de la "
+          "première facture realtive à ces travaux, (2) qu'après l'exécution de ces travaux, l'habitation est utilisée,"
+          " soit exclusivement soit à titre principal comme logement privé et (3) que ces travaux sont fournis et "
+          "facturés à un consommateurfinal. Si au moins une de ces conditions n'est pas remplie, le taux normal de TVA "
+          "de 21 p.c. sera applicable et le client endossera, par rapport à ces conditions, la responsabilité quant au "
+          "paiement de la taxe, des intérêts et des amendes dus.",
 }
 
 
@@ -190,13 +196,13 @@ def bill_gen(static_data, dyn_data):
         price_is_not_zero = line['AmountExcl'] != "0,00"
         line_html = f"""
         <tr>
-            <td class="align-left">{line['Description'].replace("\n", "<br />").replace("/r", "")}</td>
-            <td class="align-right">{"€ " + line['AmountExcl'] if price_is_not_zero else ""}</td>
-            <td class="align-right">{line['Quantity']}</td>
-            {"" if unit_is_empty else f"<td class =\"align-left\">{line['Unit']}</td>"}
-            <td class="align-right">{"€ " + line['TotalExcl'] if price_is_not_zero else ""}</td>
-            <td class="align-right">{line['VATPercentage'] + " %" if price_is_not_zero else ""}</td>
-            <td class="align-right">{"€ " + line['TotalIncl'] if price_is_not_zero else ""}</td>
+            <td class="align-left align-bottom">{line['Description'].replace("\n", "<br />").replace("/r", "")}</td>
+            <td class="align-right align-bottom">{"€ " + line['AmountExcl'] if price_is_not_zero else ""}</td>
+            <td class="align-right align-bottom">{line['Quantity']}</td>
+            {"" if unit_is_empty else f"<td class =\"align-left align-bottom\">{line['Unit']}</td>"}
+            <td class="align-right align-bottom">{"€ " + line['TotalExcl'] if price_is_not_zero else ""}</td>
+            <td class="align-right align-bottom">{line['VATPercentage'] + " %" if price_is_not_zero else ""}</td>
+            <td class="align-right align-bottom">{"€ " + line['TotalIncl'] if price_is_not_zero else ""}</td>
         </tr>
         """
         order_string += line_html

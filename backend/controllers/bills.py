@@ -13,6 +13,12 @@ def get_bills():
     url = f"{dotenv_values(".env")["URL"]}/orders"
     headers = get_headers()
     response = requests.get(url, headers=headers)
+    if response.status_code not in [200, 201]:
+        print(response.text)
+        return jsonify({
+            "status": "failed",
+            "message": response.json()
+        })
 
     return response.json()
 
@@ -58,8 +64,6 @@ def create_bill(json, order_id=0):
         return jsonify({
             "status": "failed",
             "message": response.json()
-                .get('errors', 'Erreur lors de la création de la facture.')[0]
-                .get('Description', 'Erreur lors de la création de la facture.')
         })
 
 
@@ -67,6 +71,12 @@ def get_bill(bill_id):
     url = f"{dotenv_values(".env")["URL"]}/orders/{bill_id}"
     headers = get_headers()
     response = requests.get(url, headers=headers)
+    if response.status_code not in [200, 201]:
+        print(response.text)
+        return jsonify({
+            "status": "failed",
+            "message": response.json()
+        })
     return response.json()
 
 
@@ -78,6 +88,8 @@ def delete_bill(bill_id):
     url = f"{dotenv_values(".env")["URL"]}/orders/{bill_id}"
     headers = get_headers()
     response = requests.delete(url, headers=headers)
+    if response.content != b'true':
+        print(response.text)
     return jsonify({"status": "deleted" if response.content == b'true' else "failed"})
 
 
@@ -96,8 +108,6 @@ def send_peppol(bill_id):
         return jsonify({
             "status": "failed",
             "message": response.json()
-                .get('errors', 'Erreur lors de l\'envoi Peppol.')[0]
-                .get('Description', 'Erreur lors de l\'envoi Peppol.')
         })
 
 
@@ -135,6 +145,7 @@ def format_client(customer_id):
         #     elif box.lower().startswith('boite'):
         #         box = box[5:].strip()
     else:
+        print("Invalid address format for customer ID:", customer_id)
         return {
             "status": "failed",
             "message": "Format d'adresse incorrect. L'adresse devrait avoir le format 'Rue , Numéro'."

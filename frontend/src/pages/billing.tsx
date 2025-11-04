@@ -233,7 +233,7 @@ const Billing = () => {
       unitPrice: "0.0",
       unit: "",
     });
-    setOrderLines(orderLinesSlice);
+    change(setOrderLines, orderLinesSlice);
   };
 
   /**
@@ -243,7 +243,7 @@ const Billing = () => {
     if (orderLines.length === 1) return; // do nothing if only one line
     const orderLinesSlice = orderLines.slice(0, -1);
 
-    setOrderLines(orderLinesSlice);
+    change(setOrderLines, orderLinesSlice);
   };
 
   /**
@@ -434,7 +434,10 @@ const Billing = () => {
       body: JSON.stringify(billData),
     })
       .then((response) => response.json())
-      .then((data: { id: number }) => onSuccess(data.id))
+      .then((data: { status: string; id: number; message: string }) => {
+        if (data.status === "failed") onFailure(data.message);
+        else onSuccess(data.id);
+      })
       .catch((error) => onFailure(error));
   };
 
