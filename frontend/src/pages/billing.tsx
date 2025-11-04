@@ -402,7 +402,7 @@ const Billing = () => {
       setIsLoadingBill(false);
       addToast({
         title: "Facture Enregistrée",
-        description: `La facture numéro ${id} a été enregistrée avec succès.`,
+        description: `La facture numéro ${billNumber} a été enregistrée avec succès.`,
         color: "success",
       });
     };
