@@ -26,6 +26,9 @@ const ProjectPage = ({
   attribute1,
   attribute2,
   attribute3,
+  attribute1SearchFun = (attr1, searchTerm) => attr1.indexOf(searchTerm) > -1,
+  attribute2SearchFun = (attr2, searchTerm) => attr2.indexOf(searchTerm) > -1,
+  attribute3SearchFun = (attr3, searchTerm) => attr3.indexOf(searchTerm) > -1,
   apiPathname,
   title,
   instancePath,
@@ -35,6 +38,9 @@ const ProjectPage = ({
   attribute1: string;
   attribute2: string;
   attribute3: string;
+  attribute1SearchFun?: (attr1: string, searchTerm: string) => boolean;
+  attribute2SearchFun?: (attr2: string, searchTerm: string) => boolean;
+  attribute3SearchFun?: (attr3: string, searchTerm: string) => boolean;
   apiPathname: string;
   title: string;
   instancePath: string;
@@ -321,10 +327,9 @@ const ProjectPage = ({
     return unfilteredArray.filter((element) => {
       return (
         String(element["number"]).toLowerCase().startsWith(search) ||
-        element["attribute1"].toLowerCase().indexOf(search) > -1 ||
-        element["attribute2"].toLowerCase().startsWith(search) ||
-        element["attribute3"].toLowerCase().split(",")[0].startsWith(search) ||
-        element["attribute3"].toLowerCase().split(",")[1].indexOf(search) > -1
+        attribute1SearchFun(element["attribute1"], search) ||
+        attribute2SearchFun(element["attribute2"], search) ||
+        attribute3SearchFun(element["attribute3"], search)
       );
     });
   };

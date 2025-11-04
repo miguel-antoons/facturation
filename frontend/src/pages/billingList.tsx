@@ -74,6 +74,10 @@ const BillingList = () => {
       attribute1="Client"
       attribute2="Chantier"
       attribute3="Date de Création"
+      attribute3SearchFun={(attr3, searchTerm) =>
+        attr3.split("/")[2] === searchTerm ||
+        (searchTerm.indexOf("/") > -1 && attr3.indexOf(searchTerm) > -1)
+      }
       fadeClass="from-pink-500 to-yellow-500"
       fetchContent={fetchContent}
       instancePath="/bill"

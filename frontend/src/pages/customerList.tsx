@@ -71,7 +71,12 @@ const CustomerList = () => {
       apiPathname="/customers"
       attribute1="Nom, Prénom, Société"
       attribute2="N° de Téléphone"
+      attribute2SearchFun={(attr2, searchTerm) => attr2.startsWith(searchTerm)}
       attribute3="Ville"
+      attribute3SearchFun={(attr3, searchTerm) =>
+        attr3.split(",")[0].startsWith(searchTerm) ||
+        attr3.split(",")[1].indexOf(searchTerm) > -1
+      }
       fadeClass="from-green-400 to-blue-500"
       fetchContent={fetchContent}
       instancePath="/customer"
