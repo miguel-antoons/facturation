@@ -208,7 +208,7 @@ const Customer = () => {
       if (printMe) printElement(id);
       if (customerId === 0 || customerId === undefined) {
         // if new customer, navigate to the new customer's page
-        navigate(`/customer/${id}`);
+        navigate(`/customer/${id}`, { replace: true });
       }
       setSaved(true);
       setIsLoading(false);

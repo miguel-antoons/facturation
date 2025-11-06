@@ -312,7 +312,7 @@ const CreditNote = () => {
     // define behavior on success
     const onSuccess = (id: number) => {
       setShownCnoteId(cnoteNumber);
-      if (cnoteId === 0 || cnoteId === undefined) navigate(`/cnote/${id}`);
+      if (cnoteId === 0 || cnoteId === undefined) navigate(`/cnote/${id}`, { replace: true });
       if (printMe) printElement(id);
       if (id !== cnoteId) setCnoteId(id);
       setSaved(true);

@@ -305,7 +305,7 @@ const Billing = () => {
     // define behavior on success
     const onSuccess = (id: number) => {
       setShownBillId(billNumber);
-      if (billId === 0 || billId === undefined) navigate(`/bill/${id}`);
+      if (billId === 0 || billId === undefined) navigate(`/bill/${id}`, { replace: true });
       if (printMe) printElement(id);
       if (id !== billId) setBillId(id);
       setSaved(true);
