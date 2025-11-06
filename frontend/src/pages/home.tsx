@@ -1,7 +1,11 @@
 // @ts-ignore
 import { LinkContainer } from "react-router-bootstrap";
 import { Button } from "@heroui/button";
-import { IoDocuments, IoPeople } from "react-icons/io5";
+import {
+  IoDocumentText,
+  IoDocumentTextOutline,
+  IoPeople,
+} from "react-icons/io5";
 
 const Home = () => {
   return (
@@ -15,6 +19,7 @@ const Home = () => {
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
+
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/2 md:basis-1/4 p-2">
@@ -23,7 +28,7 @@ const Home = () => {
               className="text-2xl font-bold bg-linear-to-tr from-pink-500 to-yellow-500 text-white shadow-lg w-1/1 h-auto"
               radius="lg"
             >
-              <IoDocuments size={200} />
+              <IoDocumentText size={200} />
               Factures
             </Button>
           </LinkContainer>
@@ -39,6 +44,23 @@ const Home = () => {
             </Button>
           </LinkContainer>
         </div>
+        <div className="basis-2/8 hidden md:block" />
+      </div>
+
+      <div className="flex flex-row">
+        <div className="basis-2/8 hidden md:block" />
+        <div className="basis-1/2 md:basis-1/4 p-2">
+          <LinkContainer to="/cnotelist">
+            <Button
+              className="text-2xl font-bold bg-gradient-to-tr from-orange-400 to-sky-400 text-white shadow-lg w-1/1 h-auto"
+              radius="lg"
+            >
+              <IoDocumentTextOutline size={200} />
+              Notes de Crédit
+            </Button>
+          </LinkContainer>
+        </div>
+        <div className="basis-1/2 md:basis-1/4 p-2" />
         <div className="basis-2/8 hidden md:block" />
       </div>
     </>

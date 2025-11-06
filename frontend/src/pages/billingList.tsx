@@ -1,8 +1,12 @@
 import { addToast } from "@heroui/toast";
+import { IoDocumentTextOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 import ProjectPage from "@/components/projectPage";
 
 const BillingList = () => {
+  const navigate = useNavigate();
+
   const fetchContent = async () => {
     const formattedData: {
       id: number;
@@ -71,6 +75,25 @@ const BillingList = () => {
     return formattedData;
   };
 
+  const goToCnote = (billId: number) => {
+    fetch(`/api/bills/${billId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const link = `/cnote/0?bill=${data.OrderNumber}&customerId=${data.CounterParty.Nr}&title=${data.OrderTitle}&ventilationCode=${data.VentilationCode}`;
+
+        navigate(link);
+      })
+      .catch((error) => {
+        addToast({
+          title: "Erreur",
+          description: `Impossible de créer une note de crédit à partir de cette facture. Veuillez réessayer plus tard.`,
+          color: "danger",
+        });
+        // eslint-disable-next-line
+        console.log(error);
+      });
+  };
+
   return (
     <ProjectPage
       apiPathname="/bills"
@@ -80,6 +103,12 @@ const BillingList = () => {
       attribute3SearchFun={(attr3, searchTerm) =>
         attr3.split("/")[2] === searchTerm ||
         (searchTerm.indexOf("/") > -1 && attr3.indexOf(searchTerm) > -1)
+      }
+      customButtonAction={goToCnote}
+      customButtonText={
+        <>
+          <IoDocumentTextOutline size={20} /> Cnote
+        </>
       }
       fadeClass="bg-linear-to-tr from-pink-500 to-yellow-500"
       fetchContent={fetchContent}

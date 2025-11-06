@@ -3,6 +3,8 @@ from models import customers as model
 from reportlab.pdfgen.canvas import Canvas
 from controllers.bills import get_bill
 from controllers.bill_gen import create_bill
+from controllers.cnotes import get_cnote
+from controllers.cnote_gen import create_cnote
 
 
 def get_customer_file(customer_id):
@@ -50,4 +52,14 @@ def get_bill_file(bill_id):
     resp = make_response(binary_file)
     resp.headers.set('Content-Type', 'application/pdf')
     resp.headers.set('Content-Disposition', 'inline', filename=f'bill_{bill_id}.pdf')
+    return resp
+
+
+def get_cnote_file(cnote_id):
+    req_data = get_cnote(cnote_id)
+    filename = create_cnote(req_data)
+    binary_file = open(filename, 'rb')
+    resp = make_response(binary_file)
+    resp.headers.set('Content-Type', 'application/pdf')
+    resp.headers.set('Content-Disposition', 'inline', filename=f'cnote_{cnote_id}.pdf')
     return resp

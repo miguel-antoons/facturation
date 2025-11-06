@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 // eslint-disable-next-line import/order
 import * as icon from "react-icons/io5";
 
@@ -26,14 +26,19 @@ const ProjectPage = ({
   attribute1,
   attribute2,
   attribute3,
-  attribute1SearchFun = (attr1, searchTerm) => attr1.indexOf(searchTerm) > -1,
-  attribute2SearchFun = (attr2, searchTerm) => attr2.indexOf(searchTerm) > -1,
-  attribute3SearchFun = (attr3, searchTerm) => attr3.indexOf(searchTerm) > -1,
+  attribute1SearchFun = (attr1, searchTerm) =>
+    attr1.toLowerCase().indexOf(searchTerm) > -1,
+  attribute2SearchFun = (attr2, searchTerm) =>
+    attr2.toLowerCase().indexOf(searchTerm) > -1,
+  attribute3SearchFun = (attr3, searchTerm) =>
+    attr3.toLowerCase().indexOf(searchTerm) > -1,
   apiPathname,
   title,
   instancePath,
   fadeClass,
   fetchContent,
+  customButtonText = undefined,
+  customButtonAction = undefined,
 }: {
   attribute1: string;
   attribute2: string;
@@ -46,6 +51,8 @@ const ProjectPage = ({
   instancePath: string;
   fadeClass: string;
   fetchContent?: () => Promise<any>;
+  customButtonText?: React.ReactNode;
+  customButtonAction?: ((id: number) => any) | undefined;
 }) => {
   const [sort, setSort] = useState('{"key": "number", "sign": 1}');
   const [search, setSearch] = useState("");
@@ -472,6 +479,8 @@ const ProjectPage = ({
         pathname={instancePath}
         onDelete={openDeleteModal}
         onPrint={printElement}
+        {...(customButtonText === undefined ? {} : { customButtonText })}
+        {...(customButtonAction === undefined ? {} : { customButtonAction })}
       />
     </div>
   );

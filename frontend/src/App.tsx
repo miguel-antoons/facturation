@@ -5,6 +5,8 @@ import Billing from "@/pages/billing";
 import CustomerList from "@/pages/customerList";
 import Customer from "@/pages/customer";
 import Home from "@/pages/home.tsx";
+import CreditNoteList from "@/pages/creditNoteList.tsx";
+import CreditNote from "@/pages/creditNote.tsx";
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
       <Route element={<Billing />} path="/bill/:id" />
       <Route element={<CustomerList />} path="/customerlist" />
       <Route element={<Customer />} path="/customer/:id" />
+      <Route element={<CreditNoteList />} path="/cnotelist" />
+      <Route element={<CreditNote />} path="/cnote/:id" />
     </Routes>
   );
 }

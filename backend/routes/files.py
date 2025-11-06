@@ -16,3 +16,10 @@ def bill_file(bill_id):
     if request.method == 'GET':
         return ctrl.get_bill_file(bill_id)
     return None
+
+
+@files.route('/api/files/cnotes/<int:cnote_id>', methods=['GET'])
+def cnote_file(cnote_id):
+    if request.method == 'GET':
+        return ctrl.get_cnote_file(cnote_id)
+    return None

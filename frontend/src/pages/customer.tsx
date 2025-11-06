@@ -336,7 +336,7 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
-          <ReturnButton to="/customerlist" />
+          <ReturnButton />
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
           <PrintButton

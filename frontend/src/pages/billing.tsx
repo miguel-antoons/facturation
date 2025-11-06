@@ -43,7 +43,7 @@ const Billing = () => {
     "4": 21.0,
     "21": 0.0,
   };
-  const [vat, setVat] = useState(vatOptions[2].value);
+  const [vat, setVat] = useState(vatOptions[1].value);
   const [orderLines, setOrderLines] = useState([
     { key: 0, description: "", quantity: "1", unitPrice: "0.0", unit: "" },
   ]);
@@ -430,7 +430,7 @@ const Billing = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
-          <ReturnButton to="/billlist" />
+          <ReturnButton />
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
           <SendPeppolButton

@@ -5,41 +5,41 @@ from pdf.static_data import *
 from pdf.pdf_gen import format_dyn_data
 
 
-def create_bill(req_data: dict):
+def create_cnote(req_data: dict):
     if req_data["CounterParty"]["Language"].upper() == "FR":
-        return fr_bill(req_data)
+        return fr_cnote(req_data)
     else:
-        return nl_bill(req_data)
+        return nl_cnote(req_data)
 
 
-def nl_bill(req_data):
-    static_data = bill_static_nl()
+def nl_cnote(req_data):
+    static_data = cnote_static_nl()
     static_data["Label"]["SixPercentVatCertificate"] = six_percent_certificate["NL"] if req_data["VentilationCode"] == "2" else ""
     dyn_data = format_dyn_data(req_data)
-    return bill_gen(static_data, dyn_data)
+    return cnote_gen(static_data, dyn_data)
 
 
-def fr_bill(req_data):
-    static_data = bill_static_fr()
+def fr_cnote(req_data):
+    static_data = cnote_static_fr()
     static_data["Label"]["SixPercentVatCertificate"] = six_percent_certificate["FR"] if req_data["VentilationCode"] == "2" else ""
     dyn_data = format_dyn_data(req_data)
-    return bill_gen(static_data, dyn_data)
+    return cnote_gen(static_data, dyn_data)
 
 
 def html_to_pdf(html_content, output_path):
     font_config = FontConfiguration()
     css = CSS("./pdf/pdf.css", font_config=font_config)
-    HTML(string=html_content).write_pdf("/tmp/temp_bill.pdf", stylesheets=[css], font_config=font_config)
+    HTML(string=html_content).write_pdf("/tmp/temp_cnote.pdf", stylesheets=[css], font_config=font_config)
 
     merger = PdfMerger()
-    merger.append("/tmp/temp_bill.pdf")
+    merger.append("/tmp/temp_cnote.pdf")
     merger.append("./pdf/verkoopsvoorwaarden.pdf")
     with open(output_path, "wb") as pdf_file:
         merger.write(pdf_file)
     merger.close()
 
 
-def bill_gen(static_data, dyn_data):
+def cnote_gen(static_data, dyn_data):
     unit_is_empty = all(line['Unit'] == "" for line in dyn_data['OrderLines'])
 
     order_string = ""
@@ -68,11 +68,13 @@ def bill_gen(static_data, dyn_data):
                 <tbody>
                     <tr>
                       <td>
-                      <div class="logo">{static_data["Me"]["Logo"]}</div>
+                        <div class="logo">{static_data["Me"]["Logo"]}</div>
                       </td>
                       <td>
-                      <h1>{static_data["Label"]["OrderType"]}</h1>
-                      <b>{static_data["Label"]["OrderNumber"]}:</b> {dyn_data["Order"]["OrderNumber"]}</td>
+                          <h1>{static_data["Label"]["OrderType"]}</h1>
+                          <b>{static_data["Label"]["OrderNumber"]}:</b> {dyn_data["Order"]["OrderNumber"]}<br />
+                          <b>{static_data["Label"]["AboutInvoiceNumber"]}:</b> {dyn_data["Order"]["AboutInvoiceNumber"]}
+                      </td>
                     </tr>
                     <tr>
                         <td style="vertical-align: bottom;">
@@ -100,12 +102,10 @@ def bill_gen(static_data, dyn_data):
                     <tr>
                         <td style="width: 20%;">
                             <b>{static_data["Label"]["Date"]}:<br />
-                            {static_data["Label"]["DeliveryDate"]}:<br />
                             {static_data["Label"]["ExpiryDate"]}: </b>
                         </td>
                         <td style="width: 30%;">
                             {dyn_data["Order"]["OrderDate"]}<br />
-                            {dyn_data["Order"]["DeliveryDate"]}<br />
                             {dyn_data["Order"]["ExpiryDate"]}
                         </td>
                         <td colspan="2" style="width: 50%;">
@@ -175,6 +175,7 @@ def bill_gen(static_data, dyn_data):
 
                                 <div>{static_data["Label"]["SixPercentVatCertificate"]}</div>
                                 <br />
+                                <div>{static_data["Label"]["CnoteComment"]}</div>
                                 <div>{static_data["Label"]["GeneralConditions"]}</div>
                             </td>
                         </tr>
@@ -198,16 +199,16 @@ def bill_gen(static_data, dyn_data):
                                 <table border="0" cellpadding="1" cellspacing="1" style="text-align: right; width: 100%;">
                                     <tbody>
                                         <tr>
-                                            <td style="width: 70%;"><strong>{static_data["Label"]["OGM"]}:&nbsp;</strong></td>
-                                            <td style="width: 30%; vertical-align: bottom;"><span style="background-color:#ffff00;">{dyn_data["Order"]["OGM"]}</span></td>
+                                            <td style="width: 70%;"><strong>&nbsp;</strong></td>
+                                            <td style="width: 30%; vertical-align: bottom;"></td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 70%;"><strong>{static_data["Label"]["Iban"]}:&nbsp;</strong></td>
-                                            <td style="width: 30%; vertical-align: bottom;">{static_data["Me"]["Iban"]}</td>
+                                            <td style="width: 70%;"><strong>&nbsp;</strong></td>
+                                            <td style="width: 30%; vertical-align: bottom;"></td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 70%;"><strong>{static_data["Label"]["BIC"]}:&nbsp;</strong></td>
-                                            <td style="width: 30%; vertical-align: bottom;">{static_data["Me"]["BIC"]}</td>
+                                            <td style="width: 70%;"><strong>&nbsp;</strong></td>
+                                            <td style="width: 30%; vertical-align: bottom;"></td>
                                         </tr>
                                     </tbody>
                                 </table>

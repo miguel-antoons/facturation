@@ -1,15 +1,14 @@
-from flask import jsonify
 import requests
 from dotenv import dotenv_values
-
+from flask import jsonify
 from controllers.orders import get_headers, format_client, send_peppol, get_orders, get_order, delete_order
 
 
-def get_bills():
-    return get_orders("?$filter=OrderType eq 'Invoice' and OrderDirection eq 'Income'")
+def get_cnotes():
+    return get_orders("?$filter=OrderType eq 'CreditNote' and OrderDirection eq 'Income'")
 
 
-def create_bill(json, order_id=0):
+def create_cnote(json, order_id=0):
     client_payload = format_client(json.get('customerId'))
     if 'status' in client_payload and client_payload['status'] == 'failed':
         return jsonify(client_payload)
@@ -27,9 +26,10 @@ def create_bill(json, order_id=0):
 
     payload = {
         "Customer": client_payload,
-        "OrderType": "Invoice",
+        "OrderType": "CreditNote",
         "OrderDirection": "Income",
         "OrderNumber": json.get('orderNumber'),
+        "AboutInvoiceNumber": json.get('aboutInvoiceNumber'),
         "OrderDate": json.get('orderDate'),
         "ExpiryDate": json.get('expiryDate'),
         "DeliveryDate": json.get('deliveryDate'),
@@ -53,17 +53,17 @@ def create_bill(json, order_id=0):
         })
 
 
-def get_bill(bill_id):
-    return get_order(bill_id)
+def get_cnote(cnote_id):
+    return get_order(cnote_id)
 
 
-def update_bill(bill_id, json):
-    return create_bill(json, order_id=bill_id)
+def update_cnote(cnote_id, json):
+    return create_cnote(json, order_id=cnote_id)
 
 
-def delete_bill(bill_id):
-    return delete_order(bill_id)
+def delete_cnote(cnote_id):
+    return delete_order(cnote_id)
 
 
-def send_bill_peppol(bill_id):
-    send_peppol(bill_id)
+def send_cnote_peppol(cnote_id):
+    send_peppol(cnote_id)

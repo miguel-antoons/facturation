@@ -26,6 +26,12 @@ const ProjectTable = ({
   attribute2,
   attribute3,
   isLoading,
+  customButtonText = (
+    <>
+      <icon.IoOpen size={20} /> Ouvrir
+    </>
+  ),
+  customButtonAction = undefined,
 }: {
   content: {
     id: number;
@@ -43,7 +49,13 @@ const ProjectTable = ({
   attribute2: string;
   attribute3: string;
   isLoading: boolean;
+  customButtonText?: ReactNode;
+  customButtonAction?: ((id: number) => any) | undefined;
 }) => {
+  const navigate = useNavigate();
+
+  if (customButtonAction === undefined)
+    customButtonAction = (id) => navigate(`${pathname}/${id}`);
   const columns = [
     {
       key: "number",
@@ -76,7 +88,6 @@ const ProjectTable = ({
       maxWidth: 100,
     },
   ];
-  const navigate = useNavigate();
 
   const renderCell = React.useCallback(
     (
@@ -105,21 +116,21 @@ const ProjectTable = ({
                     onDelete(element.id, element.number, element.attribute1)
                   }
                 >
-                  <icon.IoTrash size={15} /> Suprimmer
+                  <icon.IoTrash size={20} /> Suprimmer
                 </Button>
                 <Button
                   color="primary"
                   variant="flat"
                   onPress={() => onPrint(element.fileId)}
                 >
-                  <icon.IoPrint size={15} /> Imprimer
+                  <icon.IoPrint size={20} /> Imprimer
                 </Button>
                 <Button
                   color="primary"
                   variant="flat"
-                  onPress={() => navigate(`${pathname}/${element.id}`)}
+                  onPress={() => customButtonAction(element.id)}
                 >
-                  <icon.IoOpen size={15} /> Ouvrir
+                  {customButtonText}
                 </Button>
               </ButtonGroup>
             </ClickKiller>
