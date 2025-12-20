@@ -7,6 +7,7 @@ import Customer from "@/pages/customer";
 import Home from "@/pages/home.tsx";
 import CreditNoteList from "@/pages/creditNoteList.tsx";
 import CreditNote from "@/pages/creditNote.tsx";
+import Tickets from "@/pages/tickets.tsx";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route element={<Customer />} path="/customer/:id" />
       <Route element={<CreditNoteList />} path="/cnotelist" />
       <Route element={<CreditNote />} path="/cnote/:id" />
+      <Route element={<Tickets />} path="/tickets/:id" />
     </Routes>
   );
 }
