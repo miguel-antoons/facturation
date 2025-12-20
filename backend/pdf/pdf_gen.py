@@ -1,7 +1,6 @@
-import time
-
 from dateutil import parser
 from pdf.static_data import comments
+import models.customers as mcust
 
 
 def format_dyn_data(req_data: dict):
@@ -26,6 +25,7 @@ def format_dyn_data(req_data: dict):
         "Customer": {
             "OfficialCompanyName": req_data["CounterParty"].get("Name", ""),
             "ContactFullName": req_data["CounterParty"].get("Contact", ""),
+            "Salutation": mcust.get_customers(["Titre"], filters={"Numero": req_data["CounterParty"]["Nr"]})[0][0],
             "StreetAndNumber": f"{req_data["CounterParty"]["Street"]} {req_data["CounterParty"]["StreetNumber"]} {req_data["CounterParty"].get("Box", "")}".strip(),
             "ZipCode": req_data["CounterParty"]["Addresses"][0]["Zipcode"],
             "City": req_data["CounterParty"]["Addresses"][0]["City"],

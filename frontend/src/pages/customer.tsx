@@ -21,6 +21,17 @@ const Customer = () => {
     { value: "fr", label: "Français", key: "fr" },
     { value: "nl", label: "Néerlandais", key: "nl" },
   ];
+  const salutationOptions = [
+    { value: "mr", labelNl: "Dhr.", labelFr: "Mr.", key: "mr" },
+    { value: "ms", labelNl: "Mevr.", labelFr: "Mme.", key: "ms" },
+    {
+      value: "mss",
+      labelNl: "Dhr. en Mevr.",
+      labelFr: "Mr. et Mme.",
+      key: "mss",
+    },
+    { value: "dr", labelNl: "Dr.", labelFr: "Dr.", key: "dr" },
+  ];
   let customerId = Number(useParams().id); // get customer id from url
   const [heading, setHeading] = useState(""); // heading of the page
   const [lastName, setLastName] = useState(""); // last name of the customer
@@ -31,7 +42,8 @@ const Customer = () => {
   const [postalCode, setPostalCode] = useState(""); // postal code of the customer
   const [city, setCity] = useState(""); // city of the customer
   const [vatNumber, setVatNumber] = useState(""); // vat number of the customer
-  const [language, setLanguage] = useState(""); // language of the customer, default to first option
+  const [language, setLanguage] = useState(languageOptions[0].value); // language of the customer, default to first option
+  const [salutation, setSalutation] = useState(salutationOptions[0].value); // salutation of the customer, default to first option
   const [architectName, setArchitectName] = useState(""); // architect name of the customer
   const [comment, setComment] = useState(""); // comment of the customer
   const [isLoading, setIsLoading] = useState(false); // loading state of the page
@@ -352,6 +364,43 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
+          <Select
+            // @ts-ignore
+            classNames="max-w-xs"
+            label="Langue"
+            selectedKeys={[language]}
+            onChange={(event) => change(setLanguage, event.target.value)}
+          >
+            {languageOptions.map((option) => (
+              // @ts-ignore
+              <SelectItem key={option.key} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
+        <div className="basis-2/8 hidden md:block" />
+      </div>
+
+      <div className="flex flex-row">
+        <div className="basis-2/8 hidden md:block" />
+        <div className="basis-1/3 md:basis-1/6 p-2">
+          <Select
+            // @ts-ignore
+            classNames="max-w-xs"
+            label="Titre"
+            selectedKeys={[salutation]}
+            onChange={(event) => change(setSalutation, event.target.value)}
+          >
+            {salutationOptions.map((option) => (
+              // @ts-ignore
+              <SelectItem key={option.key} value={option.value}>
+                {language === "nl" ? option.labelNl : option.labelFr}
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
+        <div className="basis-2/3 md:basis-2/6 p-2">
           <Input
             label="Nom"
             type="text"
@@ -452,27 +501,6 @@ const Customer = () => {
             value={architectName}
             onChange={(e) => change(setArchitectName, e.target.value)}
           />
-        </div>
-        <div className="basis-2/8 hidden md:block" />
-      </div>
-
-      <div className="flex flex-row">
-        <div className="basis-2/8 hidden md:block" />
-        <div className="basis-1/1 md:basis-4/8 p-2">
-          <Select
-            // @ts-ignore
-            classNames="max-w-xs"
-            label="Langue"
-            selectedKeys={[language]}
-            onChange={(event) => change(setLanguage, event.target.value)}
-          >
-            {languageOptions.map((option) => (
-              // @ts-ignore
-              <SelectItem key={option.key} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </Select>
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>

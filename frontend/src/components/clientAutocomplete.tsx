@@ -1,6 +1,6 @@
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { useEffect, useState } from "react";
-import {addToast} from "@heroui/toast";
+import { addToast } from "@heroui/toast";
 
 const ClientAutocomplete = ({
   setIsLoadingCustomers = (_newVal: boolean) => {},
@@ -8,12 +8,23 @@ const ClientAutocomplete = ({
   setClientHasVat = (_newVal: { [key: string]: boolean }) => {},
   customerId,
   setCustomerId = (_newVal: string) => {},
+  color = "default",
+  size = "md",
 }: {
   setIsLoadingCustomers?: (newVal: boolean) => void;
   setEmailPresent?: (newVal: { [key: string]: boolean }) => void;
   setClientHasVat?: (newVal: { [key: string]: boolean }) => void;
   customerId: string | number;
   setCustomerId?: (newVal: string) => void;
+  color?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "danger"
+    | "warning"
+    | "default"
+    | undefined;
+  size?: "sm" | "md" | "lg";
 }) => {
   const [customers, setCustomers] = useState([]);
 
@@ -90,16 +101,16 @@ const ClientAutocomplete = ({
 
   return (
     <Autocomplete
+      color={color}
       defaultItems={customers}
       label="Choisissez un Client"
       selectedKey={String(customerId)}
+      size={size}
       // @ts-ignore
       onSelectionChange={(event) => setCustomerId(event)}
     >
       {(customer: { key: string; label: string }) => (
-        <AutocompleteItem key={customer.key}>
-          {customer.label}
-        </AutocompleteItem>
+        <AutocompleteItem key={customer.key}>{customer.label}</AutocompleteItem>
       )}
     </Autocomplete>
   );

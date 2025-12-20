@@ -9,15 +9,18 @@ const SendPeppolButton = ({
   orderSaved,
   clientHasVAT,
   isAlreadySent,
+  isPending,
   setIsAlreadySent,
 }: {
   orderId: number;
   orderSaved: boolean;
   clientHasVAT: boolean;
   isAlreadySent: boolean;
+  isPending: boolean;
   setIsAlreadySent: (value: boolean) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const buttonClicked = isAlreadySent || isPending;
   let tooltipText = "";
 
   if (!orderSaved) tooltipText = "Veuillez d'abord enregistrer la facture.";
@@ -26,6 +29,11 @@ const SendPeppolButton = ({
       "Le client doit avoir un numéro de TVA pour envoyer la facture via Peppol.";
   else if (isAlreadySent)
     tooltipText = "La facture à déjà été envoyée via Peppol.";
+
+  let iconColor = "";
+
+  if (isPending) iconColor = "text-yellow-500";
+  else if (isAlreadySent) iconColor = "text-green-500";
 
   const sendToPeppol = async () => {
     setIsLoading(true);
@@ -65,15 +73,15 @@ const SendPeppolButton = ({
     setIsLoading(false);
   };
 
-  return orderSaved && clientHasVAT && !isAlreadySent ? (
+  return orderSaved && clientHasVAT && !buttonClicked ? (
     <Button
       className="mr-2"
       color="primary"
       isDisabled={false}
       isLoading={isLoading}
       radius="lg"
-      startContent={<IoGlobe size={20} />}
-      variant={isAlreadySent ? "light" : "solid"}
+      startContent={<IoGlobe color={iconColor} size={20} />}
+      variant={buttonClicked ? "light" : "solid"}
       onPress={() => sendToPeppol()}
     >
       Peppol
@@ -87,8 +95,8 @@ const SendPeppolButton = ({
           isDisabled={!(orderSaved && clientHasVAT)}
           isLoading={isLoading}
           radius="lg"
-          startContent={<IoGlobe size={20} />}
-          variant={isAlreadySent ? "light" : "solid"}
+          startContent={<IoGlobe color={iconColor} size={20} />}
+          variant={buttonClicked ? "light" : "solid"}
           onPress={() => sendToPeppol()}
         >
           Peppol

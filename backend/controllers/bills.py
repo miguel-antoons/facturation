@@ -66,4 +66,4 @@ def delete_bill(bill_id):
 
 
 def send_bill_peppol(bill_id):
-    send_peppol(bill_id)
+    return send_peppol(bill_id)

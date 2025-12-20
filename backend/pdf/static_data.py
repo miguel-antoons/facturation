@@ -19,7 +19,7 @@ comments = {
         "1": "",
         "2": "",
         "4": "",
-        "21": "Verlegging van heng. Bij gebrek aan schriftelijke betwisting binnen een termijn van één maand na de"
+        "21": "Verlegging van heffing. Bij gebrek aan schriftelijke betwisting binnen een termijn van één maand na de"
             " ontvangst van de factuur, wordt de afnemer geacht te erkennen dat hij een belastingplichtige is "
             "gehouden tot de indiening van periodieke aangiften. Als die voorwaarde niet vervuld is, is de afnemer "
             "ten aanzien van die voorwaarde aansprakelijk voor de betaling van de verschuldigde belasting, "

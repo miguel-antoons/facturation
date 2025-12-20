@@ -41,6 +41,7 @@ def html_to_pdf(html_content, output_path):
 
 def bill_gen(static_data, dyn_data):
     unit_is_empty = all(line['Unit'] == "" for line in dyn_data['OrderLines'])
+    add_salutation = dyn_data["Customer"]["Salutation"] != "" and dyn_data["Customer"]["ContactFullName"] != ""
 
     order_string = ""
     for line in dyn_data['OrderLines']:
@@ -84,7 +85,7 @@ def bill_gen(static_data, dyn_data):
                         </td>
                         <td style="vertical-align: bottom;">
                             <div>{dyn_data["Customer"]["OfficialCompanyName"]}</div>
-                            <div>{dyn_data["Customer"]["ContactFullName"]}</div>
+                            <div>{f'{dyn_data["Customer"]["Salutation"]} ' if add_salutation else ''}{dyn_data["Customer"]["ContactFullName"]}</div>
                             {dyn_data["Customer"]["StreetAndNumber"]}<br />
                             {dyn_data["Customer"]["ZipCode"]} {dyn_data["Customer"]["City"]}<br />
                             {dyn_data["Customer"]["CountryName"]}

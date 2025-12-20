@@ -60,7 +60,8 @@ const Billing = () => {
   );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
-  const [isSent, setIsSent] = useState<boolean>(false);
+  const [peppolSent, setPeppolSent] = useState<boolean>(false);
+  const [peppolPending, setPeppolPending] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
 
   /**
@@ -81,10 +82,12 @@ const Billing = () => {
           setExpiryDate(parseDate(data.ExpiryDate.split("T")[0]));
           setDeliveryDate(parseDate(data.DeliveryDate.split("T")[0]));
           setVat(data.VentilationCode);
-          setIsSent(
-            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered ||
-              data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
-                "Pending",
+          setPeppolSent(
+            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered,
+          );
+          setPeppolPending(
+            data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
+              "Pending",
           );
           setOrderLines(
             data.OrderLines.map((line: any, index: number) => ({
@@ -334,8 +337,7 @@ const Billing = () => {
       setIsLoadingBill(false);
       addToast({
         title: "Erreur",
-        description:
-          "Impossible d'enregistrer la facture. Veuillez réessayer plus tard.",
+        description: `Impossible d'enregistrer la facture. Veuillez réessayer plus tard. ${typeof error === "object" ? JSON.stringify(error) : error}`,
         color: "danger",
       });
       // eslint-disable-next-line
@@ -439,10 +441,11 @@ const Billing = () => {
                 ? clientHasVat[customerId]
                 : false
             }
-            isAlreadySent={isSent}
+            isAlreadySent={peppolSent}
+            isPending={peppolPending}
             orderId={billId}
             orderSaved={saved}
-            setIsAlreadySent={setIsSent}
+            setIsAlreadySent={setPeppolSent}
           />
           <PrintButton
             printAction={() => {

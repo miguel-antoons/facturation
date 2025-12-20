@@ -67,7 +67,8 @@ const CreditNote = () => {
   );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
-  const [isSent, setIsSent] = useState<boolean>(false);
+  const [peppolSent, setPeppolSent] = useState<boolean>(false);
+  const [peppolPending, setPeppolPending] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
 
   /**
@@ -88,10 +89,11 @@ const CreditNote = () => {
           setOrderDate(parseDate(data.OrderDate.split("T")[0]));
           setExpiryDate(parseDate(data.ExpiryDate.split("T")[0]));
           setVat(data.VentilationCode);
-          setIsSent(
-            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered ||
-              data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
-                "Pending",
+          setPeppolSent(
+            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered
+          );
+          setPeppolPending(data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
+              "Pending",
           );
           setOrderLines(
             data.OrderLines.map((line: any, index: number) => ({
@@ -446,10 +448,11 @@ const CreditNote = () => {
                 ? clientHasVat[customerId]
                 : false
             }
-            isAlreadySent={isSent}
+            isAlreadySent={peppolSent}
+            isPending={peppolPending}
             orderId={cnoteId}
             orderSaved={saved}
-            setIsAlreadySent={setIsSent}
+            setIsAlreadySent={setPeppolSent}
           />
           <PrintButton
             printAction={() => {
