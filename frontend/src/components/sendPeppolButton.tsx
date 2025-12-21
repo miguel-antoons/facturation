@@ -32,8 +32,8 @@ const SendPeppolButton = ({
 
   let iconColor = "";
 
-  if (isPending) iconColor = "text-yellow-500";
-  else if (isAlreadySent) iconColor = "text-green-500";
+  if (isPending) iconColor = "orange";
+  else if (isAlreadySent) iconColor = "green";
 
   const sendToPeppol = async () => {
     setIsLoading(true);
