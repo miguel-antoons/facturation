@@ -1,0 +1,27 @@
+server {
+        listen 80;
+        listen [::]:80;
+
+        root /usr/share/nginx/html;
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name facturation www.facturation 192.168.1.152;
+
+	location /api {
+		limit_except GET HEAD PUT POST DELETE { deny all; }
+		proxy_pass http://172.18.10.10:5000;
+		proxy_set_header Host $host;
+	        proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+	}
+
+	location / {
+		limit_except GET HEAD PUT POST DELETE { deny all; }
+                try_files $uri /index.html;
+        }
+
+	if ($http_user_agent ~* LWP::Simple|BBBike|wget) {
+		return 403;
+	}
+}

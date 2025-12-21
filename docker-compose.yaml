@@ -1,0 +1,32 @@
+services:
+  frontend:
+    image: 192.168.1.155:5000/facturation_frontend:latest
+    container_name: facturation_frontend
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      facturation_network:
+        ipv4_address: 172.18.10.5
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    image: 192.168.1.155:5000/facturation_backend:latest
+    container_name: facturation_backend
+    restart: always
+    volumes:
+      - .env:/app/.env
+      - /mnt/nas_antoons/SERVEUR/Mes Documents/Access/Facturation2021/Facturation2021.accdb:/app/Facturation2021.accdb
+    networks:
+      facturation_network:
+        ipv4_address: 172.18.10.10
+
+networks:
+  facturation_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.10.0/24
+          gateway: 172.18.10.1
