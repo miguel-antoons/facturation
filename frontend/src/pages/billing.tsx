@@ -445,7 +445,7 @@ const Billing = () => {
             isPending={peppolPending}
             orderId={billId}
             orderSaved={saved}
-            setIsAlreadySent={setPeppolSent}
+            setIsPending={setPeppolPending}
           />
           <PrintButton
             printAction={() => {

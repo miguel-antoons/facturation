@@ -452,7 +452,7 @@ const CreditNote = () => {
             isPending={peppolPending}
             orderId={cnoteId}
             orderSaved={saved}
-            setIsAlreadySent={setPeppolSent}
+            setIsPending={setPeppolPending}
           />
           <PrintButton
             printAction={() => {

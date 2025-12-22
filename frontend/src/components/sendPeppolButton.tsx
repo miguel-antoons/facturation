@@ -10,14 +10,14 @@ const SendPeppolButton = ({
   clientHasVAT,
   isAlreadySent,
   isPending,
-  setIsAlreadySent,
+  setIsPending,
 }: {
   orderId: number;
   orderSaved: boolean;
   clientHasVAT: boolean;
   isAlreadySent: boolean;
   isPending: boolean;
-  setIsAlreadySent: (value: boolean) => void;
+  setIsPending: (value: boolean) => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const buttonClicked = isAlreadySent || isPending;
@@ -48,7 +48,7 @@ const SendPeppolButton = ({
             description: "La facture a été envoyée avec succès via Peppol.",
             color: "success",
           });
-          setIsAlreadySent(true);
+          setIsPending(true);
         } else {
           addToast({
             title: "Erreur",
