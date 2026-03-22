@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, Response
 from controllers import cnotes as ctrl
 
 
@@ -6,7 +6,7 @@ cnotes = Blueprint('cnotes', __name__)
 
 
 @cnotes.route('/api/cnotes', methods=['GET', 'POST'])
-def cnotes_route():
+def cnotes_route() -> Response | None:
     if request.method == 'GET':
         return ctrl.get_cnotes()
     elif request.method == 'POST':
@@ -14,8 +14,8 @@ def cnotes_route():
     return None
 
 
-@cnotes.route('/api/cnotes/<int:cnote_id>', methods=['GET', 'PUT', 'DELETE'])
-def cnote_route(cnote_id):
+@cnotes.route('/api/cnotes/<string:cnote_id>', methods=['GET', 'PUT', 'DELETE'])
+def cnote_route(cnote_id: str) -> Response | None:
     if request.method == 'GET':
         return ctrl.get_cnote(cnote_id)
     elif request.method == 'PUT':
@@ -25,8 +25,15 @@ def cnote_route(cnote_id):
     return None
 
 
-@cnotes.route('/api/cnotes/sendPeppol/<int:bill_id>', methods=['POST'])
-def cnote_sendPeppol(cnote_id):
+@cnotes.route('/api/cnotes/sendPeppol/<string:cnote_id>', methods=['POST'])
+def cnote_send_peppol(cnote_id: str) -> Response | None:
     if request.method == 'POST':
         return ctrl.send_cnote_peppol(cnote_id)
+    return None
+
+
+@cnotes.route('/api/cnotes/sendBillit/<string:cnote_id>', methods=['POST'])
+def cnote_send_billit(cnote_id: str) -> Response | None:
+    if request.method == 'POST':
+        return ctrl.send_cnote_billit(cnote_id)
     return None

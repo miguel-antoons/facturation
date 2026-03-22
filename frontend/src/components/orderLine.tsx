@@ -2,10 +2,12 @@ import { Textarea, Input } from "@heroui/input";
 import { Divider } from "@heroui/divider";
 
 const OrderLine = ({
+  isDisabled,
   lineNumber = 1,
   writeOrderCell,
   orderInfo,
 }: {
+  isDisabled: boolean;
   lineNumber: number;
   writeOrderCell: (
     index: number,
@@ -36,6 +38,7 @@ const OrderLine = ({
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2 pt-1 pb-1">
           <Textarea
+            isDisabled={isDisabled}
             label={descriptionLabel}
             minRows={2}
             placeholder="Entrez une Description"
@@ -52,6 +55,7 @@ const OrderLine = ({
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 pt-1 pb-1 pl-2 pr-1">
           <Input
+            isDisabled={isDisabled}
             label="Pris excl. TVA"
             placeholder="0.00"
             startContent={
@@ -69,6 +73,7 @@ const OrderLine = ({
         </div>
         <div className="basis-1/3 md:basis-1/6 p-1">
           <Input
+            isDisabled={isDisabled}
             label="Quantité"
             placeholder="1.00"
             type="number"
@@ -80,6 +85,7 @@ const OrderLine = ({
         </div>
         <div className="basis-1/3 md:basis-1/6 pt-1 pb-1 pl-1 pr-2">
           <Input
+            isDisabled={isDisabled}
             label="Unité"
             type="text"
             value={orderInfo.unit}

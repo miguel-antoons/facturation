@@ -18,10 +18,17 @@ import PrintButton from "@/components/printButton.tsx";
 import SaveButton from "@/components/saveButton.tsx";
 import ClientAutocomplete from "@/components/clientAutocomplete.tsx";
 import FormConfirmModal from "@/components/formConfirmModal.tsx";
+import {
+  cnoteIsBillitReady,
+  isPeppolReady,
+  isSaveReady,
+} from "@/utils/validation.ts";
+import { isSentToPeppol } from "@/utils/peppol.ts";
+import SendBillitButton from "@/components/sendBillitButton.tsx";
 
 const CreditNote = () => {
   const [searchParams] = useSearchParams();
-  const [cnoteId, setCnoteId] = useState(Number(useParams().id));
+  const [cnoteId, setCnoteId] = useState(String(useParams().id));
   const [shownCnoteId, setShownCnoteId] = useState("");
   const [cnoteNumber, setCnoteNumber] = useState(
     `C${searchParams.get("bill") || ""}`,
@@ -67,64 +74,88 @@ const CreditNote = () => {
   );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
-  const [peppolSent, setPeppolSent] = useState<boolean>(false);
-  const [peppolPending, setPeppolPending] = useState<boolean>(false);
+  const [peppolStatus, setPeppolStatus] = useState<number>(0);
+  const [billitSent, setBillitSent] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
+
+  const [saveDisabled, setSaveDisabled] = useState(true);
+  const [saveTooltip, setSaveTooltip] = useState("");
+
+  const [billitDisabled, setBillitDisabled] = useState(true);
+  const [billitTooltip, setBillitTooltip] = useState("");
+
+  const [peppolDisabled, setPeppolDisabled] = useState(true);
+  const [peppolTooltip, setPeppolTooltip] = useState("");
 
   /**
    * Fetch the cnote data if editing an existing cnote
    */
   useEffect(() => {
-    if (cnoteId !== 0 && cnoteId !== undefined) {
+    if (cnoteId !== "0" && cnoteId !== undefined) {
       setIsLoadingCnote(true);
       fetch(`/api/cnotes/${cnoteId}`)
         .then((response) => response.json())
-        .then((data) => {
-          // set the state with the fetched data
-          setShownCnoteId(data.OrderNumber);
-          setCnoteNumber(data.OrderNumber);
-          setBillNumber(data.AboutInvoiceNumber);
-          setCustomerId(data.CounterParty.Nr);
-          setOrderTitle(data.OrderTitle);
-          setOrderDate(parseDate(data.OrderDate.split("T")[0]));
-          setExpiryDate(parseDate(data.ExpiryDate.split("T")[0]));
-          setVat(data.VentilationCode);
-          setPeppolSent(
-            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered
-          );
-          setPeppolPending(data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
-              "Pending",
-          );
-          setOrderLines(
-            data.OrderLines.map((line: any, index: number) => ({
-              key: index,
-              description: line.Description,
-              quantity: line.Quantity,
-              unitPrice: line.UnitPriceExcl,
-              unit: line.Unit,
-            })),
-          );
-          setSaved(true);
-          setIsLoadingCnote(false);
-          setLastSave(
-            JSON.stringify({
-              customerId: data.CounterParty.Nr,
-              orderTitle: data.OrderTitle,
-              orderDate: parseDate(data.OrderDate.split("T")[0]),
-              cnoteNumber: data.OrderNumber,
-              billNumber: data.AboutInvoiceNumber,
-              expiryDate: parseDate(data.ExpiryDate.split("T")[0]),
-              vat: data.VentilationCode,
-              orderLines: data.OrderLines.map((line: any, index: number) => ({
+        .then(
+          (data: {
+            orderNumber: string;
+            customerId: string;
+            orderTitle: string;
+            orderDate: string;
+            expiryDate: string;
+            deliveryDate: string;
+            ventilationCode: string;
+            billitSent: boolean;
+            peppolStatus: number;
+            aboutInvoiceNumber: string;
+            orderLines: {
+              description: string;
+              quantity: number;
+              unitPriceExcl: number;
+              unit: string;
+            }[];
+          }) => {
+            // set the state with the fetched data
+            setShownCnoteId(data.orderNumber);
+            setCnoteNumber(data.orderNumber);
+            setBillNumber(data.aboutInvoiceNumber);
+            setCustomerId(data.customerId);
+            setOrderTitle(data.orderTitle);
+            setOrderDate(parseDate(data.orderDate.split("T")[0]));
+            setExpiryDate(parseDate(data.expiryDate.split("T")[0]));
+            setVat(data.ventilationCode);
+            setBillitSent(data.billitSent);
+            setPeppolStatus(data.peppolStatus);
+            setOrderLines(
+              data.orderLines.map((line: any, index: number) => ({
                 key: index,
-                description: line.Description.replace(/\r/g, ""),
-                quantity: line.Quantity,
-                unitPrice: String(line.UnitPriceExcl),
-                unit: line.Unit,
+                description: line.description,
+                quantity: line.quantity,
+                unitPrice: line.unitPriceExcl,
+                unit: line.unit,
               })),
-            }),
-          );
-        })
+            );
+            setSaved(true);
+            setIsLoadingCnote(false);
+            setLastSave(
+              JSON.stringify({
+                customerId: data.customerId,
+                orderTitle: data.orderTitle,
+                orderDate: parseDate(data.orderDate.split("T")[0]),
+                cnoteNumber: data.orderNumber,
+                billNumber: data.aboutInvoiceNumber,
+                expiryDate: parseDate(data.expiryDate.split("T")[0]),
+                vat: data.ventilationCode,
+                orderLines: data.orderLines.map((line: any, index: number) => ({
+                  key: index,
+                  description: line.description.replace(/\r/g, ""),
+                  quantity: line.quantity,
+                  unitPrice: String(line.unitPriceExcl),
+                  unit: line.unit,
+                })),
+              }),
+            );
+          },
+        )
         .catch((e) => {
           addToast({
             title: "Erreur",
@@ -139,12 +170,51 @@ const CreditNote = () => {
     }
   }, [cnoteId]);
 
+  useEffect(() => {
+    const saveButtonInfo = isSaveReady(
+      customerId,
+      orderTitle,
+      billNumber,
+      billitSent,
+    );
+
+    setSaveDisabled(saveButtonInfo.disabled);
+    setSaveTooltip(saveButtonInfo.tooltipText);
+  }, [customerId, orderTitle, billNumber, billitSent]);
+
+  useEffect(() => {
+    const billitButtonInfo = cnoteIsBillitReady(
+      saved,
+      orderLines,
+      billitSent,
+      billNumber,
+    );
+
+    setBillitDisabled(billitButtonInfo.disabled);
+    setBillitTooltip(billitButtonInfo.tooltipText);
+  }, [saved, orderLines, billitSent, billNumber]);
+
+  useEffect(() => {
+    const clientChosenAndHasVat =
+      customerId !== "0" || customerId === undefined
+        ? clientHasVat[customerId]
+        : false;
+    const peppolButtonInfo = isPeppolReady(
+      billitSent,
+      clientChosenAndHasVat,
+      isSentToPeppol(peppolStatus),
+    );
+
+    setPeppolDisabled(peppolButtonInfo.disabled);
+    setPeppolTooltip(peppolButtonInfo.tooltipText);
+  }, [billitSent, clientHasVat, customerId, peppolStatus]);
+
   /**
    * Set the heading based on the cnoteId
    */
   useEffect(() => {
     // set heading based on cnoteId
-    if (cnoteId === 0 || cnoteId === undefined) {
+    if (cnoteId === "0" || cnoteId === undefined) {
       setHeading("Nouvelle Note de Crédit");
     } else {
       setHeading(`Note de Crédit Numéro ${shownCnoteId}`);
@@ -289,9 +359,9 @@ const CreditNote = () => {
 
     if (!differentFromLastSave) setSaved(true);
     // if already loading, do nothing (prevents double click)
-    if ((isLoadingCnote || !differentFromLastSave) && printMe)
-      printElement(Number(cnoteId));
-    if (isLoadingCnote || !differentFromLastSave) return;
+    if ((isLoadingCnote || !differentFromLastSave || billitSent) && printMe)
+      printElement(cnoteId);
+    if (isLoadingCnote || !differentFromLastSave || billitSent) return;
 
     setIsLoadingCnote(true);
     const cnoteData = {
@@ -312,9 +382,10 @@ const CreditNote = () => {
     };
 
     // define behavior on success
-    const onSuccess = (id: number) => {
+    const onSuccess = (id: string) => {
       setShownCnoteId(cnoteNumber);
-      if (cnoteId === 0 || cnoteId === undefined) navigate(`/cnote/${id}`, { replace: true });
+      if (cnoteId === "0" || cnoteId === undefined)
+        navigate(`/cnote/${id}`, { replace: true });
       if (printMe) printElement(id);
       if (id !== cnoteId) setCnoteId(id);
       setSaved(true);
@@ -351,9 +422,9 @@ const CreditNote = () => {
       console.log(error);
     };
 
-    const method = cnoteId === 0 || cnoteId === undefined ? "POST" : "PUT";
+    const method = cnoteId === "0" || cnoteId === undefined ? "POST" : "PUT";
     const url =
-      cnoteId === 0 || cnoteId === undefined
+      cnoteId === "0" || cnoteId === undefined
         ? "/api/cnotes"
         : `/api/cnotes/${cnoteId}`;
 
@@ -365,8 +436,8 @@ const CreditNote = () => {
       body: JSON.stringify(cnoteData),
     })
       .then((response) => response.json())
-      .then((data: { status: string; id: number; message: string }) => {
-        if (data.status === "failed") onFailure(data.message);
+      .then((data: { status: string; id: string; message: string }) => {
+        if (data.status === "error") onFailure(data.message);
         else onSuccess(data.id);
       })
       .catch((error) => onFailure(error));
@@ -376,7 +447,7 @@ const CreditNote = () => {
    * Print the element with the given id
    * @param id - id of the element to print
    */
-  const printElement = async (id: number) => {
+  const printElement = async (id: string) => {
     const response = await fetch(`/api/files/cnotes/${id}`, {
       method: "GET",
     });
@@ -438,28 +509,39 @@ const CreditNote = () => {
 
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
-        <div className="basis-1/3 md:basis-1/6 p-2">
+        <div className="basis-1/4 md:basis-1/8 p-2">
           <ReturnButton />
         </div>
-        <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
-          <SendPeppolButton
-            clientHasVAT={
-              customerId !== "0" || customerId === undefined
-                ? clientHasVat[customerId]
-                : false
-            }
-            isAlreadySent={peppolSent}
-            isPending={peppolPending}
+        <div className="basis-3/4 md:basis-3/8 p-2 flex justify-end">
+          <SendBillitButton
+            apiRoute={`/api/cnotes/sendBillit/`}
+            isDisabled={billitDisabled}
+            isSent={billitSent}
             orderId={cnoteId}
             orderSaved={saved}
-            setIsPending={setPeppolPending}
+            setIsSent={setBillitSent}
+            toolTipText={billitTooltip}
+          />
+          <SendPeppolButton
+            apiRoute={`/api/cnotes/sendPeppol/`}
+            isDisabled={peppolDisabled}
+            orderId={cnoteId}
+            peppolStatus={peppolStatus}
+            setPeppolStatus={setPeppolStatus}
+            tooltipText={peppolTooltip}
           />
           <PrintButton
             printAction={() => {
               verifyAndSave(true);
             }}
           />
-          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
+          <SaveButton
+            isDisabled={saveDisabled}
+            isLoading={isLoadingCnote}
+            isSaved={saved}
+            saveAction={() => verifyAndSave()}
+            tooltipText={saveTooltip}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -469,6 +551,7 @@ const CreditNote = () => {
         <div className="basis-1/1 md:basis-4/8 p-2">
           <ClientAutocomplete
             customerId={customerId}
+            isDisabled={billitSent}
             setClientHasVat={setClientHasVat}
             setCustomerId={(newVal: string) => change(setCustomerId, newVal)}
             setEmailPresent={setEmailPresent}
@@ -482,6 +565,7 @@ const CreditNote = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
           <Input
+            isDisabled={billitSent}
             label="Numéro de Note de Crédit"
             type="text"
             value={cnoteNumber}
@@ -495,6 +579,7 @@ const CreditNote = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
           <Input
+            isDisabled={billitSent}
             label="Numéro de Facture Concernée"
             type="text"
             value={billNumber}
@@ -508,6 +593,7 @@ const CreditNote = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
           <Input
+            isDisabled={billitSent}
             label="Objet de la Note de Crédit"
             type="text"
             value={orderTitle}
@@ -523,6 +609,7 @@ const CreditNote = () => {
           <I18nProvider locale="fr-FR">
             <DatePicker
               firstDayOfWeek="mon"
+              isDisabled={billitSent}
               label="Date Note de Crédit"
               value={orderDate}
               onChange={(e) => change(setOrderDate, e)}
@@ -533,6 +620,7 @@ const CreditNote = () => {
           <I18nProvider locale="fr-FR">
             <DatePicker
               firstDayOfWeek="mon"
+              isDisabled={billitSent}
               label="Date Échéance"
               value={expiryDate}
               onChange={(e) => change(setExpiryDate, e)}
@@ -548,6 +636,7 @@ const CreditNote = () => {
           <Select
             // @ts-ignore
             classNames="max-w-xs"
+            isDisabled={billitSent}
             label="TVA"
             selectedKeys={[String(vat)]}
             onChange={(event) => change(setVat, event.target.value)}
@@ -566,6 +655,7 @@ const CreditNote = () => {
       {orderLines.map((line, index) => (
         <OrderLine
           key={index}
+          isDisabled={billitSent}
           lineNumber={index + 1}
           orderInfo={line}
           writeOrderCell={writeOrderCell}
@@ -575,10 +665,21 @@ const CreditNote = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/2 md:basis-1/4 p-2">
-          <Button color="primary" radius="lg" onPress={addLine}>
+          <Button
+            color="primary"
+            isDisabled={billitSent}
+            radius="lg"
+            onPress={addLine}
+          >
             <IoArrowDown size={20} /> Ajouter Ligne
           </Button>
-          <Button className="ml-2" color="danger" radius="lg" onPress={delLine}>
+          <Button
+            className="ml-2"
+            color="danger"
+            isDisabled={billitSent}
+            radius="lg"
+            onPress={delLine}
+          >
             <IoArrowUp size={20} /> Supprimer Ligne
           </Button>
         </div>
@@ -588,7 +689,13 @@ const CreditNote = () => {
               verifyAndSave(true);
             }}
           />
-          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
+          <SaveButton
+            isDisabled={saveDisabled}
+            isLoading={isLoadingCnote}
+            isSaved={saved}
+            saveAction={() => verifyAndSave()}
+            tooltipText={saveTooltip}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>

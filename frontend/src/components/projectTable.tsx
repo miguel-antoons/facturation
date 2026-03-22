@@ -34,15 +34,14 @@ const ProjectTable = ({
   customButtonAction = undefined,
 }: {
   content: {
-    id: number;
-    number: number;
+    id: string;
+    number: string;
     attribute1: string;
     attribute2: string;
     attribute3: string;
-    fileId: string | null;
   }[];
-  onDelete: (id: number, number: number, name: string) => any;
-  onPrint: (id: number | string | null) => any;
+  onDelete: (id: string, number: string, name: string) => any;
+  onPrint: (id: string) => any;
   height: number;
   pathname: string;
   attribute1: string;
@@ -50,7 +49,7 @@ const ProjectTable = ({
   attribute3: string;
   isLoading: boolean;
   customButtonText?: ReactNode;
-  customButtonAction?: ((id: number) => any) | undefined;
+  customButtonAction?: ((id: string) => any) | undefined;
 }) => {
   const navigate = useNavigate();
 
@@ -92,12 +91,11 @@ const ProjectTable = ({
   const renderCell = React.useCallback(
     (
       element: {
-        id: number;
-        number: number;
+        id: string;
+        number: string;
         attribute1: string;
         attribute2: string;
         attribute3: string;
-        fileId: string | null;
       },
       columnKey: string | Key | number,
     ) => {
@@ -121,7 +119,7 @@ const ProjectTable = ({
                 <Button
                   color="primary"
                   variant="flat"
-                  onPress={() => onPrint(element.fileId)}
+                  onPress={() => onPrint(element.id)}
                 >
                   <icon.IoPrint size={20} /> Imprimer
                 </Button>

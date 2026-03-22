@@ -5,7 +5,7 @@ from models.orders import format_order
 from bson.objectid import ObjectId
 
 
-def insert_bill(
+def insert_cnote(
     customer_id: int,
     order_number: str,
     order_date: str,
@@ -14,8 +14,9 @@ def insert_bill(
     order_title: str,
     order_lines: list[OrderLineFront],
     ventilation_code: str,
+    about_invoice: str,
 ) -> str:
-    bill_object = format_order(
+    cnote_object = format_order(
         customer_id,
         order_number,
         order_date,
@@ -24,15 +25,16 @@ def insert_bill(
         order_title,
         order_lines,
         ventilation_code,
+        about_invoice=about_invoice,
     )
-    bill_object[ORDER_BACK_PEPPOL_DELIVERY_STATUS] = PEPPOL_DELIVERY_STATUS_NOT_SENT
+    cnote_object[ORDER_BACK_PEPPOL_DELIVERY_STATUS] = PEPPOL_DELIVERY_STATUS_NOT_SENT
     with get_connection() as db:
-        result = db.bills.insert_one(bill_object)
+        result = db.cnotes.insert_one(cnote_object)
     return str(result.inserted_id)
 
 
-def update_bill(
-    bill_id: str,
+def update_cnote(
+    cnote_id: str,
     customer_id: int,
     order_number: str,
     order_date: str,
@@ -41,8 +43,9 @@ def update_bill(
     order_title: str,
     order_lines: list[OrderLineFront],
     ventilation_code: str,
+    about_invoice: str,
 ) -> bool:
-    bill_object = format_order(
+    cnote_object = format_order(
         customer_id,
         order_number,
         order_date,
@@ -51,20 +54,20 @@ def update_bill(
         order_title,
         order_lines,
         ventilation_code,
-        set_order_id=False,
+        about_invoice=about_invoice,
     )
     with get_connection() as db:
-        result = db.bills.update_one(
-            {"_id": ObjectId(bill_id)},
-            {"$set": bill_object}
+        result = db.cnotes.update_one(
+            {"_id": ObjectId(cnote_id)},
+            {"$set": cnote_object}
         )
     return result.modified_count > 0
 
 
-def set_order_id(bill_id: str, order_id: int) -> bool:
+def set_order_id(cnote_id: str, order_id: int) -> bool:
     with get_connection() as db:
-        result = db.bills.update_one(
-            {"_id": ObjectId(bill_id)},
+        result = db.cnotes.update_one(
+            {"_id": ObjectId(cnote_id)},
             {"$set": {ORDER_BACK_ORDER_ID: order_id}}
         )
     return result.modified_count > 0
@@ -72,32 +75,32 @@ def set_order_id(bill_id: str, order_id: int) -> bool:
 
 def set_peppol_status(order_id: int, peppol_status: int) -> bool:
     with get_connection() as db:
-        result = db.bills.update_one(
+        result = db.cnotes.update_one(
             {ORDER_BACK_ORDER_ID: order_id},
             {"$set": {ORDER_BACK_PEPPOL_DELIVERY_STATUS: peppol_status}}
         )
     return result.modified_count > 0
 
 
-def get_bill(bill_id: str) -> OrderBack | None:
+def get_cnote(cnote_id: str) -> OrderBack | None:
     with get_connection() as db:
-        bill = db.bills.find_one({"_id": ObjectId(bill_id)})
-    return bill
+        cnote = db.cnotes.find_one({"_id": ObjectId(cnote_id)})
+    return cnote
 
 
-def delete_bill(bill_id: str) -> bool:
+def delete_cnote(cnote_id: str) -> bool:
     with get_connection() as db:
-        result = db.bills.delete_one({"_id": ObjectId(bill_id)})
+        result = db.cnotes.delete_one({"_id": ObjectId(cnote_id)})
     return result.deleted_count > 0
 
 
-def get_bills(condition: dict = None) -> list[OrderBack]:
+def get_cnotes(condition: dict = None) -> list[OrderBack]:
     with get_connection() as db:
-        bills = list(db.bills.find(condition or {}))
-    return bills
+        cnotes = list(db.cnotes.find(condition or {}))
+    return cnotes
 
 
 def count_bills(filter_query: dict = None) -> int:
     with get_connection() as db:
-        count = db.bills.count_documents(filter_query)
+        count = db.cnotes.count_documents(filter_query)
     return count

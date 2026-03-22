@@ -21,6 +21,7 @@ import { IoArrowBackCircle } from "react-icons/io5";
 
 import SearchIcon from "@/components/searchIcon";
 import ProjectTable from "@/components/projectTable";
+import { projectNumberToNumber } from "@/utils/conversions.ts";
 
 const ProjectPage = ({
   attribute1,
@@ -52,7 +53,7 @@ const ProjectPage = ({
   fadeClass: string;
   fetchContent?: () => Promise<any>;
   customButtonText?: React.ReactNode;
-  customButtonAction?: ((id: number) => any) | undefined;
+  customButtonAction?: ((id: string) => any) | undefined;
 }) => {
   const [sort, setSort] = useState('{"key": "number", "sign": 1}');
   const [search, setSearch] = useState("");
@@ -60,8 +61,8 @@ const ProjectPage = ({
   const [content, setContent] = useState([]);
   const [tableHeight, setTableHeight] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [idToDelete, setIdToDelete] = useState(0);
-  const [numberToDelete, setNumberToDelete] = useState(0);
+  const [idToDelete, setIdToDelete] = useState("");
+  const [numberToDelete, setNumberToDelete] = useState("");
   const [nameToDelete, setNameToDelete] = useState("");
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const ref = useRef(null);
@@ -153,7 +154,7 @@ const ProjectPage = ({
     });
   }, []);
 
-  const openDeleteModal = (id: number, number: number, name: string) => {
+  const openDeleteModal = (id: string, number: string, name: string) => {
     setNameToDelete(`${number}, ${name}`);
     setIdToDelete(id);
     setNumberToDelete(number);
@@ -165,14 +166,14 @@ const ProjectPage = ({
     const number = numberToDelete;
 
     setNameToDelete("");
-    setIdToDelete(0);
-    setNumberToDelete(0);
+    setIdToDelete("");
+    setNumberToDelete("");
     const res = await fetch(`/api${apiPathname}/${id}`, {
       method: "DELETE",
     });
     const data = await res.json();
 
-    if (res.status !== 200 || data.status !== "deleted") {
+    if (res.status !== 200 || data.status !== "success") {
       addToast({
         title: "Erreur lors de la supression",
         description: `Le serveur a répondu avec le code ${res.status}. Veuillez réessayer plus tard.`,
@@ -190,19 +191,18 @@ const ProjectPage = ({
 
     filteredContent = filteredContent.filter(
       (element: {
-        id: number;
-        number: number;
+        id: string;
+        number: string;
         attribute1: string;
         attribute2: string;
         attribute3: string;
-        fileId: string | null;
       }) => element.id !== id,
     );
     setContent(filteredContent);
     sortContent(filteredContent);
   };
 
-  const printElement = async (id: number | string | null) => {
+  const printElement = async (id: string) => {
     const response = await fetch(`/api/files${apiPathname}/${id}`, {
       method: "GET",
     });
@@ -234,12 +234,11 @@ const ProjectPage = ({
    */
   const sortContent = (
     arrayToSort: {
-      id: number;
-      number: number;
+      id: string;
+      number: string;
       attribute1: string;
       attribute2: string;
       attribute3: string;
-      fileId: string | null;
     }[],
   ) => {
     let selectedSort: {
@@ -248,7 +247,11 @@ const ProjectPage = ({
     } = JSON.parse(sort); // get values from html element
     let sortedContent = arrayToSort.slice(); // Create new array from the state array
 
-    sortedContent.sort((a, b) => b.number - a.number); // sort according to the project number
+    sortedContent.sort(
+      (a, b) =>
+        projectNumberToNumber(b[selectedSort["key"]]) -
+        projectNumberToNumber(a[selectedSort["key"]]),
+    ); // sort according to the project number
 
     sortedContent.sort((a, b) => {
       let prime_a;
@@ -256,8 +259,8 @@ const ProjectPage = ({
       const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
 
       if (selectedSort["key"] === "number") {
-        prime_a = Number(a[selectedSort["key"]]);
-        prime_b = Number(b[selectedSort["key"]]);
+        prime_a = projectNumberToNumber(a[selectedSort["key"]]);
+        prime_b = projectNumberToNumber(b[selectedSort["key"]]);
       } else if (
         dateRegex.test(String(a[selectedSort["key"]])) &&
         dateRegex.test(String(b[selectedSort["key"]]))
@@ -316,24 +319,22 @@ const ProjectPage = ({
    */
   const filterContent = (
     unfilteredArray: {
-      id: number;
-      number: number;
+      id: string;
+      number: string;
       attribute1: string;
       attribute2: string;
       attribute3: string;
-      fileId: string | null;
     }[],
   ): {
-    id: number;
-    number: number;
+    id: string;
+    number: string;
     attribute1: string;
     attribute2: string;
     attribute3: string;
-    fileId: string | null;
   }[] => {
     return unfilteredArray.filter((element) => {
       return (
-        String(element["number"]).toLowerCase().startsWith(search) ||
+        element["number"].toLowerCase().startsWith(search) ||
         attribute1SearchFun(element["attribute1"], search) ||
         attribute2SearchFun(element["attribute2"], search) ||
         attribute3SearchFun(element["attribute3"], search)
@@ -457,8 +458,8 @@ const ProjectPage = ({
                   color="success"
                   onPress={() => {
                     setNameToDelete("");
-                    setIdToDelete(0);
-                    setNumberToDelete(0);
+                    setIdToDelete("");
+                    setNumberToDelete("");
                     onClose();
                   }}
                 >

@@ -18,9 +18,16 @@ import PrintButton from "@/components/printButton.tsx";
 import SaveButton from "@/components/saveButton.tsx";
 import FormConfirmModal from "@/components/formConfirmModal.tsx";
 import ClientAutocomplete from "@/components/clientAutocomplete.tsx";
+import SendBillitButton from "@/components/sendBillitButton.tsx";
+import {
+  isBillitReady,
+  isPeppolReady,
+  isSaveReady,
+} from "@/utils/validation.ts";
+import { isSentToPeppol } from "@/utils/peppol.ts";
 
 const Billing = () => {
-  const [billId, setBillId] = useState(Number(useParams().id));
+  const [billId, setBillId] = useState(String(useParams().id));
   const [shownBillId, setShownBillId] = useState("");
   const [billNumber, setBillNumber] = useState("");
   const [heading, setHeading] = useState(""); // heading of the page
@@ -60,65 +67,87 @@ const Billing = () => {
   );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
-  const [peppolSent, setPeppolSent] = useState<boolean>(false);
-  const [peppolPending, setPeppolPending] = useState<boolean>(false);
+  const [peppolStatus, setPeppolStatus] = useState<number>(0);
+  const [billitSent, setBillitSent] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
+
+  const [saveDisabled, setSaveDisabled] = useState(true);
+  const [saveTooltip, setSaveTooltip] = useState("");
+
+  const [billitDisabled, setBillitDisabled] = useState(true);
+  const [billitTooltip, setBillitTooltip] = useState("");
+
+  const [peppolDisabled, setPeppolDisabled] = useState(true);
+  const [peppolTooltip, setPeppolTooltip] = useState("");
 
   /**
    * Fetch the bill data if editing an existing bill
    */
   useEffect(() => {
-    if (billId !== 0 && billId !== undefined) {
+    if (billId !== "0" && billId !== undefined) {
       setIsLoadingBill(true);
       fetch(`/api/bills/${billId}`)
         .then((response) => response.json())
-        .then((data) => {
-          // set the state with the fetched data
-          setShownBillId(data.OrderNumber);
-          setBillNumber(data.OrderNumber);
-          setCustomerId(data.CounterParty.Nr);
-          setOrderTitle(data.OrderTitle);
-          setOrderDate(parseDate(data.OrderDate.split("T")[0]));
-          setExpiryDate(parseDate(data.ExpiryDate.split("T")[0]));
-          setDeliveryDate(parseDate(data.DeliveryDate.split("T")[0]));
-          setVat(data.VentilationCode);
-          setPeppolSent(
-            data.CurrentDocumentDeliveryDetails.IsDocumentDelivered,
-          );
-          setPeppolPending(
-            data.CurrentDocumentDeliveryDetails.DocumentDeliveryStatus ===
-              "Pending",
-          );
-          setOrderLines(
-            data.OrderLines.map((line: any, index: number) => ({
-              key: index,
-              description: line.Description,
-              quantity: line.Quantity,
-              unitPrice: line.UnitPriceExcl,
-              unit: line.Unit,
-            })),
-          );
-          setSaved(true);
-          setIsLoadingBill(false);
-          setLastSave(
-            JSON.stringify({
-              customerId: data.CounterParty.Nr,
-              orderTitle: data.OrderTitle,
-              orderDate: parseDate(data.OrderDate.split("T")[0]),
-              billNumber: data.OrderNumber,
-              expiryDate: parseDate(data.ExpiryDate.split("T")[0]),
-              deliveryDate: parseDate(data.DeliveryDate.split("T")[0]),
-              vat: data.VentilationCode,
-              orderLines: data.OrderLines.map((line: any, index: number) => ({
+        .then(
+          (data: {
+            orderNumber: string;
+            customerId: string;
+            orderTitle: string;
+            orderDate: string;
+            expiryDate: string;
+            deliveryDate: string;
+            ventilationCode: string;
+            billitSent: boolean;
+            peppolStatus: number;
+            orderLines: {
+              description: string;
+              quantity: number;
+              unitPriceExcl: number;
+              unit: string;
+            }[];
+          }) => {
+            // set the state with the fetched data
+            setShownBillId(data.orderNumber);
+            setBillNumber(data.orderNumber);
+            setCustomerId(data.customerId);
+            setOrderTitle(data.orderTitle);
+            setOrderDate(parseDate(data.orderDate.split("T")[0]));
+            setExpiryDate(parseDate(data.expiryDate.split("T")[0]));
+            setDeliveryDate(parseDate(data.deliveryDate.split("T")[0]));
+            setVat(data.ventilationCode);
+            setBillitSent(data.billitSent);
+            setPeppolStatus(data.peppolStatus);
+            setOrderLines(
+              data.orderLines.map((line: any, index: number) => ({
                 key: index,
-                description: line.Description.replace(/\r/g, ""),
-                quantity: line.Quantity,
-                unitPrice: String(line.UnitPriceExcl),
-                unit: line.Unit,
+                description: line.description,
+                quantity: line.quantity,
+                unitPrice: line.unitPriceExcl,
+                unit: line.unit,
               })),
-            }),
-          );
-        })
+            );
+            setSaved(true);
+            setIsLoadingBill(false);
+            setLastSave(
+              JSON.stringify({
+                customerId: data.customerId,
+                orderTitle: data.orderTitle,
+                orderDate: parseDate(data.orderDate.split("T")[0]),
+                billNumber: data.orderNumber,
+                expiryDate: parseDate(data.expiryDate.split("T")[0]),
+                deliveryDate: parseDate(data.deliveryDate.split("T")[0]),
+                vat: data.ventilationCode,
+                orderLines: data.orderLines.map((line: any, index: number) => ({
+                  key: index,
+                  description: line.description.replace(/\r/g, ""),
+                  quantity: line.quantity,
+                  unitPrice: String(line.unitPriceExcl),
+                  unit: line.unit,
+                })),
+              }),
+            );
+          },
+        )
         .catch((e) => {
           addToast({
             title: "Erreur",
@@ -133,12 +162,46 @@ const Billing = () => {
     }
   }, [billId]);
 
+  useEffect(() => {
+    const saveButtonInfo = isSaveReady(
+      customerId,
+      orderTitle,
+      billNumber,
+      billitSent,
+    );
+
+    setSaveDisabled(saveButtonInfo.disabled);
+    setSaveTooltip(saveButtonInfo.tooltipText);
+  }, [customerId, orderTitle, billNumber, billitSent]);
+
+  useEffect(() => {
+    const billitButtonInfo = isBillitReady(saved, orderLines, billitSent);
+
+    setBillitDisabled(billitButtonInfo.disabled);
+    setBillitTooltip(billitButtonInfo.tooltipText);
+  }, [saved, orderLines, billitSent]);
+
+  useEffect(() => {
+    const clientChosenAndHasVat =
+      customerId !== "0" || customerId === undefined
+        ? clientHasVat[customerId]
+        : false;
+    const peppolButtonInfo = isPeppolReady(
+      billitSent,
+      clientChosenAndHasVat,
+      isSentToPeppol(peppolStatus),
+    );
+
+    setPeppolDisabled(peppolButtonInfo.disabled);
+    setPeppolTooltip(peppolButtonInfo.tooltipText);
+  }, [billitSent, clientHasVat, customerId, peppolStatus]);
+
   /**
    * Set the heading based on the billId
    */
   useEffect(() => {
     // set heading based on billId
-    if (billId === 0 || billId === undefined) {
+    if (billId === "0" || billId === undefined) {
       setHeading("Nouvelle Facture");
     } else {
       setHeading(`Facture Numéro ${shownBillId}`);
@@ -283,9 +346,9 @@ const Billing = () => {
 
     if (!differentFromLastSave) setSaved(true);
     // if already loading, do nothing (prevents double click)
-    if ((isLoadingBill || !differentFromLastSave) && printMe)
-      printElement(Number(billId));
-    if (isLoadingBill || !differentFromLastSave) return;
+    if ((isLoadingBill || !differentFromLastSave || billitSent) && printMe)
+      printElement(billId);
+    if (isLoadingBill || !differentFromLastSave || billitSent) return;
 
     setIsLoadingBill(true);
     const billData = {
@@ -306,9 +369,10 @@ const Billing = () => {
     };
 
     // define behavior on success
-    const onSuccess = (id: number) => {
+    const onSuccess = (id: string) => {
       setShownBillId(billNumber);
-      if (billId === 0 || billId === undefined) navigate(`/bill/${id}`, { replace: true });
+      if (billId === "0" || billId === undefined)
+        navigate(`/bill/${id}`, { replace: true });
       if (printMe) printElement(id);
       if (id !== billId) setBillId(id);
       setSaved(true);
@@ -344,9 +408,9 @@ const Billing = () => {
       console.log(error);
     };
 
-    const method = billId === 0 || billId === undefined ? "POST" : "PUT";
+    const method = billId === "0" || billId === undefined ? "POST" : "PUT";
     const url =
-      billId === 0 || billId === undefined
+      billId === "0" || billId === undefined
         ? "/api/bills"
         : `/api/bills/${billId}`;
 
@@ -358,8 +422,8 @@ const Billing = () => {
       body: JSON.stringify(billData),
     })
       .then((response) => response.json())
-      .then((data: { status: string; id: number; message: string }) => {
-        if (data.status === "failed") onFailure(data.message);
+      .then((data: { status: string; id: string; message: string }) => {
+        if (data.status === "error") onFailure(data.message);
         else onSuccess(data.id);
       })
       .catch((error) => onFailure(error));
@@ -369,7 +433,7 @@ const Billing = () => {
    * Print the element with the given id
    * @param id - id of the element to print
    */
-  const printElement = async (id: number) => {
+  const printElement = async (id: string) => {
     const response = await fetch(`/api/files/bills/${id}`, {
       method: "GET",
     });
@@ -431,28 +495,39 @@ const Billing = () => {
 
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
-        <div className="basis-1/3 md:basis-1/6 p-2">
+        <div className="basis-1/4 md:basis-1/8 p-2">
           <ReturnButton />
         </div>
-        <div className="basis-2/3 md:basis-2/6 p-2 flex justify-end">
-          <SendPeppolButton
-            clientHasVAT={
-              customerId !== "0" || customerId === undefined
-                ? clientHasVat[customerId]
-                : false
-            }
-            isAlreadySent={peppolSent}
-            isPending={peppolPending}
+        <div className="basis-3/4 md:basis-3/8 p-2 flex justify-end">
+          <SendBillitButton
+            apiRoute={`/api/bills/sendBillit/`}
+            isDisabled={billitDisabled}
+            isSent={billitSent}
             orderId={billId}
             orderSaved={saved}
-            setIsPending={setPeppolPending}
+            setIsSent={setBillitSent}
+            toolTipText={billitTooltip}
+          />
+          <SendPeppolButton
+            apiRoute={`/api/bills/sendPeppol/`}
+            isDisabled={peppolDisabled}
+            orderId={billId}
+            peppolStatus={peppolStatus}
+            setPeppolStatus={setPeppolStatus}
+            tooltipText={peppolTooltip}
           />
           <PrintButton
             printAction={() => {
               verifyAndSave(true);
             }}
           />
-          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
+          <SaveButton
+            isDisabled={saveDisabled}
+            isLoading={isLoadingBill}
+            isSaved={saved}
+            saveAction={() => verifyAndSave()}
+            tooltipText={saveTooltip}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -462,6 +537,7 @@ const Billing = () => {
         <div className="basis-1/1 md:basis-4/8 p-2">
           <ClientAutocomplete
             customerId={customerId}
+            isDisabled={billitSent}
             setClientHasVat={setClientHasVat}
             setCustomerId={(newVal: string) => change(setCustomerId, newVal)}
             setEmailPresent={setEmailPresent}
@@ -475,7 +551,9 @@ const Billing = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
           <Input
+            isDisabled={billitSent}
             label="Numéro de Facture"
+            maxLength={10}
             type="text"
             value={billNumber}
             onChange={(e) => change(setBillNumber, e.target.value)}
@@ -488,6 +566,7 @@ const Billing = () => {
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-4/8 p-2">
           <Input
+            isDisabled={billitSent}
             label="Objet de la Facture"
             type="text"
             value={orderTitle}
@@ -503,6 +582,7 @@ const Billing = () => {
           <I18nProvider locale="fr-FR">
             <DatePicker
               firstDayOfWeek="mon"
+              isDisabled={billitSent}
               label="Date Fin Travaux"
               value={deliveryDate}
               onChange={(e) => change(setDeliveryDate, e)}
@@ -513,6 +593,7 @@ const Billing = () => {
           <I18nProvider locale="fr-FR">
             <DatePicker
               firstDayOfWeek="mon"
+              isDisabled={billitSent}
               label="Date Facture"
               value={orderDate}
               onChange={(e) => change(setOrderDate, e)}
@@ -523,6 +604,7 @@ const Billing = () => {
           <I18nProvider locale="fr-FR">
             <DatePicker
               firstDayOfWeek="mon"
+              isDisabled={billitSent}
               label="Date Échéance"
               value={expiryDate}
               onChange={(e) => change(setExpiryDate, e)}
@@ -538,6 +620,7 @@ const Billing = () => {
           <Select
             // @ts-ignore
             classNames="max-w-xs"
+            isDisabled={billitSent}
             label="TVA"
             selectedKeys={[String(vat)]}
             onChange={(event) => change(setVat, event.target.value)}
@@ -556,6 +639,7 @@ const Billing = () => {
       {orderLines.map((line, index) => (
         <OrderLine
           key={index}
+          isDisabled={billitSent}
           lineNumber={index + 1}
           orderInfo={line}
           writeOrderCell={writeOrderCell}
@@ -565,10 +649,21 @@ const Billing = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/2 md:basis-1/4 p-2">
-          <Button color="primary" radius="lg" onPress={addLine}>
+          <Button
+            color="primary"
+            isDisabled={billitSent}
+            radius="lg"
+            onPress={addLine}
+          >
             <IoArrowDown size={20} /> Ajouter Ligne
           </Button>
-          <Button className="ml-2" color="danger" radius="lg" onPress={delLine}>
+          <Button
+            className="ml-2"
+            color="danger"
+            isDisabled={billitSent}
+            radius="lg"
+            onPress={delLine}
+          >
             <IoArrowUp size={20} /> Supprimer Ligne
           </Button>
         </div>
@@ -578,7 +673,13 @@ const Billing = () => {
               verifyAndSave(true);
             }}
           />
-          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
+          <SaveButton
+            isDisabled={saveDisabled}
+            isLoading={isLoadingBill}
+            isSaved={saved}
+            saveAction={() => verifyAndSave()}
+            tooltipText={saveTooltip}
+          />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>

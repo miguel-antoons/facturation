@@ -11,14 +11,14 @@ def customer_file(customer_id):
     return None
 
 
-@files.route('/api/files/bills/<int:bill_id>', methods=['GET'])
+@files.route('/api/files/bills/<string:bill_id>', methods=['GET'])
 def bill_file(bill_id):
     if request.method == 'GET':
         return ctrl.get_bill_file(bill_id)
     return None
 
 
-@files.route('/api/files/cnotes/<int:cnote_id>', methods=['GET'])
+@files.route('/api/files/cnotes/<string:cnote_id>', methods=['GET'])
 def cnote_file(cnote_id):
     if request.method == 'GET':
         return ctrl.get_cnote_file(cnote_id)

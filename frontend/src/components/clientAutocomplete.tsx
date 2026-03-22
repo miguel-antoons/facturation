@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { addToast } from "@heroui/toast";
 
 const ClientAutocomplete = ({
+  isDisabled,
   setIsLoadingCustomers = (_newVal: boolean) => {},
   setEmailPresent = (_newVal: { [key: string]: boolean }) => {},
   setClientHasVat = (_newVal: { [key: string]: boolean }) => {},
@@ -11,6 +12,7 @@ const ClientAutocomplete = ({
   color = "default",
   size = "md",
 }: {
+  isDisabled: boolean;
   setIsLoadingCustomers?: (newVal: boolean) => void;
   setEmailPresent?: (newVal: { [key: string]: boolean }) => void;
   setClientHasVat?: (newVal: { [key: string]: boolean }) => void;
@@ -103,6 +105,7 @@ const ClientAutocomplete = ({
     <Autocomplete
       color={color}
       defaultItems={customers}
+      isDisabled={isDisabled}
       label="Choisissez un Client"
       selectedKey={String(customerId)}
       size={size}

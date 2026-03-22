@@ -21,17 +21,22 @@ const Customer = () => {
     { value: "fr", label: "Français", key: "fr" },
     { value: "nl", label: "Néerlandais", key: "nl" },
   ];
-  const salutationOptions = [
-    { value: "mr", labelNl: "Dhr.", labelFr: "Mr.", key: "mr" },
-    { value: "ms", labelNl: "Mevr.", labelFr: "Mme.", key: "ms" },
-    {
-      value: "mss",
-      labelNl: "Dhr. en Mevr.",
-      labelFr: "Mr. et Mme.",
-      key: "mss",
-    },
-    { value: "dr", labelNl: "Dr.", labelFr: "Dr.", key: "dr" },
-  ];
+  const salutationOptions: {
+    [key: string]: { value: string; label: string; key: string }[];
+  } = {
+    fr: [
+      { value: "Mr.", label: "Mr.", key: "mr" },
+      { value: "Mme.", label: "Mme.", key: "ms" },
+      { value: "Mr. et Mme.", label: "Mr. et Mme.", key: "mss" },
+      { value: "Dr.", label: "Dr.", key: "dr" },
+    ],
+    nl: [
+      { value: "Dhr.", label: "Dhr.", key: "mr" },
+      { value: "Mevr.", label: "Mevr.", key: "ms" },
+      { value: "Dhr. en Mevr.", label: "Dhr. en Mevr.", key: "mss" },
+      { value: "Dr.", label: "Dr.", key: "dr" },
+    ],
+  };
   let customerId = Number(useParams().id); // get customer id from url
   const [heading, setHeading] = useState(""); // heading of the page
   const [lastName, setLastName] = useState(""); // last name of the customer
@@ -43,7 +48,9 @@ const Customer = () => {
   const [city, setCity] = useState(""); // city of the customer
   const [vatNumber, setVatNumber] = useState(""); // vat number of the customer
   const [language, setLanguage] = useState(languageOptions[0].value); // language of the customer, default to first option
-  const [salutation, setSalutation] = useState(salutationOptions[0].value); // salutation of the customer, default to first option
+  const [salutation, setSalutation] = useState(
+    salutationOptions[languageOptions[0].value][0].value,
+  ); // salutation of the customer, default to first option
   const [architectName, setArchitectName] = useState(""); // architect name of the customer
   const [comment, setComment] = useState(""); // comment of the customer
   const [isLoading, setIsLoading] = useState(false); // loading state of the page
@@ -71,6 +78,7 @@ const Customer = () => {
             city: string;
             vat_number: string;
             language: string;
+            salutation: string;
             architect_name: string;
             comment: string;
           }) => {
@@ -82,7 +90,11 @@ const Customer = () => {
             setPostalCode(data.postal_code ?? "");
             setCity(data.city ?? "");
             setVatNumber(data.vat_number ?? "");
-            setLanguage(data.language ?? "");
+            setLanguage(data.language ?? "fr");
+            setSalutation(
+              data.salutation ??
+                salutationOptions[data.language ?? "fr"][0].value,
+            );
             setArchitectName(data.architect_name ?? "");
             setComment(data.comment ?? "");
             setSaved(true);
@@ -96,7 +108,10 @@ const Customer = () => {
               postal_code: data.postal_code ?? "",
               city: data.city ?? "",
               vat_number: data.vat_number ?? "",
-              language: data.language ?? "",
+              language: data.language ?? "fr",
+              salutation:
+                data.salutation ??
+                salutationOptions[data.language ?? "fr"][0].value,
               architect_name: data.architect_name ?? "",
               comment: data.comment ?? "",
             });
@@ -174,6 +189,7 @@ const Customer = () => {
         ) : null}
         <p>
           <b>Êtes vous sur de vouloir continuer?</b>
+          <b>Êtes vous sur de vouloir continuer?</b>
         </p>
       </>
     );
@@ -212,6 +228,7 @@ const Customer = () => {
       vat_number: vatNumber,
       architect_name: architectName,
       language: language,
+      salutation: salutation,
       comment: comment,
     };
 
@@ -234,6 +251,7 @@ const Customer = () => {
         city: city,
         vat_number: vatNumber,
         language: language,
+        salutation: salutation,
         architect_name: architectName,
         comment: comment,
       });
@@ -356,7 +374,7 @@ const Customer = () => {
               verifyAndSave(true);
             }}
           />
-          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
+          <SaveButton saveAction={() => verifyAndSave()} isSaved={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>
@@ -392,10 +410,10 @@ const Customer = () => {
             selectedKeys={[salutation]}
             onChange={(event) => change(setSalutation, event.target.value)}
           >
-            {salutationOptions.map((option) => (
+            {salutationOptions[language].map((option) => (
               // @ts-ignore
               <SelectItem key={option.key} value={option.value}>
-                {language === "nl" ? option.labelNl : option.labelFr}
+                {option.label}
               </SelectItem>
             ))}
           </Select>
@@ -522,7 +540,7 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/1 md:basis-1/2 p-2 flex justify-end">
-          <SaveButton saveAction={() => verifyAndSave()} saveStatus={saved} />
+          <SaveButton saveAction={() => verifyAndSave()} isSaved={saved} />
         </div>
         <div className="basis-2/8 hidden md:block" />
       </div>

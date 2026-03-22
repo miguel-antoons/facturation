@@ -1,5 +1,5 @@
 import contextlib
-from typing import Generator
+from typing import Generator, Any, Mapping
 
 from pymongo import MongoClient
 from dotenv import dotenv_values
@@ -7,7 +7,7 @@ from pymongo.synchronous.database import Database
 
 
 @contextlib.contextmanager
-def get_connection() -> Generator[Database]:
+def get_connection() -> Generator[Database[Mapping[str, Any] | Any], Any, None]:
     mongo_uri = (
         f"mongodb://"
         f"{dotenv_values('.env')['MONGO_USER']}:"

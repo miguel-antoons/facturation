@@ -4,40 +4,35 @@ import { useState } from "react";
 import { Tooltip } from "@heroui/tooltip";
 import { addToast } from "@heroui/toast";
 
+import { isSentToPeppol, PeppolStatus } from "@/utils/peppol.ts";
+
 const SendPeppolButton = ({
+  apiRoute,
   orderId,
-  orderSaved,
-  clientHasVAT,
-  isAlreadySent,
-  isPending,
-  setIsPending,
+  isDisabled,
+  peppolStatus,
+  setPeppolStatus,
+  tooltipText,
 }: {
-  orderId: number;
-  orderSaved: boolean;
-  clientHasVAT: boolean;
-  isAlreadySent: boolean;
-  isPending: boolean;
-  setIsPending: (value: boolean) => void;
+  apiRoute: string;
+  orderId: string;
+  isDisabled: boolean;
+  peppolStatus: number;
+  setPeppolStatus: (value: number) => void;
+  tooltipText?: string;
 }) => {
+  const statusToColor = {
+    [PeppolStatus.NOT_SENT]: "",
+    [PeppolStatus.UNKNOWN]: "",
+    [PeppolStatus.PENDING]: "orange",
+    [PeppolStatus.RECEIVED]: "green",
+  };
   const [isLoading, setIsLoading] = useState(false);
-  const buttonClicked = isAlreadySent || isPending;
-  let tooltipText = "";
-
-  if (!orderSaved) tooltipText = "Veuillez d'abord enregistrer la facture.";
-  else if (!clientHasVAT)
-    tooltipText =
-      "Le client doit avoir un numéro de TVA pour envoyer la facture via Peppol.";
-  else if (isAlreadySent)
-    tooltipText = "La facture à déjà été envoyée via Peppol.";
-
-  let iconColor = "";
-
-  if (isPending) iconColor = "orange";
-  else if (isAlreadySent) iconColor = "green";
+  const buttonClicked = isSentToPeppol(peppolStatus);
 
   const sendToPeppol = async () => {
     setIsLoading(true);
-    await fetch(`/api/bills//sendPeppol/${orderId}`, {
+    await fetch(`${apiRoute}${orderId}`, {
       method: "POST",
     })
       .then((res) => res.json())
@@ -48,7 +43,7 @@ const SendPeppolButton = ({
             description: "La facture a été envoyée avec succès via Peppol.",
             color: "success",
           });
-          setIsPending(true);
+          setPeppolStatus(PeppolStatus.PENDING);
         } else {
           addToast({
             title: "Erreur",
@@ -69,40 +64,39 @@ const SendPeppolButton = ({
         });
         // eslint-disable-next-line
         console.log(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-    setIsLoading(false);
   };
 
-  return orderSaved && clientHasVAT && !buttonClicked ? (
+  const button = (
     <Button
       className="mr-2"
       color="primary"
-      isDisabled={false}
+      isDisabled={isDisabled}
       isLoading={isLoading}
       radius="lg"
-      startContent={<IoGlobe color={iconColor} size={20} />}
+      startContent={
+        isLoading ? (
+          ""
+        ) : (
+          <IoGlobe color={statusToColor[peppolStatus]} size={20} />
+        )
+      }
       variant={buttonClicked ? "light" : "solid"}
       onPress={() => sendToPeppol()}
     >
       Peppol
     </Button>
-  ) : (
+  );
+
+  return tooltipText ? (
     <Tooltip content={tooltipText} placement="top">
-      <div>
-        <Button
-          className="mr-2"
-          color="primary"
-          isDisabled={!(orderSaved && clientHasVAT)}
-          isLoading={isLoading}
-          radius="lg"
-          startContent={<IoGlobe color={iconColor} size={20} />}
-          variant={buttonClicked ? "light" : "solid"}
-          onPress={() => sendToPeppol()}
-        >
-          Peppol
-        </Button>
-      </div>
+      <div>{button}</div>
     </Tooltip>
+  ) : (
+    button
   );
 };
 

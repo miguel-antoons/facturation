@@ -2,7 +2,7 @@ from flask import Flask
 from routes import blueprints
 
 
-def create_app():
+def create_app() -> Flask:
     fapp = Flask(__name__)
 
     for bp in blueprints:

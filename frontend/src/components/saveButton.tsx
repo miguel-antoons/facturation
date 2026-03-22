@@ -1,23 +1,40 @@
 import { IoSave } from "react-icons/io5";
 import { Button } from "@heroui/button";
+import { Tooltip } from "@heroui/tooltip";
 
 const SaveButton = ({
-  saveStatus,
+  isDisabled = false,
+  isSaved,
   saveAction,
+  tooltipText = "",
+  isLoading = false,
 }: {
-  saveStatus: boolean;
+  isDisabled?: boolean;
+  isSaved: boolean;
   saveAction: () => void;
+  tooltipText?: string;
+  isLoading?: boolean;
 }) => {
-  return (
+  const button = (
     <Button
       color="success"
+      isDisabled={isDisabled}
+      isLoading={isLoading}
       radius="lg"
-      variant={saveStatus ? "light" : "solid"}
+      startContent={isLoading ? "" : <IoSave size={20} />}
+      variant={isSaved ? "light" : "solid"}
       onPress={saveAction}
     >
-      <IoSave size={20} />
       Enregistrer
     </Button>
+  );
+
+  return tooltipText ? (
+    <Tooltip content={tooltipText}>
+      <div>{button}</div>
+    </Tooltip>
+  ) : (
+    button
   );
 };
 

@@ -1,4 +1,5 @@
 import database.access as access
+from constants.customer import *
 
 
 def get_customers(fields: list, filters: dict = None) -> list:
@@ -13,8 +14,24 @@ def get_customers(fields: list, filters: dict = None) -> list:
     return results
 
 
-def create_customer(data: dict) -> int:
-    fields = [f'`{field}`' for field in data.keys()]
+def get_customers_dict(fields: list, filters: dict = None) -> dict[int, CustomerBack]:
+    fields = [CUSTOMER_DB_ID] + fields if CUSTOMER_DB_ID not in fields else fields
+    customers = get_customers(fields, filters)
+    if not customers:
+        return {}
+
+    customer_dict = {}
+    for customer in customers:
+        customer_id = customer[fields.index(CUSTOMER_DB_ID)]
+        customer_dict[customer_id] = CustomerBack(
+            **{field: customer[fields.index(field)] for field in fields}
+        )
+
+    return customer_dict
+
+
+def create_customer(data: CustomerBack) -> int:
+    fields = [f'`{key_to_db_mapping[field]}`' for field in data.keys()]
     fields = ', '.join(fields)
     placeholders = ', '.join(['?'] * len(data))
     query = f'INSERT INTO Client ({fields}) VALUES ({placeholders})'
@@ -25,8 +42,8 @@ def create_customer(data: dict) -> int:
     return get_last_customer_id()
 
 
-def update_customer(customer_id: int, data: dict) -> None:
-    set_clauses = ', '.join([f"`{key}` = ?" for key in data.keys()])
+def update_customer(customer_id: int, data: CustomerBack) -> None:
+    set_clauses = ', '.join([f"`{key_to_db_mapping[key]}` = ?" for key in data.keys()])
     query = f'UPDATE Client SET {set_clauses} WHERE Numero = ?'
 
     values = [data[key] if data[key] != '' else None for key in data.keys()]
@@ -59,3 +76,13 @@ def check_customer_exists(customer_id: int) -> bool:
     result = access.get_connection().execute_query(query, (customer_id,), fetch_one=True)
 
     return result is not None and len(result) > 0
+
+
+def get_customer_street(address: str) -> str:
+    parts = address.split(',')
+    return parts[0].strip() if len(parts) > 0 else ''
+
+
+def get_customer_street_number(address: str) -> str:
+    parts = address.split(',')
+    return ''.join(parts[1:]).strip() if len(parts) > 1 else ''

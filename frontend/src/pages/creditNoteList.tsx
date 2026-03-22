@@ -5,35 +5,33 @@ import ProjectPage from "@/components/projectPage";
 const CreditNoteList = () => {
   const fetchContent = async () => {
     const formattedData: {
-      id: number;
-      number: number | string;
+      id: string;
+      number: string;
       attribute1: string;
       attribute2: string;
       attribute3: string;
-      fileId: string | null;
     }[] = [];
 
     try {
       const response = await fetch("/api/cnotes");
-      const dataJson = await response.json();
       const data: {
-        OrderID: string;
-        OrderNumber: string;
-        CounterParty: { DisplayName: string };
-        OrderTitle: string;
-        OrderDate: string;
-      }[] = dataJson.Items;
+        orderId: string;
+        orderNumber: string;
+        customerName: string;
+        orderTitle: string;
+        orderDate: string;
+      }[] = await response.json();
 
       data.forEach(
         (element: {
-          OrderID: string;
-          OrderNumber: string;
-          CounterParty: { DisplayName: string };
-          OrderTitle: string;
-          OrderDate: string;
+          orderId: string;
+          orderNumber: string;
+          customerName: string;
+          orderTitle: string;
+          orderDate: string;
         }) => {
-          let attr3: string | Date = element.OrderDate
-            ? new Date(element.OrderDate)
+          let attr3: string | Date = element.orderDate
+            ? new Date(element.orderDate)
             : "N/A";
           const dateOptions = {
             year: "numeric",
@@ -46,13 +44,10 @@ const CreditNoteList = () => {
             attr3 = attr3.toLocaleString("fr-BE", dateOptions);
           }
           formattedData.push({
-            id: Number(element.OrderID),
-            number: element.OrderNumber,
-            fileId: element.OrderID,
-            attribute1: element.CounterParty.DisplayName
-              ? element.CounterParty.DisplayName
-              : "N/A",
-            attribute2: element.OrderTitle ? element.OrderTitle : "N/A",
+            id: element.orderId,
+            number: element.orderNumber,
+            attribute1: element.customerName ? element.customerName : "N/A",
+            attribute2: element.orderTitle ? element.orderTitle : "N/A",
             attribute3: attr3,
           });
         },

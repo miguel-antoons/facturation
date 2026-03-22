@@ -2,33 +2,50 @@ from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
 from PyPDF2 import PdfMerger
 from pdf.static_data import *
-from pdf.pdf_gen import format_dyn_data
+from controllers.billit import format_dyn_data
+from constants.order_pdf import order_line_string, price_to_string, PDF
+
+from constants.order_back import *
+from constants.customer import *
 
 
-def create_bill(req_data: dict):
-    if req_data["CounterParty"]["Language"].upper() == "FR":
-        return fr_bill(req_data)
+def create_bill(order_data: OrderBack, customer_data: CustomerBack) -> str:
+    if customer_data["Langue"].upper() == "FR":
+        return fr_bill(order_data, customer_data)
     else:
-        return nl_bill(req_data)
+        return nl_bill(order_data, customer_data)
 
 
-def nl_bill(req_data):
+def nl_bill(order_data: OrderBack, customer_data: CustomerBack) -> str:
     static_data = bill_static_nl()
-    static_data["Label"]["SixPercentVatCertificate"] = six_percent_certificate["NL"] if req_data["VentilationCode"] == "2" else ""
-    dyn_data = format_dyn_data(req_data)
+    static_data["Label"]["SixPercentVatCertificate"] = six_percent_certificate["NL"] if order_data["VentilationCode"] == "2" else ""
+    dyn_data = format_dyn_data(
+        order_data,
+        customer_data,
+        set_id=True,
+        number_formatter=price_to_string,
+        order_lines_formater=order_line_string
+    )
     return bill_gen(static_data, dyn_data)
 
 
-def fr_bill(req_data):
+def fr_bill(order_data: OrderBack, customer_data: CustomerBack) -> str:
     static_data = bill_static_fr()
-    static_data["Label"]["SixPercentVatCertificate"] = six_percent_certificate["FR"] if req_data["VentilationCode"] == "2" else ""
-    dyn_data = format_dyn_data(req_data)
+    static_data["Label"]["SixPercentVatCertificate"] = six_percent_certificate["FR"] if order_data["VentilationCode"] == "2" else ""
+    dyn_data = format_dyn_data(
+        order_data,
+        customer_data,
+        set_id=True,
+        number_formatter=price_to_string,
+        order_lines_formater=order_line_string
+    )
     return bill_gen(static_data, dyn_data)
 
 
-def html_to_pdf(html_content, output_path):
+def html_to_pdf(html_content: str, output_path: str) -> None:
     font_config = FontConfiguration()
     css = CSS("./pdf/pdf.css", font_config=font_config)
+    # TODO: choose dynamic temp filename to avoid conflicts when multiple pdfs are generated at the same time
     HTML(string=html_content).write_pdf("/tmp/temp_bill.pdf", stylesheets=[css], font_config=font_config)
 
     merger = PdfMerger()
@@ -39,7 +56,7 @@ def html_to_pdf(html_content, output_path):
     merger.close()
 
 
-def bill_gen(static_data, dyn_data):
+def bill_gen(static_data, dyn_data: PDF) -> str:
     unit_is_empty = all(line['Unit'] == "" for line in dyn_data['OrderLines'])
     add_salutation = dyn_data["Customer"]["Salutation"] != "" and dyn_data["Customer"]["ContactFullName"] != ""
 
@@ -111,7 +128,7 @@ def bill_gen(static_data, dyn_data):
                         </td>
                         <td colspan="2" style="width: 50%;">
                             <div><b>{static_data["Label"]["CustomerNumber"]}:</b> {dyn_data["Customer"]["Nr"]}<br />
-                            <b>{static_data["Label"]["Re"]}:&nbsp;</b>{dyn_data["Order"]["Title"]}<br />
+                            <b>{static_data["Label"]["Re"]}:&nbsp;</b>{dyn_data["Order"]["OrderTitle"]}<br />
                             <strong>{static_data["Label"]["YourReference"]}:&nbsp;</strong>{dyn_data["Order"]["YourReference"]}</div>
                         </td>
                     </tr>

@@ -5,12 +5,11 @@ import ProjectPage from "@/components/projectPage";
 const CustomerList = () => {
   const fetchContent = async () => {
     const formattedData: {
-      id: number;
-      number: number;
+      id: string;
+      number: string;
       attribute1: string;
       attribute2: string;
       attribute3: string;
-      fileId: string | null;
     }[] = [];
 
     try {
@@ -43,12 +42,11 @@ const CustomerList = () => {
             attribute1 = `${element.name === null ? "" : element.name} ${element.surname === null ? "" : element.surname}, ${element.company}`;
           }
           formattedData.push({
-            id: Number(element.id),
-            number: Number(element.id),
+            id: String(element.id),
+            number: String(element.id),
             attribute1: attribute1,
             attribute2: element.phones.length > 0 ? element.phones[0] : "N/A",
             attribute3: `${element.postal_code}, ${element.city}`,
-            fileId: String(element.id),
           });
         },
       );
