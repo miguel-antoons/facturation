@@ -4,7 +4,7 @@ from reportlab.pdfgen.canvas import Canvas
 from controllers.bill_gen import create_bill
 from controllers.cnote_gen import create_cnote
 from constants.customer import *
-from models.customers import get_customers, get_customers_dict
+from models.customers import get_customers_dict
 from models.bills import get_bill
 from models.cnotes import get_cnote
 

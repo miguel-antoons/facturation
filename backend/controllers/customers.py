@@ -1,7 +1,6 @@
 from flask import jsonify
 
 from models import customers as model
-import re
 from constants.customer import *
 from constants.all import *
 
@@ -70,20 +69,7 @@ def get_customer(customer_id: int):
 
 
 def create_customer(json: CustomerFront):
-    new_customer = CustomerBack(
-        Numero=model.get_last_customer_id() + 1,
-        Nom=json.get('name'),
-        Prenom=json.get('surname'),
-        Societe=json.get('company'),
-        Commentaire=json.get('comment'),
-        Adresse=f"{json.get('street').strip()} , {json.get('number').strip()}",
-        Codepostal=json.get('postal_code'),
-        Localite=json.get('city'),
-        TVA=json.get('vat_number'),
-        Langue=json.get('language'),
-        NomArchitecte=json.get('architect_name'),
-        Titre=json.get('salutation'),
-    )
+    new_customer = CustomerBack.from_customer_front(json)
     response = ResponseMessage(
         id=model.create_customer(new_customer),
         status=RESPONSE_SUCCESS,
@@ -92,19 +78,7 @@ def create_customer(json: CustomerFront):
 
 
 def update_customer(customer_id: int, json: CustomerFront):
-    updated_customer = CustomerBack(
-        Nom=json.get('name'),
-        Prenom=json.get('surname'),
-        Societe=json.get('company'),
-        Commentaire=json.get('comment'),
-        Adresse=f"{json.get('street').strip()} , {json.get('number').strip()}",
-        Codepostal=json.get('postal_code'),
-        Localite=json.get('city'),
-        TVA=json.get('vat_number'),
-        Langue=json.get('language'),
-        NomArchitecte=json.get('architect_name'),
-        Titre=json.get('salutation'),
-    )
+    updated_customer = CustomerBack.from_customer_front(json)
     model.update_customer(customer_id, updated_customer)
     response = ResponseMessage(
         id=customer_id,

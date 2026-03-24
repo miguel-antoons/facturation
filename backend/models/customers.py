@@ -23,30 +23,33 @@ def get_customers_dict(fields: list, filters: dict = None) -> dict[int, Customer
     customer_dict = {}
     for customer in customers:
         customer_id = customer[fields.index(CUSTOMER_DB_ID)]
-        customer_dict[customer_id] = CustomerBack(
+        customer_obj = CustomerDB(
             **{field: customer[fields.index(field)] for field in fields}
         )
+        customer_dict[customer_id] = CustomerBack.from_customer_db(customer_obj)
 
     return customer_dict
 
 
 def create_customer(data: CustomerBack) -> int:
-    fields = [f'`{key_to_db_mapping[field]}`' for field in data.keys()]
+    data = data.to_customer_db()
+    fields = [f'`{field}`' for field in data]
     fields = ', '.join(fields)
     placeholders = ', '.join(['?'] * len(data))
     query = f'INSERT INTO Client ({fields}) VALUES ({placeholders})'
 
-    values = [data[key] if data[key] != '' else None for key in data.keys()]
+    values = [data[key] if data[key] != '' else None for key in data]
     access.get_connection().execute_query(query, tuple(values))
 
     return get_last_customer_id()
 
 
 def update_customer(customer_id: int, data: CustomerBack) -> None:
-    set_clauses = ', '.join([f"`{key_to_db_mapping[key]}` = ?" for key in data.keys()])
+    data = data.to_customer_db()
+    set_clauses = ', '.join([f"`{field}` = ?" for field in data])
     query = f'UPDATE Client SET {set_clauses} WHERE Numero = ?'
 
-    values = [data[key] if data[key] != '' else None for key in data.keys()]
+    values = [data[key] if data[key] != '' else None for key in data]
     access.get_connection().execute_query(query, tuple(values) + (customer_id,))
 
 

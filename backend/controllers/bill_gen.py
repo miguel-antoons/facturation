@@ -10,7 +10,7 @@ from constants.customer import *
 
 
 def create_bill(order_data: OrderBack, customer_data: CustomerBack) -> str:
-    if customer_data["Langue"].upper() == "FR":
+    if customer_data.language.upper() == "FR":
         return fr_bill(order_data, customer_data)
     else:
         return nl_bill(order_data, customer_data)

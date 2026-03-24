@@ -16,8 +16,6 @@ from constants.customer import *
 from constants.order_billit import BillitPDF
 from controllers.billit import get_headers
 from models import customers as mcust
-from models import bills as mbill
-from utils.peppol_poller import PeppolStatusPoller
 
 
 def get_orders(filter_query: str = ""):
@@ -64,16 +62,6 @@ def send_peppol(order_id: int):
         "SendMethod": "Peppol",
     }
     return requests.post(url, headers=headers, json=payload)
-    if response.status_code in [200, 201]:
-        mbill.set_peppol_status(order_id, PEPPOL_DELIVERY_STATUS_UNKNOWN)
-        PeppolStatusPoller()(order_id)
-        return ResponseMessage(status=RESPONSE_SUCCESS)
-    else:
-        print(response.text)
-        return jsonify(ResponseMessage(
-            status=RESPONSE_ERROR,
-            message=response.json()
-        ))
 
 
 def send_billit(
@@ -106,7 +94,7 @@ def send_billit(
         base64_pdf = base64.b64encode(pdf_file.read())
 
     payload["OrderPDF"] = BillitPDF(
-        FileName=f"bill_{customer_data[CUSTOMER_DB_NAME]}_{customer_data[CUSTOMER_DB_FIRSTNAME]}_{customer_data[CUSTOMER_DB_COMPANY]}_{order_data['OrderNumber']}.pdf",
+        FileName=f"bill_{customer_data.last_name}_{customer_data.first_name}_{customer_data.company}_{order_data['OrderNumber']}.pdf",
         FileContent=base64_pdf.decode("utf-8"),
     )
 

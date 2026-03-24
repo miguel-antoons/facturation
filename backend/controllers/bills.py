@@ -1,5 +1,3 @@
-import threading
-
 from flask import jsonify, Response
 
 from constants.all import *
@@ -87,9 +85,9 @@ def get_bills() -> Response:
     bills_front = []
     for bill in bills:
         cust_id = bill.get('CustomerId')
-        customer_name = f"{customers[cust_id][CUSTOMER_DB_NAME] or ""} {customers[cust_id][CUSTOMER_DB_FIRSTNAME] or ""}".strip()
-        customer_name += ", " if customer_name and customers[cust_id].get(CUSTOMER_DB_COMPANY) else ""
-        customer_name += f"{customers[cust_id].get(CUSTOMER_DB_COMPANY)}" if customers[cust_id].get(CUSTOMER_DB_COMPANY) else ""
+        customer_name = f"{customers[cust_id].last_name or ""} {customers[cust_id].first_name or ""}".strip()
+        customer_name += ", " if customer_name and customers[cust_id].company else ""
+        customer_name += f"{customers[cust_id].company}" if customers[cust_id].company else ""
         bills_front.append(OrderFrontShort(
             orderId=str(bill.get('_id')),
             customerName=customer_name,
@@ -132,7 +130,7 @@ def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
         not mcust.get_customers_dict(
             [CUSTOMER_DB_VAT_NUMBER],
             filters={CUSTOMER_DB_ID: order_data['CustomerId']}
-        )[order_data['CustomerId']].get(CUSTOMER_DB_VAT_NUMBER)
+        )[order_data['CustomerId']].vat_number
     ):
         message = f"Le client associé à la facture avec l'ID {order_data['OrderNumber']} n'a pas de numéro de TVA. Veuillez ajouter un numéro de TVA au client avant d'envoyer la facture à Peppol."
 

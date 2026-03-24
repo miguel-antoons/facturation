@@ -3,10 +3,9 @@ from flask import jsonify, Response
 from constants.customer import CUSTOMER_DB_NAME, CUSTOMER_DB_FIRSTNAME, CUSTOMER_DB_COMPANY, CUSTOMER_DB_VAT_NUMBER, \
     CUSTOMER_DB_ID, CUSTOMER_DB_COMMENT, CUSTOMER_DB_ADDRESS, CUSTOMER_DB_POSTAL_CODE, CUSTOMER_DB_CITY, \
     CUSTOMER_DB_LANGUAGE, CUSTOMER_DB_SALUTATION
-from constants.order_billit import OrderBillit, ORDER_TYPE_CREDIT_NOTE, ORDER_DIRECTION_INCOME, customer_from_back
 from constants.order_front import OrderFront, convert_order_back_to_front, OrderFrontShort
-from controllers.orders import send_peppol, get_orders, get_order, delete_order
-from controllers.billit import get_headers, order_locked, bill_undeletable
+from controllers.orders import send_peppol
+from controllers.billit import order_locked, bill_undeletable
 from constants.all import *
 from constants.order_back import *
 import models.cnotes as model
@@ -89,9 +88,9 @@ def get_cnotes() -> Response:
     cnotes_front = []
     for cnote in cnotes:
         cust_id = cnote.get("CustomerId")
-        customer_name = f"{customers[cust_id][CUSTOMER_DB_NAME] or ''} {customers[cust_id][CUSTOMER_DB_FIRSTNAME] or ''}".strip()
-        customer_name += ", " if customer_name and customers[cust_id].get(CUSTOMER_DB_COMPANY) else ""
-        customer_name += f"{customers[cust_id].get(CUSTOMER_DB_COMPANY)}" if customers[cust_id].get(CUSTOMER_DB_COMPANY) else ""
+        customer_name = f"{customers[cust_id].last_name or ''} {customers[cust_id].first_name or ''}".strip()
+        customer_name += ", " if customer_name and customers[cust_id].company else ""
+        customer_name += f"{customers[cust_id].company}" if customers[cust_id].company else ""
         cnotes_front.append(OrderFrontShort(
             orderId=str(cnote.get("_id")),
             customerName=customer_name,
@@ -134,7 +133,7 @@ def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
         not mcust.get_customers_dict(
             [CUSTOMER_DB_VAT_NUMBER],
             filters={CUSTOMER_DB_ID: order_data['CustomerId']}
-        )[order_data['CustomerId']].get(CUSTOMER_DB_VAT_NUMBER)
+        )[order_data['CustomerId']].vat_number
     ):
         message = f"Le client associé à la note de crédit avec l'ID {order_data['OrderNumber']} n'a pas de numéro de TVA. Veuillez ajouter un numéro de TVA au client avant d'envoyer la facture à Peppol."
 
