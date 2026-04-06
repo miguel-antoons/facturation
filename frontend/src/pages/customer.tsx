@@ -379,7 +379,22 @@ const Customer = () => {
             classNames="max-w-xs"
             label="Langue"
             selectedKeys={[language]}
-            onChange={(event) => change(setLanguage, event.target.value)}
+            onChange={(event) => {
+              const newLang = event.target.value;
+
+              if (newLang) {
+                const currentIndex =
+                  salutationOptions[language].indexOf(salutation);
+
+                change(setLanguage, newLang);
+                change(
+                  setSalutation,
+                  currentIndex !== -1
+                    ? salutationOptions[newLang][currentIndex]
+                    : salutationOptions[newLang][0],
+                );
+              }
+            }}
           >
             {languageOptions.map((option) => (
               // @ts-ignore
@@ -398,6 +413,7 @@ const Customer = () => {
           <Autocomplete
             allowsCustomValue
             classNames={{ base: "max-w-xs" }}
+            defaultFilter={() => true}
             inputValue={salutation}
             label="Titre"
             onInputChange={(value) => change(setSalutation, value)}

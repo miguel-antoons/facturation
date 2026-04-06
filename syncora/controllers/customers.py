@@ -18,7 +18,7 @@ def get_customers():
     ])
     formatted = []
     for customer in customers:
-        formatted.append(customer.model_dump())
+        formatted.append(customer.model_dump(by_alias=True))
     return jsonify(formatted)
 
 
@@ -53,7 +53,8 @@ def create_customer(json: CustomerFront):
 
 
 def update_customer(customer_id: int, json: CustomerFront):
-    updated_customer = CustomerBack.model_validate(json)
+    json['id'] = customer_id
+    updated_customer = CustomerBack.model_validate(json, by_name=True)
     model.update_customer(customer_id, updated_customer)
     response = ResponseMessage(
         id=customer_id,

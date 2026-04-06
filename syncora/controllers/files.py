@@ -88,7 +88,7 @@ def get_cnote_file(cnote_id: str):
             CUSTOMER_DB_LANGUAGE,
             CUSTOMER_DB_SALUTATION,
         ],
-        filters={CUSTOMER_DB_ID: order_data['Customer']['Numero']}
+        filters={CUSTOMER_DB_ID: order_data['CustomerId']}
     ).values()
     filename = create_cnote(order_data, list(customer_data)[0])
     with open(filename, 'rb') as binary_file:

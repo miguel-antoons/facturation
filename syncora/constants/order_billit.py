@@ -31,7 +31,7 @@ class OrderBillit(OrderBack):
 # * ------------------------------------------
 def order_from_back(order_back: OrderBack, customer_back: CustomerBack) -> OrderBillit:
     res = OrderBillit(
-        Customer=CustomerBillit(**customer_back.model_dump()).model_dump_json(),
+        Customer=CustomerBillit(**customer_back.model_dump()).model_dump(),
         OrderType=ORDER_TYPE_INVOICE,
         OrderDirection=ORDER_DIRECTION_INCOME,
         OrderNumber=order_back["OrderNumber"],
@@ -45,5 +45,4 @@ def order_from_back(order_back: OrderBack, customer_back: CustomerBack) -> Order
 
     if "OrderID" in order_back:
         res["OrderID"] = order_back["OrderID"]
-
     return res

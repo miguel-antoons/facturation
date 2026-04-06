@@ -1,11 +1,7 @@
 import re
-from dataclasses import dataclass
-from typing import TypedDict, NotRequired, ReadOnly, Annotated
+from typing import TypedDict, NotRequired, ReadOnly, Annotated, Any
 
-from pydantic import BaseModel, model_validator, Field, computed_field
-
-from constants.all import ResponseMessage, RESPONSE_ERROR, COUNTRY_CODE_BE
-
+from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
 PARTY_TYPE_CUSTOMER = "Customer"
 ADDRESS_TYPE_INVOICE_ADDRESS = "InvoiceAddress"
@@ -27,28 +23,6 @@ CUSTOMER_DB_ARCHITECT_NAME = "Nom Architecte"
 CUSTOMER_DB_SALUTATION = "Titre"
 
 
-# * ------------------------------------------
-# * API FIELD NAMES FOR CUSTOMER INFORMATION
-# * ------------------------------------------
-CUSTOMER_API_ID = "id"
-CUSTOMER_API_NAME = "name"
-CUSTOMER_API_FIRSTNAME = "surname"
-CUSTOMER_API_COMPANY = "company"
-CUSTOMER_API_COMMENT = "comment"
-CUSTOMER_API_STREET = "street"
-CUSTOMER_API_NUMBER = "number"
-CUSTOMER_API_POSTAL_CODE = "postal_code"
-CUSTOMER_API_CITY = "city"
-CUSTOMER_API_VAT_NUMBER = "vat_number"
-CUSTOMER_API_LANGUAGE = "language"
-CUSTOMER_API_ARCHITECT_NAME = "architect_name"
-CUSTOMER_API_SALUTATION = "salutation"
-CUSTOMER_API_PHONES = "phones"
-CUSTOMER_API_HAS_EMAIL = "hasEmail"
-CUSTOMER_API_HAS_VAT = "hasVAT"
-CUSTOMER_API_STATUS = "status"
-
-
 class CustomerFront(TypedDict):
     id: Annotated[int, ReadOnly]
     name: str
@@ -68,33 +42,24 @@ class CustomerFront(TypedDict):
     hasVAT: NotRequired[bool]
 
 
-class CustomerBillitAddress(TypedDict):
-    AddressType: str
-    Street: str
-    StreetNumber: str
-    Zipcode: str
-    City: str
-    CountryCode: str
-
-
 CustomerDB = TypedDict("CustomerDB", {
-    "Numero": NotRequired[ReadOnly[int]],
-    "Nom": NotRequired[str],
-    "Prenom": NotRequired[str],
-    "Societe": NotRequired[str],
-    "Commentaire": NotRequired[str],
-    "Adresse": NotRequired[str],
-    "Codepostal": NotRequired[str],
-    "Localite": NotRequired[str],
-    "TVA": NotRequired[str],
-    "Langue": NotRequired[str],
-    "Nom Architecte": NotRequired[str],
-    "Titre": NotRequired[str],
+    CUSTOMER_DB_ID: NotRequired[ReadOnly[int]],
+    CUSTOMER_DB_NAME: NotRequired[str],
+    CUSTOMER_DB_FIRSTNAME: NotRequired[str],
+    CUSTOMER_DB_COMPANY: NotRequired[str],
+    CUSTOMER_DB_COMMENT: NotRequired[str],
+    CUSTOMER_DB_ADDRESS: NotRequired[str],
+    CUSTOMER_DB_POSTAL_CODE: NotRequired[str],
+    CUSTOMER_DB_CITY: NotRequired[str],
+    CUSTOMER_DB_VAT_NUMBER: NotRequired[str],
+    CUSTOMER_DB_LANGUAGE: NotRequired[str],
+    CUSTOMER_DB_ARCHITECT_NAME: NotRequired[str],
+    CUSTOMER_DB_SALUTATION: NotRequired[str],
 })
 
 
 class CustomerBack(BaseModel):
-    id: int = Field(validation_alias=CUSTOMER_DB_ID)
+    id: int = Field(default=-1, validation_alias=CUSTOMER_DB_ID)
     name: str | None = Field(default=None, validation_alias=CUSTOMER_DB_NAME)
     surname: str | None = Field(default=None, validation_alias=CUSTOMER_DB_FIRSTNAME)
     company: str | None = Field(default=None, validation_alias=CUSTOMER_DB_COMPANY)
@@ -113,13 +78,11 @@ class CustomerBack(BaseModel):
         customer_db = CustomerDB(
             **{field: data[field_names.index(field)] for field in field_names}
         )
-        print(customer_db)
         return CustomerBack.model_validate(customer_db)
 
 
     def to_customer_db(self) -> tuple[list[str], list]:
         mapping = {
-            CUSTOMER_DB_ID: self.id,
             CUSTOMER_DB_NAME: self.name,
             CUSTOMER_DB_FIRSTNAME: self.surname,
             CUSTOMER_DB_COMPANY: self.company,
@@ -138,8 +101,8 @@ class CustomerBack(BaseModel):
         for field, value in mapping.items():
             if value is not None:
                 fields.append(field)
-                values.append(value)
-                
+                values.append(value if value else None)
+
         return fields, values
 
 
@@ -216,8 +179,30 @@ class CustomerBack(BaseModel):
         return cleaned_mobile_numbers
 
 
-    @model_validator(mode="after")
-    def ensure_identity(self) -> "CustomerBack":
-        if self.name is None and self.surname is None and self.company is None:
-            raise ValueError("At least one of name, surname, or company must be provided.")
-        return self
+    @computed_field(alias="hasVAT")
+    def has_vat(self) -> bool:
+        return bool(self.vat_number)
+
+
+    @computed_field(alias="hasEmail")
+    def has_email(self) -> bool:
+        return bool(self.emails)
+
+
+    @model_validator(mode="before")
+    @classmethod
+    def assemble_address_from_front(cls, data: Any) -> Any:
+        if isinstance(data, dict) and "address" not in data and CUSTOMER_DB_ADDRESS not in data:
+            if "street" in data or "number" in data:
+                street = data.get("street", "")
+                number = data.get("number", "")
+                data["address"] = f"{street} , {number}"
+        return data
+
+
+    @field_validator("language", mode="after")
+    @classmethod
+    def ensure_language_lower(cls, language: str) -> str | None:
+        if language:
+            return language.lower()
+        return None

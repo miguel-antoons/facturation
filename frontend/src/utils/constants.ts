@@ -1,3 +1,3 @@
-export const LANGUAGE_CODE_FR = "FR";
-export const LANGUAGE_CODE_EN = "EN";
-export const LANGUAGE_CODE_NL = "NL";
+export const LANGUAGE_CODE_FR = "fr";
+export const LANGUAGE_CODE_EN = "en";
+export const LANGUAGE_CODE_NL = "nl";
