@@ -4,12 +4,14 @@ import { Select, SelectItem } from "@heroui/select";
 import { addToast } from "@heroui/toast";
 import { useDisclosure } from "@heroui/modal";
 import { useNavigate, useParams } from "react-router-dom";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 
 import SaveStatus from "@/components/saveStatus.tsx";
 import ReturnButton from "@/components/returnButton.tsx";
 import PrintButton from "@/components/printButton.tsx";
 import SaveButton from "@/components/saveButton.tsx";
 import FormConfirmModal from "@/components/formConfirmModal.tsx";
+import { LANGUAGE_CODE_FR, LANGUAGE_CODE_NL } from "@/utils/constants.ts";
 
 const Customer = () => {
   // language options for select
@@ -18,24 +20,14 @@ const Customer = () => {
   // when adding a language, also update reverseLanguageOptions
   // and the languageOptions in src/pages/billing.tsx
   const languageOptions = [
-    { value: "fr", label: "Français", key: "fr" },
-    { value: "nl", label: "Néerlandais", key: "nl" },
+    { value: LANGUAGE_CODE_FR, label: "Français", key: LANGUAGE_CODE_FR },
+    { value: LANGUAGE_CODE_NL, label: "Néerlandais", key: LANGUAGE_CODE_NL },
   ];
   const salutationOptions: {
-    [key: string]: { value: string; label: string; key: string }[];
+    [key: string]: string[];
   } = {
-    fr: [
-      { value: "Mr.", label: "Mr.", key: "mr" },
-      { value: "Mme.", label: "Mme.", key: "ms" },
-      { value: "Mr. et Mme.", label: "Mr. et Mme.", key: "mss" },
-      { value: "Dr.", label: "Dr.", key: "dr" },
-    ],
-    nl: [
-      { value: "Dhr.", label: "Dhr.", key: "mr" },
-      { value: "Mevr.", label: "Mevr.", key: "ms" },
-      { value: "Dhr. en Mevr.", label: "Dhr. en Mevr.", key: "mss" },
-      { value: "Dr.", label: "Dr.", key: "dr" },
-    ],
+    [LANGUAGE_CODE_FR]: ["Mr.", "Mme.", "Mr. et Mme.", "Dr."],
+    [LANGUAGE_CODE_NL]: ["Dhr.", "Mevr.", "Dhr. en Mevr.", "Dr."],
   };
   let customerId = Number(useParams().id); // get customer id from url
   const [heading, setHeading] = useState(""); // heading of the page
@@ -49,7 +41,7 @@ const Customer = () => {
   const [vatNumber, setVatNumber] = useState(""); // vat number of the customer
   const [language, setLanguage] = useState(languageOptions[0].value); // language of the customer, default to first option
   const [salutation, setSalutation] = useState(
-    salutationOptions[languageOptions[0].value][0].value,
+    salutationOptions[languageOptions[0].value][0],
   ); // salutation of the customer, default to first option
   const [architectName, setArchitectName] = useState(""); // architect name of the customer
   const [comment, setComment] = useState(""); // comment of the customer
@@ -90,10 +82,10 @@ const Customer = () => {
             setPostalCode(data.postal_code ?? "");
             setCity(data.city ?? "");
             setVatNumber(data.vat_number ?? "");
-            setLanguage(data.language ?? "fr");
+            setLanguage(data.language ?? LANGUAGE_CODE_FR);
             setSalutation(
               data.salutation ??
-                salutationOptions[data.language ?? "fr"][0].value,
+                salutationOptions[data.language ?? LANGUAGE_CODE_FR][0],
             );
             setArchitectName(data.architect_name ?? "");
             setComment(data.comment ?? "");
@@ -108,10 +100,10 @@ const Customer = () => {
               postal_code: data.postal_code ?? "",
               city: data.city ?? "",
               vat_number: data.vat_number ?? "",
-              language: data.language ?? "fr",
+              language: data.language ?? LANGUAGE_CODE_FR,
               salutation:
                 data.salutation ??
-                salutationOptions[data.language ?? "fr"][0].value,
+                salutationOptions[data.language ?? LANGUAGE_CODE_FR][0],
               architect_name: data.architect_name ?? "",
               comment: data.comment ?? "",
             });
@@ -403,20 +395,20 @@ const Customer = () => {
       <div className="flex flex-row">
         <div className="basis-2/8 hidden md:block" />
         <div className="basis-1/3 md:basis-1/6 p-2">
-          <Select
-            // @ts-ignore
-            classNames="max-w-xs"
+          <Autocomplete
+            allowsCustomValue
+            classNames={{ base: "max-w-xs" }}
+            inputValue={salutation}
             label="Titre"
-            selectedKeys={[salutation]}
-            onChange={(event) => change(setSalutation, event.target.value)}
+            onInputChange={(value) => change(setSalutation, value)}
+            onSelectionChange={(key) => {
+              if (key) change(setSalutation, key.toString());
+            }}
           >
             {salutationOptions[language].map((option) => (
-              // @ts-ignore
-              <SelectItem key={option.key} value={option.value}>
-                {option.label}
-              </SelectItem>
+              <AutocompleteItem key={option}>{option}</AutocompleteItem>
             ))}
-          </Select>
+          </Autocomplete>
         </div>
         <div className="basis-2/3 md:basis-2/6 p-2">
           <Input

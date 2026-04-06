@@ -6,7 +6,7 @@ from controllers.billit import format_dyn_data
 from constants.order_pdf import order_line_string, price_to_string, PDF
 
 from constants.order_back import *
-from constants.customer import *
+from constants.customer_back import *
 
 
 def create_cnote(order_data: OrderBack, customer_data: CustomerBack):

@@ -1,17 +1,21 @@
 import database.access as access
-from constants.customer import *
+from constants.customer_back import *
 
 
-def get_customers(fields: list, filters: dict = None) -> list:
-    fields = [f'`{field}`' for field in fields]
-    query = f'SELECT {", ".join(fields)} FROM Client'
+def get_customers(fields: list, filters: dict = None) -> list[CustomerBack]:
+    formatted_fields = [f'`{field}`' for field in fields]
+    query = f'SELECT {", ".join(formatted_fields)} FROM Client'
     if filters:
         filter_clauses = [f"{key} = ?" for key in filters.keys()]
         query += ' WHERE ' + ' AND '.join(filter_clauses)
 
     results = access.get_connection().execute_query(query, tuple(filters.values()) if filters else ())
 
-    return results
+    customers = []
+    for customer in results:
+        customers.append(CustomerBack.from_customer_db(fields, customer))
+
+    return customers
 
 
 def get_customers_dict(fields: list, filters: dict = None) -> dict[int, CustomerBack]:
@@ -22,34 +26,27 @@ def get_customers_dict(fields: list, filters: dict = None) -> dict[int, Customer
 
     customer_dict = {}
     for customer in customers:
-        customer_id = customer[fields.index(CUSTOMER_DB_ID)]
-        customer_obj = CustomerDB(
-            **{field: customer[fields.index(field)] for field in fields}
-        )
-        customer_dict[customer_id] = CustomerBack.from_customer_db(customer_obj)
+        customer_dict[customer.id] = customer
 
     return customer_dict
 
 
 def create_customer(data: CustomerBack) -> int:
-    data = data.to_customer_db()
-    fields = [f'`{field}`' for field in data]
+    fields, values = data.to_customer_db()
     fields = ', '.join(fields)
-    placeholders = ', '.join(['?'] * len(data))
+    placeholders = ', '.join(['?'] * len(values))
     query = f'INSERT INTO Client ({fields}) VALUES ({placeholders})'
 
-    values = [data[key] if data[key] != '' else None for key in data]
     access.get_connection().execute_query(query, tuple(values))
 
     return get_last_customer_id()
 
 
 def update_customer(customer_id: int, data: CustomerBack) -> None:
-    data = data.to_customer_db()
-    set_clauses = ', '.join([f"`{field}` = ?" for field in data])
+    fields, values = data.to_customer_db()
+    set_clauses = ', '.join([f"`{field}` = ?" for field in fields])
     query = f'UPDATE Client SET {set_clauses} WHERE Numero = ?'
 
-    values = [data[key] if data[key] != '' else None for key in data]
     access.get_connection().execute_query(query, tuple(values) + (customer_id,))
 
 

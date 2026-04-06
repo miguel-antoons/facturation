@@ -1,6 +1,7 @@
 from typing import TypedDict
 
-from constants.customer import CustomerBack, CustomerBillit
+from constants.customer_back import CustomerBack
+from constants.customer_billit import CustomerBillit
 from constants.order_back import OrderBack
 
 ORDER_TYPE_INVOICE = "Invoice"
@@ -30,7 +31,7 @@ class OrderBillit(OrderBack):
 # * ------------------------------------------
 def order_from_back(order_back: OrderBack, customer_back: CustomerBack) -> OrderBillit:
     res = OrderBillit(
-        Customer=customer_back.to_customer_billit(),
+        Customer=CustomerBillit(**customer_back.model_dump()).model_dump_json(),
         OrderType=ORDER_TYPE_INVOICE,
         OrderDirection=ORDER_DIRECTION_INCOME,
         OrderNumber=order_back["OrderNumber"],

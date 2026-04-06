@@ -12,7 +12,7 @@ from flask import jsonify
 
 from constants.all import *
 from constants.order_back import *
-from constants.customer import *
+from constants.customer_back import *
 from constants.order_billit import BillitPDF
 from controllers.billit import get_headers
 from models import customers as mcust
@@ -72,7 +72,7 @@ def send_billit(
     customer_data: CustomerBack | None = None,
 ):
     if not customer_data:
-        customer_data = mcust.get_customers_dict(
+        customer_data: CustomerBack = mcust.get_customers_dict(
             [
                 CUSTOMER_DB_ID,
                 CUSTOMER_DB_NAME,
@@ -94,7 +94,7 @@ def send_billit(
         base64_pdf = base64.b64encode(pdf_file.read())
 
     payload["OrderPDF"] = BillitPDF(
-        FileName=f"bill_{customer_data.last_name}_{customer_data.first_name}_{customer_data.company}_{order_data['OrderNumber']}.pdf",
+        FileName=f"bill_{customer_data.name}_{customer_data.surname}_{customer_data.company}_{order_data['OrderNumber']}.pdf",
         FileContent=base64_pdf.decode("utf-8"),
     )
 

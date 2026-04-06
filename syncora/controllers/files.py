@@ -3,7 +3,7 @@ from models import customers as model
 from reportlab.pdfgen.canvas import Canvas
 from controllers.bill_gen import create_bill
 from controllers.cnote_gen import create_cnote
-from constants.customer import *
+from constants.customer_back import *
 from models.customers import get_customers_dict
 from models.bills import get_bill
 from models.cnotes import get_cnote
@@ -25,18 +25,18 @@ def get_customer_file(customer_id):
             CUSTOMER_DB_ARCHITECT_NAME,
         ],
         filters={CUSTOMER_DB_ID: customer_id}
-    )
+    )[0]
     # generate pdf file from customer info
     pdf_file_path = f'/tmp/customer_{customer_id}.pdf'
     canvas = Canvas(pdf_file_path)
-    canvas.drawString(100, 800, f"Numéro: {customer_info[0][0]}")
-    canvas.drawString(100, 780, f"Nom, Prénom: {customer_info[0][1]} {customer_info[0][2]}")
-    canvas.drawString(100, 760, f"Société: {customer_info[0][3]}")
-    canvas.drawString(100, 740, f"Adresse: {customer_info[0][5]}, {customer_info[0][6]} {customer_info[0][7]}")
-    canvas.drawString(100, 720, f"Numéro de TVA: {customer_info[0][8]}")
-    canvas.drawString(100, 700, f"Langue: {customer_info[0][9]}")
-    canvas.drawString(100, 680, f"Nom d'Architecte: {customer_info[0][10]}")
-    canvas.drawString(100, 610, f"Commentaire: {customer_info[0][4]}")
+    canvas.drawString(100, 800, f"Numéro: {customer_info.id}")
+    canvas.drawString(100, 780, f"Nom, Prénom: {customer_info.name} {customer_info.surname}")
+    canvas.drawString(100, 760, f"Société: {customer_info.company}")
+    canvas.drawString(100, 740, f"Adresse: {customer_info.street}, {customer_info.number} {customer_info.city}")
+    canvas.drawString(100, 720, f"Numéro de TVA: {customer_info.vat_number}")
+    canvas.drawString(100, 700, f"Langue: {customer_info.language}")
+    canvas.drawString(100, 680, f"Nom d'Architecte: {customer_info.architect_name}")
+    canvas.drawString(100, 610, f"Commentaire: {customer_info.comment}")
     canvas.save()
 
     binary_file = open(pdf_file_path, 'rb')

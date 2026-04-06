@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models import customers as model
-from constants.customer import *
+from constants.customer_back import *
 from constants.all import *
 
 
@@ -18,17 +18,7 @@ def get_customers():
     ])
     formatted = []
     for customer in customers:
-        formatted.append(CustomerFront(
-            id=customer[0],
-            name=customer[1],
-            surname=customer[2],
-            company=customer[3],
-            phones=detect_phones(customer[4]) + detect_mobiles(customer[4]),
-            hasEmail=len(detect_emails(customer[4])) > 0,
-            hasVAT=customer[7] is not None and customer[7] != '',
-            postal_code=customer[5],
-            city=customer[6],
-        ))
+        formatted.append(customer.model_dump())
     return jsonify(formatted)
 
 
@@ -49,27 +39,12 @@ def get_customer(customer_id: int):
             CUSTOMER_DB_SALUTATION,
         ],
         filters={CUSTOMER_DB_ID: customer_id}
-    )
-    formatted = CustomerFront(
-        id=customer[0][0],
-        name=customer[0][1],
-        surname=customer[0][2],
-        company=customer[0][3],
-        comment=customer[0][4],
-        street=model.get_customer_street(customer[0][5]),
-        number=model.get_customer_street_number(customer[0][5]),
-        postal_code=customer[0][6],
-        city=customer[0][7],
-        vat_number=customer[0][8],
-        language=customer[0][9],
-        architect_name=customer[0][10],
-        salutation=customer[0][11],
-    )
-    return jsonify(formatted)
+    )[0]
+    return customer.model_dump_json()
 
 
 def create_customer(json: CustomerFront):
-    new_customer = CustomerBack.from_customer_front(json)
+    new_customer = CustomerBack.model_validate(json)
     response = ResponseMessage(
         id=model.create_customer(new_customer),
         status=RESPONSE_SUCCESS,
@@ -78,7 +53,7 @@ def create_customer(json: CustomerFront):
 
 
 def update_customer(customer_id: int, json: CustomerFront):
-    updated_customer = CustomerBack.from_customer_front(json)
+    updated_customer = CustomerBack.model_validate(json)
     model.update_customer(customer_id, updated_customer)
     response = ResponseMessage(
         id=customer_id,

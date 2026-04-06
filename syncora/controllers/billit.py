@@ -7,7 +7,7 @@ from constants.order_pdf import calculate_order_totals, ogm_gen, PDF, OrderPDF, 
 from pdf.static_data import comments
 
 from constants.order_back import *
-from constants.customer import *
+from constants.customer_back import *
 
 
 def format_dyn_data(
@@ -41,9 +41,9 @@ def format_dyn_data(
         ),
         Customer=CustomerPDF(
             OfficialCompanyName=customer_data.company or "",
-            ContactFullName=f"{customer_data.last_name or ''} {customer_data.first_name or ''}".strip(),
-            Salutation=customer_data.name_prefix,
-            StreetAndNumber=f"{customer_data.street} {customer_data.street_number}".strip(),
+            ContactFullName=f"{customer_data.name or ''} {customer_data.surname or ''}".strip(),
+            Salutation=customer_data.salutation,
+            StreetAndNumber=f"{customer_data.street} {customer_data.number}".strip(),
             ZipCode=customer_data.postal_code,
             City=customer_data.city,
             CountryName="",
