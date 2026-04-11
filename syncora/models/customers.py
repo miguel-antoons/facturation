@@ -13,7 +13,7 @@ def get_customers(fields: list, filters: dict = None) -> list[CustomerBack]:
 
     customers = []
     for customer in results:
-        customers.append(CustomerBack.from_customer_db(fields, customer))
+        customers.append(CustomerBack.from_db(fields, customer))
 
     return customers
 
@@ -32,7 +32,7 @@ def get_customers_dict(fields: list, filters: dict = None) -> dict[int, Customer
 
 
 def create_customer(data: CustomerBack) -> int:
-    fields, values = data.to_customer_db()
+    fields, values = data.to_db()
     fields = ', '.join(fields)
     placeholders = ', '.join(['?'] * len(values))
     query = f'INSERT INTO Client ({fields}) VALUES ({placeholders})'
@@ -43,8 +43,8 @@ def create_customer(data: CustomerBack) -> int:
 
 
 def update_customer(customer_id: int, data: CustomerBack) -> None:
-    fields, values = data.to_customer_db()
-    set_clauses = ', '.join([f"`{field}` = ?" for field in fields])
+    fields, values = data.to_db()
+    set_clauses = ', '.join([f"{field} = ?" for field in fields])
     query = f'UPDATE Client SET {set_clauses} WHERE Numero = ?'
 
     access.get_connection().execute_query(query, tuple(values) + (customer_id,))

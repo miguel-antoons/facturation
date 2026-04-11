@@ -1,7 +1,9 @@
 import re
 from typing import TypedDict, NotRequired, ReadOnly, Annotated, Any
 
-from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
+from pydantic import Field, computed_field, field_validator, model_validator
+
+from constants.all import Undefined, SyncoraUndefined, SyncoraModel
 
 PARTY_TYPE_CUSTOMER = "Customer"
 ADDRESS_TYPE_INVOICE_ADDRESS = "InvoiceAddress"
@@ -58,58 +60,62 @@ CustomerDB = TypedDict("CustomerDB", {
 })
 
 
-class CustomerBack(BaseModel):
-    id: int = Field(default=-1, validation_alias=CUSTOMER_DB_ID)
-    name: str | None = Field(default=None, validation_alias=CUSTOMER_DB_NAME)
-    surname: str | None = Field(default=None, validation_alias=CUSTOMER_DB_FIRSTNAME)
-    company: str | None = Field(default=None, validation_alias=CUSTOMER_DB_COMPANY)
-    comment: str | None = Field(default=None, validation_alias=CUSTOMER_DB_COMMENT)
-    address: str | None = Field(default=None, validation_alias=CUSTOMER_DB_ADDRESS)
-    postal_code: str | None = Field(default=None, validation_alias=CUSTOMER_DB_POSTAL_CODE)
-    city: str | None = Field(default=None, validation_alias=CUSTOMER_DB_CITY)
-    vat_number: str | None = Field(default=None, validation_alias=CUSTOMER_DB_VAT_NUMBER)
-    language: str | None = Field(default=None, validation_alias=CUSTOMER_DB_LANGUAGE)
-    architect_name: str | None = Field(default=None, validation_alias=CUSTOMER_DB_ARCHITECT_NAME)
-    salutation: str | None = Field(default=None, validation_alias=CUSTOMER_DB_SALUTATION)
+class CustomerBack(SyncoraModel):
+    id: int = Field(default=-1, alias=CUSTOMER_DB_ID)
+    name: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_NAME)
+    surname: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_FIRSTNAME)
+    company: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_COMPANY)
+    comment: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_COMMENT)
+    address: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_ADDRESS)
+    postal_code: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_POSTAL_CODE)
+    city: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_CITY)
+    vat_number: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_VAT_NUMBER)
+    language: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_LANGUAGE)
+    architect_name: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_ARCHITECT_NAME)
+    salutation: str | Undefined = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_SALUTATION)
 
 
     @staticmethod
-    def from_customer_db(field_names: list[str], data: list):
+    def from_db(field_names: list[str], data: list) -> "CustomerBack":
         customer_db = CustomerDB(
             **{field: data[field_names.index(field)] for field in field_names}
         )
         return CustomerBack.model_validate(customer_db)
 
 
-    def to_customer_db(self) -> tuple[list[str], list]:
-        mapping = {
-            CUSTOMER_DB_NAME: self.name,
-            CUSTOMER_DB_FIRSTNAME: self.surname,
-            CUSTOMER_DB_COMPANY: self.company,
-            CUSTOMER_DB_COMMENT: self.comment,
-            CUSTOMER_DB_ADDRESS: self.address,
-            CUSTOMER_DB_POSTAL_CODE: self.postal_code,
-            CUSTOMER_DB_CITY: self.city,
-            CUSTOMER_DB_VAT_NUMBER: self.vat_number,
-            CUSTOMER_DB_LANGUAGE: self.language,
-            CUSTOMER_DB_ARCHITECT_NAME: self.architect_name,
-            CUSTOMER_DB_SALUTATION: self.salutation,
-        }
-        
+    def to_db(self) -> tuple[list[str], list[Any]]:
+        mapping = self.model_dump(
+            by_alias=True,
+            exclude_unset=True,
+            exclude_computed_fields=True,
+            exclude={"id"}
+        )
+
         fields = []
         values = []
         for field, value in mapping.items():
-            if value is not None:
-                fields.append(field)
-                values.append(value if value else None)
+            fields.append(f"`{field}`")
+            values.append(value if value else None)
 
         return fields, values
+
+
+    def to_front(self) -> str:
+        return self.model_dump_json(
+            exclude={
+                "id",
+                "address",
+                "emails",
+                "telephoneNumbers",
+                "mobileNumbers",
+            }
+        )
 
 
     @computed_field
     def street(self) -> str:
         if not self.address:
-            return ""
+            return self.ret_def(self.address, "")
         parts = self.address.split(',')
         return parts[0].strip() if len(parts) > 0 else ''
 
@@ -117,32 +123,32 @@ class CustomerBack(BaseModel):
     @computed_field
     def number(self) -> str:
         if not self.address:
-            return ""
+            return self.ret_def(self.address, "")
         parts = self.address.split(',')
         return ''.join(parts[1:]).strip() if len(parts) > 1 else ''
 
 
     @computed_field
     def emails(self) -> list[str]:
-        if self.comment is None:
-            return []
+        if not self.comment:
+            return self.ret_def(self.comment, [])
 
         pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
         return re.findall(pattern, self.comment)
 
 
     @computed_field
-    def telephone_numbers(self) -> list[str]:
-        if self.comment is None:
-            return []
+    def telephoneNumbers(self) -> list[str] | Undefined:
+        if not self.comment:
+            return self.ret_def(self.comment, [])
 
         patterns = [
-            r'\+\d{10}',
-            r'0\d{8}',
-            r'0\d{2}/\d{2} \d{2} \d{2}',
-            r'0\d{2}/\d{2},\d{2},\d{2}',
-            r'0\d{1}/\d{3} \d{2} \d{2}',
-            r'0\d{1}/\d{3},\d{2},\d{2}',
+            r'(?<!\d)\+\d{10}(?!\d)',
+            r'(?<!\d)0\d{8}(?!\d)',
+            r'(?<!\d)0\d{2}/\d{2} \d{2} \d{2}(?!\d)',
+            r'(?<!\d)0\d{2}/\d{2},\d{2},\d{2}(?!\d)',
+            r'(?<!\d)0\d{1}/\d{3} \d{2} \d{2}(?!\d)',
+            r'(?<!\d)0\d{1}/\d{3},\d{2},\d{2}(?!\d)',
         ]
         phone_numbers = []
 
@@ -157,15 +163,15 @@ class CustomerBack(BaseModel):
 
 
     @computed_field
-    def mobile_numbers(self) -> list[str]:
-        if self.comment is None:
-            return []
+    def mobileNumbers(self) -> list[str]:
+        if not self.comment:
+            return self.ret_def(self.comment, [])
 
         patterns = [
-            r'\+\d{11}',
-            r'0\d{9}',
-            r'0\d{3}/\d{2} \d{2} \d{2}',
-            r'0\d{3}/\d{2},\d{2},\d{2}',
+            r'(?<!\d)\+\d{11}(?!\d)',
+            r'(?<!\d)0\d{9}(?!\d)',
+            r'(?<!\d)0\d{3}/\d{2} \d{2} \d{2}(?!\d)',
+            r'(?<!\d)0\d{3}/\d{2},\d{2},\d{2}(?!\d)',
         ]
         mobile_numbers = []
 
@@ -179,14 +185,14 @@ class CustomerBack(BaseModel):
         return cleaned_mobile_numbers
 
 
-    @computed_field(alias="hasVAT")
-    def has_vat(self) -> bool:
-        return bool(self.vat_number)
+    @computed_field
+    def hasVAT(self) -> bool:
+        return self.ret_def(self.vat_number, bool(self.vat_number))
 
 
-    @computed_field(alias="hasEmail")
-    def has_email(self) -> bool:
-        return bool(self.emails)
+    @computed_field
+    def hasEmail(self) -> bool:
+        return self.ret_def(self.emails, bool(self.emails))
 
 
     @model_validator(mode="before")
@@ -202,7 +208,7 @@ class CustomerBack(BaseModel):
 
     @field_validator("language", mode="after")
     @classmethod
-    def ensure_language_lower(cls, language: str) -> str | None:
+    def ensure_language_lower(cls, language: str | Undefined) -> str | None | Undefined:
         if language:
             return language.lower()
-        return None
+        return language

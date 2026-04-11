@@ -18,7 +18,21 @@ def get_customers():
     ])
     formatted = []
     for customer in customers:
-        formatted.append(customer.model_dump(by_alias=True))
+        formatted.append(
+            customer.model_dump(
+                by_alias=False,
+                include={
+                    "id",
+                    "name",
+                    "surname",
+                    "company",
+                    "postal_code",
+                    "city",
+                    "mobileNumbers",
+                    "telephoneNumbers",
+                }
+            )
+        )
     return jsonify(formatted)
 
 
@@ -40,11 +54,11 @@ def get_customer(customer_id: int):
         ],
         filters={CUSTOMER_DB_ID: customer_id}
     )[0]
-    return customer.model_dump_json()
+    return customer.to_front()
 
 
 def create_customer(json: CustomerFront):
-    new_customer = CustomerBack.model_validate(json)
+    new_customer = CustomerBack.model_validate(json, by_name=True)
     response = ResponseMessage(
         id=model.create_customer(new_customer),
         status=RESPONSE_SUCCESS,

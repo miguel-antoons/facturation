@@ -22,8 +22,8 @@ const CustomerList = () => {
           city: string;
           company: string;
           name: string;
-          mobile_numbers: string[];
-          telephone_numbers: string[];
+          mobileNumbers: string[];
+          telephoneNumbers: string[];
           postal_code: string;
           surname: string;
         }) => {
@@ -42,9 +42,7 @@ const CustomerList = () => {
           } else {
             attribute1 = `${element.name === null ? "" : element.name} ${element.surname === null ? "" : element.surname}, ${element.company}`;
           }
-          const phones = element.mobile_numbers.concat(
-            element.telephone_numbers,
-          );
+          const phones = element.mobileNumbers.concat(element.telephoneNumbers);
 
           formattedData.push({
             id: String(element.id),
