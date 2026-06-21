@@ -74,7 +74,7 @@ const CreditNote = () => {
   );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
-  const [peppolStatus, setPeppolStatus] = useState<number>(0);
+  const [peppolDeliveryStatus, setPeppolDeliveryStatus] = useState<number>(0);
   const [billitSent, setBillitSent] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
 
@@ -105,7 +105,7 @@ const CreditNote = () => {
             deliveryDate: string;
             ventilationCode: string;
             billitSent: boolean;
-            peppolStatus: number;
+            peppolDeliveryStatus: number;
             aboutInvoiceNumber: string;
             orderLines: {
               description: string;
@@ -124,7 +124,7 @@ const CreditNote = () => {
             setExpiryDate(parseDate(data.expiryDate.split("T")[0]));
             setVat(data.ventilationCode);
             setBillitSent(data.billitSent);
-            setPeppolStatus(data.peppolStatus);
+            setPeppolDeliveryStatus(data.peppolDeliveryStatus);
             setOrderLines(
               data.orderLines.map((line: any, index: number) => ({
                 key: index,
@@ -202,12 +202,12 @@ const CreditNote = () => {
     const peppolButtonInfo = isPeppolReady(
       billitSent,
       clientChosenAndHasVat,
-      isSentToPeppol(peppolStatus),
+      isSentToPeppol(peppolDeliveryStatus),
     );
 
     setPeppolDisabled(peppolButtonInfo.disabled);
     setPeppolTooltip(peppolButtonInfo.tooltipText);
-  }, [billitSent, clientHasVat, customerId, peppolStatus]);
+  }, [billitSent, clientHasVat, customerId, peppolDeliveryStatus]);
 
   /**
    * Set the heading based on the cnoteId
@@ -526,8 +526,8 @@ const CreditNote = () => {
             apiRoute={`/api/cnotes/sendPeppol/`}
             isDisabled={peppolDisabled}
             orderId={cnoteId}
-            peppolStatus={peppolStatus}
-            setPeppolStatus={setPeppolStatus}
+            peppolStatus={peppolDeliveryStatus}
+            setPeppolStatus={setPeppolDeliveryStatus}
             tooltipText={peppolTooltip}
           />
           <PrintButton

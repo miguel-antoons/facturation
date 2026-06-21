@@ -67,7 +67,7 @@ const Billing = () => {
   );
   const [lastSave, setLastSave] = useState({});
   const navigate = useNavigate(); // navigate function from react router
-  const [peppolStatus, setPeppolStatus] = useState<number>(0);
+  const [peppolDeliveryStatus, setPeppolDeliveryStatus] = useState<number>(0);
   const [billitSent, setBillitSent] = useState<boolean>(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure(); // modal state from heroui
 
@@ -98,7 +98,7 @@ const Billing = () => {
             deliveryDate: string;
             ventilationCode: string;
             billitSent: boolean;
-            peppolStatus: number;
+            peppolDeliveryStatus: number;
             orderLines: {
               description: string;
               quantity: number;
@@ -116,7 +116,7 @@ const Billing = () => {
             setDeliveryDate(parseDate(data.deliveryDate.split("T")[0]));
             setVat(data.ventilationCode);
             setBillitSent(data.billitSent);
-            setPeppolStatus(data.peppolStatus);
+            setPeppolDeliveryStatus(data.peppolDeliveryStatus);
             setOrderLines(
               data.orderLines.map((line: any, index: number) => ({
                 key: index,
@@ -189,12 +189,12 @@ const Billing = () => {
     const peppolButtonInfo = isPeppolReady(
       billitSent,
       clientChosenAndHasVat,
-      isSentToPeppol(peppolStatus),
+      isSentToPeppol(peppolDeliveryStatus),
     );
 
     setPeppolDisabled(peppolButtonInfo.disabled);
     setPeppolTooltip(peppolButtonInfo.tooltipText);
-  }, [billitSent, clientHasVat, customerId, peppolStatus]);
+  }, [billitSent, clientHasVat, customerId, peppolDeliveryStatus]);
 
   /**
    * Set the heading based on the billId
@@ -512,8 +512,8 @@ const Billing = () => {
             apiRoute={`/api/bills/sendPeppol/`}
             isDisabled={peppolDisabled}
             orderId={billId}
-            peppolStatus={peppolStatus}
-            setPeppolStatus={setPeppolStatus}
+            peppolStatus={peppolDeliveryStatus}
+            setPeppolStatus={setPeppolDeliveryStatus}
             tooltipText={peppolTooltip}
           />
           <PrintButton
