@@ -242,3 +242,4 @@ package-lock.json
 bun.lockb
 
 datadir/
+*.accdb
