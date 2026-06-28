@@ -1,16 +1,23 @@
-import jaydebeapi
+import contextlib
 import threading
-import os
 import time
-from dotenv import dotenv_values
+from pathlib import Path
 
+import jaydebeapi
+from dotenv import dotenv_values
 
 _db = None
 
 
 class SmartAccessConnector:
-    def __init__(self, db_path, ucanaccess_jars_path, idle_timeout_sec=1800, extra_params=""):
-        self.db_path = db_path
+    def __init__(
+        self,
+        db_path: str,
+        ucanaccess_jars_path: str,
+        idle_timeout_sec: int = 1800,
+        extra_params: str = "",
+    ) -> None:
+        self.db_path = Path(db_path)
         self.jars = ucanaccess_jars_path
         self.idle_timeout = idle_timeout_sec
 
@@ -23,16 +30,16 @@ class SmartAccessConnector:
         self.driver_name = "net.ucanaccess.jdbc.UcanaccessDriver"
         self.jdbc_url = f"jdbc:ucanaccess://{self.db_path};{extra_params}"
 
-    def _current_db_mtime(self):
+    def _current_db_mtime(self) -> float | int:
         try:
-            return os.path.getmtime(self.db_path)
+            return Path.stat(self.db_path).st_mtime
         except OSError:
             return 0
 
-    def _connect(self):
+    def _connect(self) -> jaydebeapi.Connection:
         return jaydebeapi.connect(self.driver_name, self.jdbc_url, ["", ""], self.jars)
 
-    def get_connection(self):
+    def get_connection(self) -> jaydebeapi.Connection:
         """
         Internal method to get/refresh connection.
         MUST be called inside a 'with self.lock:' block.
@@ -48,10 +55,8 @@ class SmartAccessConnector:
 
             if self.conn:
                 print(f"Reloading DB ({reason})...")
-                try:
+                with contextlib.suppress(BaseException):
                     self.conn.close()
-                except:
-                    pass
             else:
                 print("Initializing DB connection...")
 
@@ -61,7 +66,9 @@ class SmartAccessConnector:
         self.last_usage_time = current_time
         return self.conn
 
-    def execute_query(self, query, params=None, fetch_one=False):
+    def execute_query(
+        self, query: str, params: tuple | None = None, fetch_one: bool = False
+    ) -> list | None:
         """
         Thread-safe wrapper to execute a query.
         Handles locking, connecting, cursor management, and result fetching.
@@ -80,12 +87,11 @@ class SmartAccessConnector:
                 # If it's a SELECT query, fetch results
                 if query.strip().upper().startswith("SELECT"):
                     return curs.fetchone() if fetch_one else curs.fetchall()
-                else:
-                    if query.strip().upper().startswith(("INSERT", "UPDATE", "DELETE")):
-                        conn.commit()
+                if query.strip().upper().startswith(("INSERT", "UPDATE", "DELETE")):
+                    conn.commit()
 
-                    # For INSERT/UPDATE, usually return None or row count
-                    return None
+                # For INSERT/UPDATE, usually return None or row count
+                return None
             finally:
                 curs.close()
                 # We do NOT close the connection; we keep it for the next user.
@@ -96,5 +102,10 @@ def get_connection() -> SmartAccessConnector:
     if not _db:
         db_path = dotenv_values(".env")["DB_FILE"]
         classpath = "./src/ucanaccess-5.1.3-uber.jar"
-        _db = SmartAccessConnector(db_path, classpath, idle_timeout_sec=10080, extra_params="immediatelyReleaseResources=true")
+        _db = SmartAccessConnector(
+            db_path,
+            classpath,
+            idle_timeout_sec=10080,
+            extra_params="immediatelyReleaseResources=true",
+        )
     return _db

@@ -1,6 +1,7 @@
-from typing import TypedDict, NotRequired
+from typing import TYPE_CHECKING, NotRequired, TypedDict
 
-from constants.order_back import _OrderLineBack
+if TYPE_CHECKING:
+    from constants.order_back import _OrderLineBack
 
 
 # * ------------------------------------------
@@ -56,17 +57,21 @@ class PDF(TypedDict):
 # * CONVERSION FUNCTIONS
 # * ------------------------------------------
 def price_to_string(price: float) -> str:
-    return '{0:.2f}'.format(price).replace(".", ",")
+    return f"{price:.2f}".replace(".", ",")
 
 
 def order_line_string(order_line: _OrderLineBack) -> OrderLinePDF:
     return OrderLinePDF(
         Description=order_line.description,
         AmountExcl=price_to_string(order_line.unitPriceExcl),
-        Quantity=str(order_line.quantity) if isinstance(order_line.quantity, int) else price_to_string(order_line.quantity),
+        Quantity=(
+            str(order_line.quantity)
+            if isinstance(order_line.quantity, int)
+            else price_to_string(order_line.quantity)
+        ),
         Unit=order_line.unit,
         TotalExcl=price_to_string(order_line.total_excl),
-        VATPercentage='{0:.0f}'.format(order_line.VATPercentage),
+        VATPercentage=f"{order_line.VATPercentage:.0f}",
         TotalIncl=price_to_string(order_line.total_incl),
     )
 
@@ -75,7 +80,9 @@ def order_line_total_excl(quantity: float, unit_price_excl: float) -> float:
     return quantity * unit_price_excl
 
 
-def order_line_total_incl(quantity: float, unit_price_excl: float, vat_percentage: float) -> float:
+def order_line_total_incl(
+    quantity: float, unit_price_excl: float, vat_percentage: float
+) -> float:
     total_excl = order_line_total_excl(quantity, unit_price_excl)
     vat_amount = total_excl * vat_percentage / 100
     return total_excl + vat_amount

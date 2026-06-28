@@ -1,9 +1,13 @@
 import contextlib
-from typing import Generator, Any, Mapping
+from typing import TYPE_CHECKING, Any
 
-from pymongo import MongoClient
 from dotenv import dotenv_values
-from pymongo.synchronous.database import Database
+from pymongo import MongoClient
+
+if TYPE_CHECKING:
+    from collections.abc import Generator, Mapping
+
+    from pymongo.synchronous.database import Database
 
 
 @contextlib.contextmanager
@@ -17,6 +21,6 @@ def get_connection() -> Generator[Database[Mapping[str, Any] | Any], Any, None]:
     )
     client = MongoClient(mongo_uri)
     try:
-        yield client[dotenv_values('.env')['MONGO_DB']]
+        yield client[dotenv_values(".env")["MONGO_DB"]]
     finally:
         client.close()

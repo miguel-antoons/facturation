@@ -2,7 +2,6 @@ import jaydebeapi
 
 from src.database import access
 
-
 if __name__ == "__main__":
     while (query := input("Enter sql query (or 'exit' to quit): ")) != "exit":
         try:

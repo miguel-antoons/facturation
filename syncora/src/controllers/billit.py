@@ -1,17 +1,21 @@
 import base64
-from typing import Callable, Any
+from typing import TYPE_CHECKING, Any
 
 import requests
 from dotenv import dotenv_values
 from flask import jsonify
 from requests import Response
 
-from constants.all import ResponseMessage, RESPONSE_ERROR, RESPONSE_SUCCESS
-from constants.customer_back import CustomerBack
-from constants.order_back import OrderBack, _OrderLineBack
+from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
 from constants.order_billit import BillitPDF, OrderBillit
-from constants.order_pdf import PDF, OrderPDF, CustomerPDF, OrderLinePDF
+from constants.order_pdf import PDF, CustomerPDF, OrderLinePDF, OrderPDF
 from pdf.static_data import comments
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from constants.customer_back import CustomerBack
+    from constants.order_back import OrderBack, _OrderLineBack
 
 
 def format_dyn_data(
@@ -36,12 +40,16 @@ def format_dyn_data(
             TotalVAT=number_formatter(order_data.total_vat),
             TotalIncl=number_formatter(order_data.total_incl),
             Comments="",
-            LegalInfo=comments[customer_data.language.upper()][order_data.ventilationCode],
+            LegalInfo=comments[customer_data.language.upper()][
+                order_data.ventilationCode
+            ],
             OGM=order_data.ogm,
         ),
         Customer=CustomerPDF(
             OfficialCompanyName=customer_data.company or "",
-            ContactFullName=f"{customer_data.name or ''} {customer_data.surname or ''}".strip(),
+            ContactFullName=(
+                f"{customer_data.name or ''} {customer_data.surname or ''}".strip()
+            ),
             Salutation=customer_data.salutation,
             StreetAndNumber=f"{customer_data.street} {customer_data.number}".strip(),
             ZipCode=customer_data.postal_code,
@@ -71,23 +79,33 @@ def get_headers() -> dict[str, str]:
 def delete_order(order_id: int) -> ResponseMessage | None:
     url = f"{dotenv_values(".env")["URL"]}/orders/{order_id}"
     headers = get_headers()
-    response = requests.delete(url, headers=headers)
-    if response.content != b'true':
+    response = requests.delete(url, headers=headers)  # noqa: S113
+    if response.content != b"true":
         print(response.text)
-    return None if response.content == b'true' else ResponseMessage(status=RESPONSE_ERROR, message=response.text)
+    return (
+        None
+        if response.content == b"true"
+        else ResponseMessage(status=RESPONSE_ERROR, message=response.text)
+    )
 
 
-def send_peppol(order_id: int):
+def send_peppol(order_id: int) -> Response:
     url = f"{dotenv_values('.env')['URL']}/orders/commands/send"
     headers = get_headers()
     payload = {
         "OrderIDs": [order_id],
         "SendMethod": "Peppol",
     }
-    return requests.post(url, headers=headers, json=payload)
+    return requests.post(url, headers=headers, json=payload)  # noqa: S113
 
 
-def send_billit(order_data: OrderBack, pdf_bytes: bytes, customer_data: CustomerBack, *, callback: Callable[[Response], Any]):
+def send_billit(
+    order_data: OrderBack,
+    pdf_bytes: bytes,
+    customer_data: CustomerBack,
+    *,
+    callback: Callable[[Response], Any],
+) -> Response:
     raw_data = order_data.model_dump()
     raw_data["Customer"] = customer_data.model_dump()
     base64_pdf = base64.b64encode(pdf_bytes)
@@ -99,14 +117,12 @@ def send_billit(order_data: OrderBack, pdf_bytes: bytes, customer_data: Customer
 
     headers = get_headers()
     url = f"{dotenv_values(".env")['URL']}/orders"
-    response = requests.post(url, headers=headers, json=payload.model_dump())
+    response = requests.post(  # noqa: S113
+        url, headers=headers, json=payload.model_dump()
+    )
 
     if response.status_code in [200, 201]:
         callback(response)
-        return ResponseMessage(status=RESPONSE_SUCCESS)
-    else:
-        print(response.text)
-        return jsonify(ResponseMessage(
-            status=RESPONSE_ERROR,
-            message=response.json()
-        ))
+        return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
+    print(response.text)
+    return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))

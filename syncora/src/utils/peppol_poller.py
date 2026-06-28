@@ -1,21 +1,33 @@
 import asyncio
 import threading
-from collections.abc import Callable
+from typing import TYPE_CHECKING, Self
 
 import requests
 from dotenv import dotenv_values
 from requests import Response
 
-from constants.order_back import PEPPOL_DELIVERY_STATUS_SENT, PEPPOL_DELIVERY_STATUS_PENDING
+from constants.order_back import (
+    PEPPOL_DELIVERY_STATUS_PENDING,
+    PEPPOL_DELIVERY_STATUS_SENT,
+)
 from controllers.billit import get_headers
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class PeppolStatusPoller:
 
     _instance = None
 
-    def __init__(self, callback: Callable[[int, int], bool], poll_interval: float = 5.0, max_errors: int = 5, timeout: float = 3600.0):
-        if hasattr(self, '_initialized'):
+    def __init__(
+        self,
+        callback: Callable[[int, int], bool],
+        poll_interval: float = 5.0,
+        max_errors: int = 5,
+        timeout: float = 3600.0,
+    ) -> None:
+        if hasattr(self, "_initialized"):
             return
         self._callback = callback
         self._poll_interval = poll_interval
@@ -23,7 +35,7 @@ class PeppolStatusPoller:
         self._timeout = timeout
         self._base_url = f"{dotenv_values('.env')['URL']}/orders/"
         self._headers = get_headers()
-        self._current_tasks = set()
+        self._current_tasks: set[int] = set()
         self._initialized = True
 
     def __new__(
@@ -32,13 +44,13 @@ class PeppolStatusPoller:
         *,
         poll_interval: float = 5.0,
         max_errors: int = 5,
-        timeout: float = 3600.0
-    ):
+        timeout: float = 3600.0,
+    ) -> Self:
         if cls._instance is None:
-            cls._instance = super(PeppolStatusPoller, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __call__(self, order_id: int):
+    def __call__(self, order_id: int) -> None:
         if order_id not in self._current_tasks:
             self._current_tasks.add(order_id)
             thread = threading.Thread(
@@ -62,7 +74,7 @@ class PeppolStatusPoller:
             and (asyncio.get_running_loop().time() - start_time) < self._timeout
             and no_errors < self._max_errors
         ):
-            response: Response = requests.get(url, headers=headers)
+            response: Response = requests.get(url, headers=headers, timeout=20)
             if response.status_code not in [200, 201]:
                 print(response.text)
                 no_errors += 1
@@ -70,11 +82,18 @@ class PeppolStatusPoller:
             else:
                 no_errors = no_errors - 1 if no_errors > 0 else 0
                 order_data = response.json()
-                if order_data.get("CurrentDocumentDeliveryDetails").get("IsDocumentDelivered"):
+                if order_data.get("CurrentDocumentDeliveryDetails").get(
+                    "IsDocumentDelivered"
+                ):
                     peppol_delivered = True
                     self._callback(order_id, PEPPOL_DELIVERY_STATUS_SENT)
-                elif order_data.get("CurrentDocumentDeliveryDetails").get(
-                        "DocumentDeliveryStatus") == "Pending" and not peppol_pending:
+                elif (
+                    order_data.get("CurrentDocumentDeliveryDetails").get(
+                        "DocumentDeliveryStatus"
+                    )
+                    == "Pending"
+                    and not peppol_pending
+                ):
                     peppol_pending = True
                     self._callback(order_id, PEPPOL_DELIVERY_STATUS_PENDING)
                 else:

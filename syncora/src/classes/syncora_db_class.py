@@ -4,23 +4,23 @@ from typing import Any
 class SyncoraDBClass:
 
     @staticmethod
-    def get_one(item_id: Any):
+    def get_one(item_id: Any) -> Any:  # noqa: ANN401
         raise NotImplementedError
 
     @staticmethod
-    def get(*args, **kwargs):
+    def get(*args: list, **kwargs: dict) -> Any:  # noqa: ANN401
         raise NotImplementedError
 
     @staticmethod
-    def create(item: Any):
+    def create(item: Any) -> Any:  # noqa: ANN401
         raise NotImplementedError
 
     @staticmethod
-    def update(item_id: Any, item: Any):
+    def update(item_id: Any, item: Any) -> Any:  # noqa: ANN401
         raise NotImplementedError
 
     @staticmethod
-    def delete(item_id: Any):
+    def delete(item_id: Any) -> Any:  # noqa: ANN401
         raise NotImplementedError
 
     @staticmethod
@@ -28,5 +28,5 @@ class SyncoraDBClass:
         raise NotImplementedError
 
     @staticmethod
-    def size():
+    def size() -> int:
         raise NotImplementedError

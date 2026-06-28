@@ -1,4 +1,5 @@
 from flask import Flask
+
 from routes import blueprints
 
 
@@ -10,7 +11,8 @@ def create_app() -> Flask:
 
     return fapp
 
+
 app = create_app()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
