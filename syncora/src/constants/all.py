@@ -90,5 +90,5 @@ class SyncoraModel(BaseModel, ABC):
         pass
 
     @abstractmethod
-    def to_front(self) -> str:
+    def to_front(self) -> str | dict:
         pass

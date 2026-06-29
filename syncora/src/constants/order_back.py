@@ -216,7 +216,7 @@ class OrderBack(SyncoraModel):
             exclude_unset=True, exclude_computed_fields=True, exclude={"orderId"}
         )
 
-    def to_front(self) -> str:
+    def to_front(self) -> dict[str, Any]:  # noqa: ANN401
         return self.model_dump(
             exclude={
                 "orderId": True,

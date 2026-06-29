@@ -1,5 +1,3 @@
-from flask import Response, jsonify
-
 import controllers.bill_gen as pdf
 from constants.all import (
     RESPONSE_ERROR,
@@ -26,18 +24,16 @@ from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller
 
 
-def create_bill(json: OrderFront, db_id: str = "") -> Response:
+def create_bill(json: OrderFront, db_id: str = "") -> ResponseMessage:
     bill = OrderBack.model_validate(json, by_name=True)
     # Check for duplicate order numbers
     if BillModel.contains(bill.orderNumber):
-        return jsonify(
-            ResponseMessage(
-                status=RESPONSE_ERROR,
-                message=(
-                    f"Une facture avec le numéro {json.get('orderNumber')} "
-                    "existe déjà. Veuillez choisir un numéro de facture unique."
-                ),
-            )
+        return ResponseMessage(
+            status=RESPONSE_ERROR,
+            message=(
+                f"Une facture avec le numéro {json.get('orderNumber')} "
+                "existe déjà. Veuillez choisir un numéro de facture unique."
+            ),
         )
 
     if not db_id:
@@ -45,37 +41,32 @@ def create_bill(json: OrderFront, db_id: str = "") -> Response:
     else:
         order_data = BillModel.get_one(db_id)
         if order_data.locked:
-            return jsonify(
-                ResponseMessage(
-                    status=RESPONSE_WARNING,
-                    message=(
-                        f"Facture avec l'ID {order_data.orderNumber} a déjà été "
-                        "envoyée à Billit et est verrouillée."
-                    ),
-                )
+            return ResponseMessage(
+                status=RESPONSE_WARNING,
+                message=(
+                    f"Facture avec l'ID {order_data.orderNumber} a déjà été "
+                    "envoyée à Billit et est verrouillée."
+                ),
             )
         _ = BillModel.update(db_id, bill)
 
-    return jsonify(
-        ResponseMessage(
-            status=RESPONSE_SUCCESS,
-            id=db_id,
-        )
+    return ResponseMessage(
+        status=RESPONSE_SUCCESS,
+        id=db_id,
     )
 
 
-def get_bill(bill_id: str) -> Response:
+def get_bill(bill_id: str) -> dict:
     order_back = BillModel.get_one(bill_id)
     if (
         order_back.peppolDeliveryStatus == PEPPOL_DELIVERY_STATUS_PENDING
         or order_back.peppolDeliveryStatus == PEPPOL_DELIVERY_STATUS_UNKNOWN
     ):
         PeppolStatusPoller(BillModel.set_peppol_status)(order_back.externalId)
-    print(order_back.to_front())
-    return jsonify(order_back.to_front())
+    return order_back.to_front()
 
 
-def get_bills() -> Response:
+def get_bills() -> list[OrderFrontShort]:
     bills = BillModel.get()
     customers = CustomerModel.get(
         [CUSTOMER_DB_NAME, CUSTOMER_DB_FIRSTNAME, CUSTOMER_DB_COMPANY], by_id=True
@@ -99,33 +90,29 @@ def get_bills() -> Response:
                 orderTitle=bill.orderTitle,
             )
         )
-    return jsonify(bills_front)
+    return bills_front
 
 
-def update_bill(bill_id: str, json: OrderFront) -> Response:
+def update_bill(bill_id: str, json: OrderFront) -> ResponseMessage:
     return create_bill(json, db_id=bill_id)
 
 
-def delete_bill(bill_id: str) -> Response:
+def delete_bill(bill_id: str) -> ResponseMessage:
     order_data = BillModel.get_one(bill_id)
     if order_data.undeletable:
-        return jsonify(
-            ResponseMessage(
-                status=RESPONSE_WARNING,
-                message=(
-                    f"Facture avec l'ID {bill_id} a déjà été envoyée à Peppol "
-                    "et ne peut pas être supprimée."
-                ),
-            )
+        return ResponseMessage(
+            status=RESPONSE_WARNING,
+            message=(
+                f"Facture avec l'ID {bill_id} a déjà été envoyée à Peppol "
+                "et ne peut pas être supprimée."
+            ),
         )
     if order_data.externalId and (res := billit.delete_order(order_data.externalId)):
-        return jsonify(res)
+        return res
     bill_deleted = BillModel.delete(bill_id)
     if not bill_deleted:
         print("ERROR: Bill not deleted from local DB")
-    return jsonify(
-        ResponseMessage(status=RESPONSE_SUCCESS if bill_deleted else RESPONSE_ERROR)
-    )
+    return ResponseMessage(status=RESPONSE_SUCCESS if bill_deleted else RESPONSE_ERROR)
 
 
 def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
@@ -161,19 +148,19 @@ def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
     )
 
 
-def send_bill_peppol(bill_id: str) -> Response:
+def send_bill_peppol(bill_id: str) -> ResponseMessage:
     order_data: OrderBack = BillModel.get_one(bill_id)
     if res := pre_peppol_checks(order_data):
-        return jsonify(res)
+        return res
     response = send_peppol(order_data.externalId)
     if response.status_code in [200, 201]:
         BillModel.set_peppol_status(
             order_data.externalId, PEPPOL_DELIVERY_STATUS_UNKNOWN
         )
         PeppolStatusPoller(BillModel.set_peppol_status)(order_data.externalId)
-        return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
+        return ResponseMessage(status=RESPONSE_SUCCESS)
     print(response.text)
-    return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))
+    return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
 
 
 def pre_billit_checks(order_data: OrderBack) -> ResponseMessage | None:  # noqa: C901
@@ -247,11 +234,11 @@ def pre_billit_checks(order_data: OrderBack) -> ResponseMessage | None:  # noqa:
     )
 
 
-def send_bill_billit(bill_id: str) -> Response:
+def send_bill_billit(bill_id: str) -> ResponseMessage:
     order_data = BillModel.get_one(bill_id)
 
     if res := pre_billit_checks(order_data):
-        return jsonify(res)
+        return res
 
     customer_data = CustomerModel.get_one(order_data.customerId)
 

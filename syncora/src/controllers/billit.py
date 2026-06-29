@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 from dotenv import dotenv_values
-from flask import jsonify
 from requests import Response
 
 from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
@@ -105,7 +104,7 @@ def send_billit(
     customer_data: CustomerBack,
     *,
     callback: Callable[[Response], Any],
-) -> Response:
+) -> ResponseMessage:
     raw_data = order_data.model_dump()
     raw_data["Customer"] = customer_data.model_dump()
     base64_pdf = base64.b64encode(pdf_bytes)
@@ -123,6 +122,6 @@ def send_billit(
 
     if response.status_code in [200, 201]:
         callback(response)
-        return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
+        return ResponseMessage(status=RESPONSE_SUCCESS)
     print(response.text)
-    return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))
+    return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
