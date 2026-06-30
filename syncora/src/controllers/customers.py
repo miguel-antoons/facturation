@@ -1,4 +1,3 @@
-import re
 from typing import Any
 
 from constants.all import RESPONSE_SUCCESS, ResponseMessage
@@ -86,64 +85,3 @@ def delete_customer(customer_id: int) -> ResponseMessage:
         id=customer_id,
         status=RESPONSE_SUCCESS,
     )
-
-
-def detect_phones(comment: str | None) -> list[str]:
-    if comment is None:
-        return []
-
-    patterns = [
-        r"\+\d{10}",
-        r"0\d{8}",
-        r"0\d{2}/\d{2} \d{2} \d{2}",
-        r"0\d{2}/\d{2},\d{2},\d{2}",
-        r"0\d{1}/\d{3} \d{2} \d{2}",
-        r"0\d{1}/\d{3},\d{2},\d{2}",
-    ]
-    phone_numbers = []
-
-    for pattern in patterns:
-        phone_numbers.extend(re.findall(pattern, comment))
-
-    cleaned_phone_numbers = []
-    for number in phone_numbers:
-        cleaned_phone_numbers.append(re.sub(r"[^\d+]", "", number))
-
-    return cleaned_phone_numbers
-
-
-def detect_mobiles(comment: str | None) -> list[str]:
-    if comment is None:
-        return []
-
-    patterns = [
-        r"\+\d{11}",
-        r"0\d{9}",
-        r"0\d{3}/\d{2} \d{2} \d{2}",
-        r"0\d{3}/\d{2},\d{2},\d{2}",
-    ]
-    mobile_numbers = []
-
-    for pattern in patterns:
-        mobile_numbers.extend(re.findall(pattern, comment))
-
-    cleaned_mobile_numbers = []
-    for number in mobile_numbers:
-        cleaned_mobile_numbers.append(re.sub(r"[^\d+]", "", number))
-
-    return cleaned_mobile_numbers
-
-
-def detect_emails(comment: str | None) -> list[str]:
-    if comment is None:
-        return []
-
-    pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-    return re.findall(pattern, comment)
-
-
-def is_old_db_comment(comment: str | None) -> bool:
-    if comment is None:
-        return True
-
-    return not (comment.startswith("##") and comment.endswith("##"))
