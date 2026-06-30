@@ -1,5 +1,3 @@
-from flask import Response, jsonify
-
 import controllers.cnote_gen as pdf
 from constants.all import (
     RESPONSE_ERROR,
@@ -28,18 +26,16 @@ from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller
 
 
-def create_cnote(json: OrderFront, db_id: str = "") -> Response:
+def create_cnote(json: OrderFront, db_id: str = "") -> ResponseMessage:
     cnote = OrderBack.model_validate(json)
     # Check for duplicate order numbers
     if CnoteModel.contains(cnote.orderNumber):
-        return jsonify(
-            ResponseMessage(
-                status=RESPONSE_ERROR,
-                message=(
-                    f"Une note de crédit avec le numéro {json.get('orderNumber')} "
-                    "existe déjà. Veuillez choisir un numéro de facture unique."
-                ),
-            )
+        return ResponseMessage(
+            status=RESPONSE_ERROR,
+            message=(
+                f"Une note de crédit avec le numéro {json.get('orderNumber')} "
+                "existe déjà. Veuillez choisir un numéro de facture unique."
+            ),
         )
 
     if not db_id:
@@ -47,26 +43,22 @@ def create_cnote(json: OrderFront, db_id: str = "") -> Response:
     else:
         order_data = CnoteModel.get_one(db_id)
         if order_data.locked:
-            return jsonify(
-                ResponseMessage(
-                    status=RESPONSE_WARNING,
-                    message=(
-                        f"Note de crédit avec l'ID {order_data.orderNumber} a déjà été "
-                        "envoyée à Billit et est verrouillée."
-                    ),
-                )
+            return ResponseMessage(
+                status=RESPONSE_WARNING,
+                message=(
+                    f"Note de crédit avec l'ID {order_data.orderNumber} a déjà été "
+                    "envoyée à Billit et est verrouillée."
+                ),
             )
         _ = CnoteModel.update(db_id, cnote)
 
-    return jsonify(
-        ResponseMessage(
-            status=RESPONSE_SUCCESS,
-            id=db_id,
-        )
+    return ResponseMessage(
+        status=RESPONSE_SUCCESS,
+        id=db_id,
     )
 
 
-def get_cnote(cnote_id: str) -> Response:
+def get_cnote(cnote_id: str) -> dict:
     order_back = CnoteModel.get_one(cnote_id)
     if (
         order_back.peppolDeliveryStatus == PEPPOL_DELIVERY_STATUS_PENDING
@@ -74,10 +66,10 @@ def get_cnote(cnote_id: str) -> Response:
     ):
         PeppolStatusPoller(CnoteModel.set_peppol_status)(order_back.externalId)
 
-    return jsonify(order_back.to_front())
+    return order_back.to_front()
 
 
-def get_cnotes() -> Response:
+def get_cnotes() -> list[OrderFrontShort]:
     cnotes = CnoteModel.get()
     customers = CustomerModel.get(
         [
@@ -106,33 +98,29 @@ def get_cnotes() -> Response:
                 orderTitle=cnote.orderTitle,
             )
         )
-    return jsonify(cnotes_front)
+    return cnotes_front
 
 
-def update_cnote(cnote_id: str, json: OrderFront) -> Response:
+def update_cnote(cnote_id: str, json: OrderFront) -> ResponseMessage:
     return create_cnote(json, db_id=cnote_id)
 
 
-def delete_cnote(cnote_id: str) -> Response:
+def delete_cnote(cnote_id: str) -> ResponseMessage:
     order_data = CnoteModel.get_one(cnote_id)
     if order_data.undeletable:
-        return jsonify(
-            ResponseMessage(
-                status=RESPONSE_WARNING,
-                message=(
-                    f"Note de crédit avec l'ID {order_data.orderNumber} a déjà été "
-                    "envoyée à Billit et est verrouillée."
-                ),
-            )
+        return ResponseMessage(
+            status=RESPONSE_WARNING,
+            message=(
+                f"Note de crédit avec l'ID {order_data.orderNumber} a déjà été "
+                "envoyée à Billit et est verrouillée."
+            ),
         )
     if order_data.externalId and (res := billit.delete_order(order_data.externalId)):
-        return jsonify(res)
+        return res
     cnote_deleted = CnoteModel.delete(cnote_id)
     if not cnote_deleted:
         print("ERROR: Credit note not deleted from local DB")
-    return jsonify(
-        ResponseMessage(status=RESPONSE_SUCCESS if cnote_deleted else RESPONSE_ERROR)
-    )
+    return ResponseMessage(status=RESPONSE_SUCCESS if cnote_deleted else RESPONSE_ERROR)
 
 
 def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
@@ -179,19 +167,19 @@ def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
     )
 
 
-def send_cnote_peppol(cnote_id: str) -> Response:
+def send_cnote_peppol(cnote_id: str) -> ResponseMessage:
     order_data: OrderBack = CnoteModel.get_one(cnote_id)
     if res := pre_peppol_checks(order_data):
-        return jsonify(res)
+        return res
     response = send_peppol(order_data.externalId)
     if response.status_code in [200, 201]:
         CnoteModel.set_peppol_status(
             order_data.externalId, PEPPOL_DELIVERY_STATUS_UNKNOWN
         )
         PeppolStatusPoller(CnoteModel.set_peppol_status)(order_data.externalId)
-        return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
+        return ResponseMessage(status=RESPONSE_SUCCESS)
     print(response.text)
-    return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))
+    return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
 
 
 def pre_billit_checks(order_data: OrderBack) -> ResponseMessage | None:  # noqa: C901
@@ -280,11 +268,11 @@ def pre_billit_checks(order_data: OrderBack) -> ResponseMessage | None:  # noqa:
     )
 
 
-def send_cnote_billit(bill_id: str) -> Response:
+def send_cnote_billit(bill_id: str) -> ResponseMessage:
     order_data = CnoteModel.get_one(bill_id)
 
     if res := pre_billit_checks(order_data):
-        return jsonify(res)
+        return res
 
     customer_data = CustomerModel.get_one(order_data.customerId)
 
