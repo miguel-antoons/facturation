@@ -108,8 +108,8 @@ class CustomerBack(SyncoraModel):
 
         return fields, values
 
-    def to_front(self) -> str:
-        return self.model_dump_json(
+    def to_front(self) -> dict[str, Any]:
+        return self.model_dump(
             exclude_defaults=True,
             exclude_unset=True,
             exclude={

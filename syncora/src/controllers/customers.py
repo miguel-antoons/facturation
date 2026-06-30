@@ -1,7 +1,5 @@
 import re
-from typing import TYPE_CHECKING
-
-from flask import jsonify
+from typing import Any
 
 from constants.all import RESPONSE_SUCCESS, ResponseMessage
 from constants.customer_back import (
@@ -19,11 +17,8 @@ from constants.customer_back import (
 from models.customers import CustomerModel
 from utils.generic_error import SyncoraError
 
-if TYPE_CHECKING:
-    from flask.wrappers import Response
 
-
-def get_customers() -> Response:
+def get_customers() -> list[dict[str, Any]]:
     customers: list[CustomerBack] = CustomerModel.get(
         [
             CUSTOMER_DB_ID,
@@ -55,45 +50,42 @@ def get_customers() -> Response:
                 },
             )
         )
-    return jsonify(formatted)
+    return formatted
 
 
-def get_customer(customer_id: int) -> str:
+def get_customer(customer_id: int) -> dict[str, Any]:
     customer = CustomerModel.get_one(customer_id)
     return customer.to_front()
 
 
-def create_customer(json: CustomerFront) -> Response:
+def create_customer(json: CustomerFront) -> ResponseMessage:
     new_customer = CustomerBack.model_validate(json, by_name=True)
     if not new_customer.name and not new_customer.surname and not new_customer.company:
         raise SyncoraError(
             "Missing required fields: name, surname, or company is required.", 1000
         )
-    response = ResponseMessage(
+    return ResponseMessage(
         id=CustomerModel.create(new_customer),
         status=RESPONSE_SUCCESS,
     )
-    return jsonify(response)
 
 
-def update_customer(customer_id: int, json: CustomerFront) -> Response:
+def update_customer(customer_id: int, json: CustomerFront) -> ResponseMessage:
     json["id"] = customer_id
     updated_customer = CustomerBack.model_validate(json, by_name=True)
     CustomerModel.update(customer_id, updated_customer)
-    response = ResponseMessage(
+    return ResponseMessage(
         id=customer_id,
         status=RESPONSE_SUCCESS,
     )
-    return jsonify(response)
 
 
-def delete_customer(customer_id: int) -> Response:
+def delete_customer(customer_id: int) -> ResponseMessage:
     CustomerModel.delete(customer_id)
-    response = ResponseMessage(
+    return ResponseMessage(
         id=customer_id,
         status=RESPONSE_SUCCESS,
     )
-    return jsonify(response)
 
 
 def detect_phones(comment: str | None) -> list[str]:
