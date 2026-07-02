@@ -1,5 +1,4 @@
 import base64
-import logging
 from typing import TYPE_CHECKING, Any
 
 import requests
@@ -7,12 +6,11 @@ from dotenv import dotenv_values
 from flask import jsonify
 from requests import Response
 
+from app import extra
 from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
 from constants.order_billit import BillitPDF, OrderBillit
 from constants.order_pdf import PDF, CustomerPDF, OrderLinePDF, OrderPDF
 from pdf.static_data import comments
-
-extra = logging.getLogger("extra")
 
 if TYPE_CHECKING:
     from collections.abc import Callable

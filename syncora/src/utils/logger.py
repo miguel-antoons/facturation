@@ -2,8 +2,7 @@ from logging.config import dictConfig
 
 FMT = "[%(asctime)s]  %(levelname)s : %(module)s | %(message)s"
 
-# for adding a logger in a file import logging and
-# the logger extra = logging.getLogger("extra")
+# for adding a logger in a file import logging and from app import extra
 # then you can use the 5 differents type of log : debug, info, warning, error, critical
 
 

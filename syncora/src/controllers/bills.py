@@ -1,8 +1,7 @@
-import logging
-
 from flask import Response, jsonify
 
 import controllers.bill_gen as pdf
+from app import extra
 from constants.all import (
     RESPONSE_ERROR,
     RESPONSE_SUCCESS,
@@ -26,8 +25,6 @@ from controllers.billit import send_billit, send_peppol
 from models.bills import BillModel
 from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller
-
-extra = logging.getLogger("extra")
 
 
 def create_bill(json: OrderFront, db_id: str = "") -> Response:

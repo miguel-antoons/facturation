@@ -1,8 +1,7 @@
-import logging
-
 from flask import Response, jsonify
 
 import controllers.cnote_gen as pdf
+from app import extra
 from constants.all import (
     RESPONSE_ERROR,
     RESPONSE_SUCCESS,
@@ -28,9 +27,6 @@ from models.bills import BillModel
 from models.cnotes import CnoteModel
 from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller
-
-extra = logging.getLogger("extra")
-extra.info("TEST HERE ------------------- HERE TEST")
 
 
 def create_cnote(json: OrderFront, db_id: str = "") -> Response:

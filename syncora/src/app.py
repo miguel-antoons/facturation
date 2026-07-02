@@ -1,9 +1,12 @@
+import logging
+
 from flask import Flask
 
 from routes import blueprints
 from utils.logger import setup_logging
 
 setup_logging()
+extra = logging.getLogger("extra")
 
 
 def create_app() -> Flask:
