@@ -1,3 +1,5 @@
+import logging
+
 from flask import Response, jsonify
 
 import controllers.cnote_gen as pdf
@@ -26,6 +28,9 @@ from models.bills import BillModel
 from models.cnotes import CnoteModel
 from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller
+
+extra = logging.getLogger("extra")
+extra.info("TEST HERE ------------------- HERE TEST")
 
 
 def create_cnote(json: OrderFront, db_id: str = "") -> Response:
@@ -129,7 +134,7 @@ def delete_cnote(cnote_id: str) -> Response:
         return jsonify(res)
     cnote_deleted = CnoteModel.delete(cnote_id)
     if not cnote_deleted:
-        print("ERROR: Credit note not deleted from local DB")
+        extra.error("Credit note not deleted from local DB")
     return jsonify(
         ResponseMessage(status=RESPONSE_SUCCESS if cnote_deleted else RESPONSE_ERROR)
     )
@@ -190,7 +195,7 @@ def send_cnote_peppol(cnote_id: str) -> Response:
         )
         PeppolStatusPoller(CnoteModel.set_peppol_status)(order_data.externalId)
         return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
-    print(response.text)
+    extra.error(response.text)  # logger.error ?
     return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))
 
 

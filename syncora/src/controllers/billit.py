@@ -1,4 +1,5 @@
 import base64
+import logging
 from typing import TYPE_CHECKING, Any
 
 import requests
@@ -10,6 +11,8 @@ from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
 from constants.order_billit import BillitPDF, OrderBillit
 from constants.order_pdf import PDF, CustomerPDF, OrderLinePDF, OrderPDF
 from pdf.static_data import comments
+
+extra = logging.getLogger("extra")
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -81,7 +84,7 @@ def delete_order(order_id: int) -> ResponseMessage | None:
     headers = get_headers()
     response = requests.delete(url, headers=headers)  # noqa: S113
     if response.content != b"true":
-        print(response.text)
+        extra.error(response.text)
     return (
         None
         if response.content == b"true"
@@ -124,5 +127,5 @@ def send_billit(
     if response.status_code in [200, 201]:
         callback(response)
         return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
-    print(response.text)
+    extra.error(response.text)
     return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))

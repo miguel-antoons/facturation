@@ -1,3 +1,5 @@
+import logging
+
 from flask import Response, jsonify
 
 import controllers.bill_gen as pdf
@@ -24,6 +26,8 @@ from controllers.billit import send_billit, send_peppol
 from models.bills import BillModel
 from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller
+
+extra = logging.getLogger("extra")
 
 
 def create_bill(json: OrderFront, db_id: str = "") -> Response:
@@ -71,7 +75,7 @@ def get_bill(bill_id: str) -> Response:
         or order_back.peppolDeliveryStatus == PEPPOL_DELIVERY_STATUS_UNKNOWN
     ):
         PeppolStatusPoller(BillModel.set_peppol_status)(order_back.externalId)
-    print(order_back.to_front())
+    extra.info(order_back.to_front())  # logger.info ?
     return jsonify(order_back.to_front())
 
 
@@ -122,7 +126,7 @@ def delete_bill(bill_id: str) -> Response:
         return jsonify(res)
     bill_deleted = BillModel.delete(bill_id)
     if not bill_deleted:
-        print("ERROR: Bill not deleted from local DB")
+        extra.error("Bill not deleted from local DB")
     return jsonify(
         ResponseMessage(status=RESPONSE_SUCCESS if bill_deleted else RESPONSE_ERROR)
     )
@@ -172,7 +176,7 @@ def send_bill_peppol(bill_id: str) -> Response:
         )
         PeppolStatusPoller(BillModel.set_peppol_status)(order_data.externalId)
         return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
-    print(response.text)
+    extra.error(response.text)  # logger.error ?
     return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))
 
 
