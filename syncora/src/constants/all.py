@@ -23,11 +23,20 @@ class ResponseMessage(TypedDict):
 
 
 class Undefined:
+    """Sentinel marking a field that was never provided (distinct from ``None``).
+
+    The backend relies on this distinction -- e.g. ``is_cnote`` checks whether
+    ``aboutInvoiceNumber`` is an ``Undefined`` value, and ``SyncoraModel``
+    serialization drops ``Undefined``-valued fields from its output. It is a
+    singleton so identity comparisons (``is``) and ``__eq__`` agree, and it is
+    falsy so ``if not value`` treats "not provided" like emptiness.
+    """
+
     _instance = None
 
-    def __new__(cls, *args: list, **kwargs: dict) -> Self:
-        if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
+    def __new__(cls) -> Self:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     @classmethod

@@ -26,27 +26,34 @@ from utils.peppol_poller import PeppolStatusPoller
 
 def create_bill(json: OrderFront, db_id: str = "") -> ResponseMessage:
     bill = OrderBack.model_validate(json, by_name=True)
-    # Check for duplicate order numbers
-    if BillModel.contains(bill.orderNumber):
-        return ResponseMessage(
-            status=RESPONSE_ERROR,
-            message=(
-                f"Une facture avec le numéro {json.get('orderNumber')} "
-                "existe déjà. Veuillez choisir un numéro de facture unique."
-            ),
+    existing = BillModel.get_one(db_id) if db_id else None
+
+    # Reject a duplicate order number, unless it belongs to the bill being edited.
+    if BillModel.contains(bill.orderNumber) and (
+        existing is None or existing.orderNumber != bill.orderNumber
+    ):
+        return jsonify(
+            ResponseMessage(
+                status=RESPONSE_ERROR,
+                message=(
+                    f"Une facture avec le numéro {json.get('orderNumber')} "
+                    "existe déjà. Veuillez choisir un numéro de facture unique."
+                ),
+            )
         )
 
     if not db_id:
         db_id = BillModel.create(bill)
     else:
-        order_data = BillModel.get_one(db_id)
-        if order_data.locked:
-            return ResponseMessage(
-                status=RESPONSE_WARNING,
-                message=(
-                    f"Facture avec l'ID {order_data.orderNumber} a déjà été "
-                    "envoyée à Billit et est verrouillée."
-                ),
+        if existing.locked:
+            return jsonify(
+                ResponseMessage(
+                    status=RESPONSE_WARNING,
+                    message=(
+                        f"Facture avec l'ID {existing.orderNumber} a déjà été "
+                        "envoyée à Billit et est verrouillée."
+                    ),
+                )
             )
         _ = BillModel.update(db_id, bill)
 

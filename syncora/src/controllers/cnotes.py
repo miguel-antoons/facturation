@@ -28,27 +28,35 @@ from utils.peppol_poller import PeppolStatusPoller
 
 def create_cnote(json: OrderFront, db_id: str = "") -> ResponseMessage:
     cnote = OrderBack.model_validate(json)
-    # Check for duplicate order numbers
-    if CnoteModel.contains(cnote.orderNumber):
-        return ResponseMessage(
-            status=RESPONSE_ERROR,
-            message=(
-                f"Une note de crédit avec le numéro {json.get('orderNumber')} "
-                "existe déjà. Veuillez choisir un numéro de facture unique."
-            ),
+    existing = CnoteModel.get_one(db_id) if db_id else None
+
+    # Reject a duplicate order number, unless it belongs to the credit note
+    # being edited.
+    if CnoteModel.contains(cnote.orderNumber) and (
+        existing is None or existing.orderNumber != cnote.orderNumber
+    ):
+        return jsonify(
+            ResponseMessage(
+                status=RESPONSE_ERROR,
+                message=(
+                    f"Une note de crédit avec le numéro {json.get('orderNumber')} "
+                    "existe déjà. Veuillez choisir un numéro de facture unique."
+                ),
+            )
         )
 
     if not db_id:
         db_id = CnoteModel.create(cnote)
     else:
-        order_data = CnoteModel.get_one(db_id)
-        if order_data.locked:
-            return ResponseMessage(
-                status=RESPONSE_WARNING,
-                message=(
-                    f"Note de crédit avec l'ID {order_data.orderNumber} a déjà été "
-                    "envoyée à Billit et est verrouillée."
-                ),
+        if existing.locked:
+            return jsonify(
+                ResponseMessage(
+                    status=RESPONSE_WARNING,
+                    message=(
+                        f"Note de crédit avec l'ID {existing.orderNumber} a déjà été "
+                        "envoyée à Billit et est verrouillée."
+                    ),
+                )
             )
         _ = CnoteModel.update(db_id, cnote)
 

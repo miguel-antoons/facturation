@@ -1,11 +1,9 @@
-from typing import TYPE_CHECKING, TypedDict
+from typing import TypedDict
 
 from pydantic import BaseModel, Field, computed_field, field_validator
 
+from constants.customer_billit import CustomerBillit  # noqa: TC001
 from utils.generic_error import Severity, SyncoraError
-
-if TYPE_CHECKING:
-    from constants.customer_billit import CustomerBillit
 
 ORDER_TYPE_INVOICE = "Invoice"
 ORDER_TYPE_CREDIT_NOTE = "CreditNote"

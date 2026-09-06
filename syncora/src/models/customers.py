@@ -1,6 +1,5 @@
 from typing import Any
 
-import database.access as access
 from classes.syncora_db_class import SyncoraDBClass
 from constants.customer_back import (
     CUSTOMER_DB_ADDRESS,
@@ -17,6 +16,7 @@ from constants.customer_back import (
     CUSTOMER_DB_VAT_NUMBER,
     CustomerBack,
 )
+from database import access
 
 
 class CustomerModel(SyncoraDBClass):
@@ -117,3 +117,8 @@ class CustomerModel(SyncoraDBClass):
         )
 
         return result is not None and len(result) > 0
+
+    @staticmethod
+    def delete(customer_id: int) -> None:
+        query = f"DELETE FROM Client WHERE {CUSTOMER_DB_ID} = ?"  # noqa: S608
+        access.get_connection().execute_query(query, (customer_id,))

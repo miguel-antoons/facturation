@@ -93,7 +93,7 @@ def send_peppol(order_id: int) -> Response:
     headers = get_headers()
     payload = {
         "OrderIDs": [order_id],
-        "SendMethod": "Peppol",
+        "Transporttype": "Peppol",
     }
     return requests.post(url, headers=headers, json=payload)  # noqa: S113
 

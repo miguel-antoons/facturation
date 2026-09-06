@@ -1,3 +1,4 @@
+import json
 import re
 from typing import Annotated, Any, NotRequired, ReadOnly, TypedDict
 
@@ -108,8 +109,8 @@ class CustomerBack(SyncoraModel):
 
         return fields, values
 
-    def to_front(self) -> dict[str, Any]:
-        return self.model_dump(
+    def to_front(self) -> str:
+        data = self.model_dump(
             exclude_defaults=True,
             exclude_unset=True,
             exclude={
@@ -120,6 +121,7 @@ class CustomerBack(SyncoraModel):
                 "mobileNumbers",
             },
         )
+        return json.dumps(data)
 
     @computed_field
     def street(self) -> str:

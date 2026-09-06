@@ -236,12 +236,30 @@ class OrderBack(SyncoraModel):
         )
 
     def _calc_totals(self) -> None:
+        """Compute order totals using Billit's taxable-amount method.
+
+        Lines are grouped by VAT rate; the unrounded excl amount is summed per
+        group, VAT is applied per group, and rounding happens once at the end.
+        This matches how Billit recalculates totals server-side (see the Billit
+        "Calculation Method" docs) and avoids the rounding drift that the
+        per-line method accumulates. Per-line totals (shown individually on the
+        PDF) are unaffected and remain line-rounded.
+        """
         total_excl = 0.0
-        total_incl = 0.0
+        # Unrounded excl amount accumulated per VAT rate.
+        excl_by_rate: dict[float, float] = {}
 
         for line in self.orderLines:
-            total_excl += line.total_excl
-            total_incl += line.total_incl
+            line_excl = line.quantity * line.unitPriceExcl
+            total_excl += line_excl
+            excl_by_rate[line.VATPercentage] = (
+                excl_by_rate.get(line.VATPercentage, 0.0) + line_excl
+            )
 
-        self._total_excl = total_excl
+        total_incl = sum(
+            round(group_excl * (1 + rate / 100), 2)
+            for rate, group_excl in excl_by_rate.items()
+        )
+
+        self._total_excl = round(total_excl, 2)
         self._total_incl = total_incl
