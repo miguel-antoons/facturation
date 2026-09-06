@@ -18,6 +18,7 @@ React frontend (`../frontend/src`) consumes the API.
 | [06-billit-and-peppol-integration.md](06-billit-and-peppol-integration.md) | Mapping between Syncora data and the Billit REST API, header/authentication handling, and the Peppol delivery-status polling loop. |
 | [07-pdf-generation.md](07-pdf-generation.md) | Requirements for the invoice, credit-note, and customer PDF documents (bilingual FR/NL, templating, general-conditions merge). |
 | [08-non-functional-requirements.md](08-non-functional-requirements.md) | Reliability, performance, security, concurrency, observability, and tooling constraints. |
+| [09-testing-requirements.md](09-testing-requirements.md) | Test requirements derived from `01`–`08`: sunny/rainy/edge cases per area, implementation-agnostic, with a known-gap regression section and a traceability matrix. |
 
 ## How to read these requirements
 
