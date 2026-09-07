@@ -5,24 +5,34 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "flask>=3.1.3",
-    "jaydebeapi>=1.2.3",
-    "jinja2>=3.1.6",
-    "psycopg2-binary>=2.9.12",
-    "pydantic>=2.13.4",
-    "pymongo>=4.17.0",
-    "pypdf2>=3.0.1",
-    "python-dateutil>=2.9.0.post0",
-    "python-dotenv>=1.2.2",
-    "reportlab>=4.5.1",
-    "requests>=2.34.2",
-    "weasyprint>=68.1",
+    "flask>=3.1.3,<4",
+    "jaydebeapi>=1.2.3,<2",
+    "jinja2>=3.1.6,<4",
+    "psycopg2-binary>=2.9.12,<3",
+    "pydantic>=2.13.4,<3",
+    "pymongo>=4.17.0,<5",
+    "pypdf2>=3.0.1,<4",
+    "python-dateutil>=2.9.0.post0,<3",
+    "python-dotenv>=1.2.2,<2",
+    "reportlab>=4.5.1,<5",
+    "requests>=2.34.2,<3",
+    "weasyprint>=68.1,<69",
 ]
 
 [dependency-groups]
 dev = [
-    "prek>=0.4.5",
+    "mongomock>=4.3.0,<5",
+    "prek>=0.4.5,<1",
+    "responses>=0.26.3,<1",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S108", "S603"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "integration: tests that need real system deps (WeasyPrint/PDF) and are skippable in CI",
+    "gap: tests pinning a known-deficient behaviour so regressions are detected",
+]
