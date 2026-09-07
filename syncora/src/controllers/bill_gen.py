@@ -2,7 +2,7 @@ import io
 from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader
-from PyPDF2 import PdfMerger
+from pypdf import PdfWriter
 from weasyprint import CSS, HTML
 from weasyprint.text.fonts import FontConfiguration
 
@@ -59,7 +59,7 @@ def html_to_pdf(html_content: str) -> bytes:
         stylesheets=[css], font_config=font_config
     )
 
-    merger = PdfMerger()
+    merger = PdfWriter()
     merger.append(io.BytesIO(pdf_bytes))
     merger.append("./src/pdf/verkoopsvoorwaarden.pdf")
 

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 # Shared helpers
 # --------------------------------------------------------------------------- #
 def pdf_text(pdf_bytes: bytes) -> str:
-    from PyPDF2 import PdfReader
+    from pypdf import PdfReader
 
     reader = PdfReader(io.BytesIO(pdf_bytes))
     return "\n".join((page.extract_text() or "") for page in reader.pages)
@@ -192,7 +192,7 @@ def test_pdf_appends_general_conditions_multiple_pages(
     _seed_customer(customer_store)
     bill_id = insert_bill(mongo, customer_id=1, order_number="2026000001")
     resp = client.get(f"/api/files/bills/{bill_id}")
-    from PyPDF2 import PdfReader
+    from pypdf import PdfReader
 
     reader = PdfReader(io.BytesIO(resp.data))
     assert len(reader.pages) > 1
