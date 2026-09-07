@@ -145,7 +145,7 @@ class OrderBack(SyncoraModel):
             raise SyncoraError(
                 "Calculated Total VAT has negative value", 905, Severity.HIGH
             )
-        return res
+        return round(res, 2)
 
     @property
     def ogm(self) -> str:
