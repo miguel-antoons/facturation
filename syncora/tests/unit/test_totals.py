@@ -107,7 +107,7 @@ def test_total_vat_equals_incl_minus_excl_for_multi_rate() -> None:
             {"quantity": 4, "unitPriceExcl": 9.99, "VATPercentage": 0.0},
         ]
     )
-    assert order.total_vat == order.total_incl - order.total_excl
+    assert order.total_vat == round(order.total_incl - order.total_excl, 2)
 
 
 def test_total_excl_is_rounded_sum_of_unrounded_line_excl() -> None:

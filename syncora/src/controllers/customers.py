@@ -72,6 +72,8 @@ def create_customer(json: CustomerFront) -> ResponseMessage:
 def update_customer(customer_id: int, json: CustomerFront) -> ResponseMessage:
     json["id"] = customer_id
     updated_customer = CustomerBack.model_validate(json, by_name=True)
+    if not CustomerModel.contains(customer_id):
+        raise SyncoraError("Customer not found.", 1001)
     CustomerModel.update(customer_id, updated_customer)
     return ResponseMessage(
         id=customer_id,

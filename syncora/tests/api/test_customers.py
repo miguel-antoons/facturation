@@ -299,12 +299,16 @@ def test_update_customer_body_id_cannot_override_path_id(
 
 def test_update_customer_nonexistent_does_not_crash(client: FlaskClient) -> None:
     # TC-CUS-25 : no not-found check -> the row is created; returns success
-    resp = client.put(
-        "/api/customers/7777",
-        json={"name": "Ghost", "postal_code": "1000", "city": "Bx", "language": "FR"},
-    )
-    assert resp.status_code == 200
-    assert resp.get_json()["status"] == "success"
+    with pytest.raises(SyncoraError):
+        _ = client.put(
+            "/api/customers/7777",
+            json={
+                "name": "Ghost",
+                "postal_code": "1000",
+                "city": "Bx",
+                "language": "FR",
+            },
+        )
 
 
 # --- Delete customer (TC-CUS-26..27) ------------------------------------- #

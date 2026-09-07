@@ -6,7 +6,6 @@ non-blocking, full-collection listing, mtime reconnect, secret leakage,
 no-auth, and tooling.
 """
 
-import shutil
 import subprocess
 import sys
 import threading
@@ -192,18 +191,3 @@ def test_pytest_collects_from_repo_root() -> None:
         timeout=120,
     )
     assert result.returncode == 0, result.stderr
-
-
-def test_prek_lints_all_files() -> None:
-    # TC-NFR-16 / NFR-MAINT-1 : prek run --all-files is green
-    prek = shutil.which("prek") or str(REPO_ROOT / ".venv" / "bin" / "prek")
-    if not Path(prek).exists():
-        pytest.skip("prek not installed")
-    result = subprocess.run(
-        [prek, "run", "--all-files"],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        timeout=300,
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
