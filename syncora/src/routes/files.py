@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, abort, request
 
 from controllers import files as ctrl
-from src.utils.response_file import make_pdf_response
+from utils.response_file import make_pdf_response
 
 files = Blueprint("files", __name__)
 

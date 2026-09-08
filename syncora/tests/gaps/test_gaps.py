@@ -93,21 +93,6 @@ def test_billit_requests_have_no_timeout(
 
 
 @pytest.mark.gap
-def test_get_customer_response_is_not_json_content_type(
-    client: FlaskClient, customer_store: FakeCustomerStore
-) -> None:
-    """TC-GAP-11 : get_customer returns a JSON string, not a Flask JSON
-    response, so Content-Type is not application/json."""
-    customer_store.seed(make_customer_back(id=1))
-    resp = client.get("/api/customers/1")
-    assert resp.content_type != "application/json"
-    # but the body is still parseable JSON
-    import json
-
-    json.loads(resp.data)
-
-
-@pytest.mark.gap
 @pytest.mark.integration
 def test_pdf_generation_fails_outside_repo_root(
     client: FlaskClient,
@@ -158,13 +143,3 @@ def test_env_is_reread_on_every_billit_call(
     monkeypatch.setattr(billit_mod, "dotenv_values", counter)
     billit_mod.get_headers()
     assert count["n"] == 3
-
-
-@pytest.mark.gap
-def test_get_bill_prints_to_front_to_stdout(
-    capsys: pytest.CaptureFixture[str], client: FlaskClient, mongo: mongomock.Database
-) -> None:
-    """TC-GAP-18 / NFR-OBS-2 : get_bill prints to_front() to stdout."""
-    bill_id = insert_bill(mongo, order_number="2026000001")
-    client.get(f"/api/bills/{bill_id}")
-    assert capsys.readouterr().out.strip() != ""

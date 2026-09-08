@@ -35,28 +35,24 @@ def create_cnote(json: OrderFront, db_id: str = "") -> ResponseMessage:
     if CnoteModel.contains(cnote.orderNumber) and (
         existing is None or existing.orderNumber != cnote.orderNumber
     ):
-        return jsonify(
-            ResponseMessage(
-                status=RESPONSE_ERROR,
-                message=(
-                    f"Une note de crédit avec le numéro {json.get('orderNumber')} "
-                    "existe déjà. Veuillez choisir un numéro de facture unique."
-                ),
-            )
+        return ResponseMessage(
+            status=RESPONSE_ERROR,
+            message=(
+                f"Une note de crédit avec le numéro {json.get('orderNumber')} "
+                "existe déjà. Veuillez choisir un numéro de facture unique."
+            ),
         )
 
     if not db_id:
         db_id = CnoteModel.create(cnote)
     else:
         if existing.locked:
-            return jsonify(
-                ResponseMessage(
-                    status=RESPONSE_WARNING,
-                    message=(
-                        f"Note de crédit avec l'ID {existing.orderNumber} a déjà été "
-                        "envoyée à Billit et est verrouillée."
-                    ),
-                )
+            return ResponseMessage(
+                status=RESPONSE_WARNING,
+                message=(
+                    f"Note de crédit avec l'ID {existing.orderNumber} a déjà été "
+                    "envoyée à Billit et est verrouillée."
+                ),
             )
         _ = CnoteModel.update(db_id, cnote)
 

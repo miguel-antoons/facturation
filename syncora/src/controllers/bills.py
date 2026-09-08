@@ -32,28 +32,24 @@ def create_bill(json: OrderFront, db_id: str = "") -> ResponseMessage:
     if BillModel.contains(bill.orderNumber) and (
         existing is None or existing.orderNumber != bill.orderNumber
     ):
-        return jsonify(
-            ResponseMessage(
-                status=RESPONSE_ERROR,
-                message=(
-                    f"Une facture avec le numéro {json.get('orderNumber')} "
-                    "existe déjà. Veuillez choisir un numéro de facture unique."
-                ),
-            )
+        return ResponseMessage(
+            status=RESPONSE_ERROR,
+            message=(
+                f"Une facture avec le numéro {json.get('orderNumber')} "
+                "existe déjà. Veuillez choisir un numéro de facture unique."
+            ),
         )
 
     if not db_id:
         db_id = BillModel.create(bill)
     else:
         if existing.locked:
-            return jsonify(
-                ResponseMessage(
-                    status=RESPONSE_WARNING,
-                    message=(
-                        f"Facture avec l'ID {existing.orderNumber} a déjà été "
-                        "envoyée à Billit et est verrouillée."
-                    ),
-                )
+            return ResponseMessage(
+                status=RESPONSE_WARNING,
+                message=(
+                    f"Facture avec l'ID {existing.orderNumber} a déjà été "
+                    "envoyée à Billit et est verrouillée."
+                ),
             )
         _ = BillModel.update(db_id, bill)
 
