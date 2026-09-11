@@ -14,18 +14,18 @@ from constants.order_back import (
     PEPPOL_DELIVERY_STATUS_PENDING,
     PEPPOL_DELIVERY_STATUS_SENT,
     PEPPOL_DELIVERY_STATUS_UNKNOWN,
-    OrderBack,
 )
 from constants.order_front import OrderFront, OrderFrontShort
 from controllers import billit
 from controllers.billit import send_billit, send_peppol
 from models.bills import BillModel
 from models.customers import CustomerModel
+from src.constants.bill_back import BillBack
 from utils.peppol_poller import PeppolStatusPoller
 
 
 def create_bill(json: OrderFront, db_id: str = "") -> ResponseMessage:
-    bill = OrderBack.model_validate(json, by_name=True)
+    bill = BillBack.model_validate(json, by_name=True)
     existing = BillModel.get_one(db_id) if db_id else None
 
     # Reject a duplicate order number, unless it belongs to the bill being edited.
@@ -118,7 +118,7 @@ def delete_bill(bill_id: str) -> ResponseMessage:
     return ResponseMessage(status=RESPONSE_SUCCESS if bill_deleted else RESPONSE_ERROR)
 
 
-def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
+def pre_peppol_checks(order_data: BillBack) -> ResponseMessage | None:
     message = None
     if not order_data.externalId:
         message = (
@@ -152,7 +152,7 @@ def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
 
 
 def send_bill_peppol(bill_id: str) -> ResponseMessage:
-    order_data: OrderBack = BillModel.get_one(bill_id)
+    order_data: BillBack = BillModel.get_one(bill_id)
     if res := pre_peppol_checks(order_data):
         return res
     response = send_peppol(order_data.externalId)
@@ -166,7 +166,7 @@ def send_bill_peppol(bill_id: str) -> ResponseMessage:
     return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
 
 
-def pre_billit_checks(order_data: OrderBack) -> ResponseMessage | None:  # noqa: C901
+def pre_billit_checks(order_data: BillBack) -> ResponseMessage | None:  # noqa: C901
     message = None
     if order_data.locked:
         message = (

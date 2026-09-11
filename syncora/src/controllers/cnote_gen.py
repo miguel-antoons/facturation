@@ -9,19 +9,19 @@ from weasyprint.text.fonts import FontConfiguration
 from constants.order_pdf import PDF, order_line_string, price_to_string
 from controllers.billit import format_dyn_data
 from pdf.static_data import cnote_static_fr, cnote_static_nl, six_percent_certificate
+from src.constants.cnote_back import CnoteBack
 
 if TYPE_CHECKING:
     from constants.customer_back import CustomerBack
-    from constants.order_back import OrderBack
 
 
-def create_cnote(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
+def create_cnote(order_data: CnoteBack, customer_data: CustomerBack) -> bytes:
     if customer_data.language.upper() == "FR":
         return fr_cnote(order_data, customer_data)
     return nl_cnote(order_data, customer_data)
 
 
-def nl_cnote(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
+def nl_cnote(order_data: CnoteBack, customer_data: CustomerBack) -> bytes:
     static_data = cnote_static_nl()
     static_data["Label"]["SixPercentVatCertificate"] = (
         six_percent_certificate["NL"] if order_data.ventilationCode == "2" else ""
@@ -36,7 +36,7 @@ def nl_cnote(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
     return cnote_gen(static_data, dyn_data)
 
 
-def fr_cnote(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
+def fr_cnote(order_data: CnoteBack, customer_data: CustomerBack) -> bytes:
     static_data = cnote_static_fr()
     static_data["Label"]["SixPercentVatCertificate"] = (
         six_percent_certificate["FR"] if order_data.ventilationCode == "2" else ""

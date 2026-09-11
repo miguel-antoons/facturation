@@ -1,10 +1,10 @@
-from typing import Any, NotRequired, TypedDict
+from typing import Any, NotRequired, Self, TypedDict
 
 from bson import ObjectId
-from dateutil import parser
 from pydantic import BaseModel, Field, computed_field, field_validator
 
 from constants.all import SyncoraModel, SyncoraUndefined, Undefined
+from src.utils.date_formatter import format_date
 from utils.generic_error import Severity, SyncoraError
 
 PEPPOL_DELIVERY_STATUS_NOT_SENT = -1
@@ -85,10 +85,6 @@ def _order_line_total_incl(
     return total_excl + vat_amount
 
 
-def _format_date(date: str) -> str:
-    return parser.parse(date).strftime("%d/%m/%Y") if date else ""
-
-
 class OrderBack(SyncoraModel):
     orderId: str = Field(default=SyncoraUndefined, validation_alias="_id")  # noqa: N815
     customerId: int = Field(default=SyncoraUndefined)  # noqa: N815
@@ -148,23 +144,6 @@ class OrderBack(SyncoraModel):
         return round(res, 2)
 
     @property
-    def ogm(self) -> str:
-        if self.is_cnote:
-            return ""
-        ref_numbers = self.orderNumber.ljust(10, "0")
-        check_digit = int(ref_numbers[:10]) % 97
-        if check_digit == 0:
-            check_digit = 97
-        return (
-            f"+++{ref_numbers[0:3]}/{ref_numbers[3:7]}/"
-            f"{ref_numbers[7:10]}{str(check_digit).ljust(2, '0')}+++"
-        )
-
-    @property
-    def is_cnote(self) -> bool:
-        return not isinstance(self.aboutInvoiceNumber, Undefined)
-
-    @property
     def locked(self) -> bool:
         if isinstance(self.billit_sent, Undefined):
             raise SyncoraError(
@@ -188,17 +167,11 @@ class OrderBack(SyncoraModel):
 
     @property
     def formatted_order_date(self) -> str:
-        return _format_date(self.orderDate)
-
-    @property
-    def formatted_delivery_date(self) -> str:
-        if self.is_cnote:
-            return ""
-        return _format_date(self.deliveryDate)
+        return format_date(self.orderDate)
 
     @property
     def formatted_expiry_date(self) -> str:
-        return _format_date(self.expiryDate)
+        return format_date(self.expiryDate)
 
     @field_validator("orderId", mode="before")
     @classmethod
@@ -207,9 +180,9 @@ class OrderBack(SyncoraModel):
             return str(order_id)
         return order_id
 
-    @staticmethod
-    def from_db(order_db: OrderDB) -> OrderBack:
-        return OrderBack.model_validate(order_db)
+    @classmethod
+    def from_db(cls, order_db: OrderDB) -> Self:
+        return cls.model_validate(order_db)
 
     def to_db(self) -> OrderDB:
         return self.model_dump(

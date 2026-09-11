@@ -59,6 +59,7 @@ class OrderBillit(BaseModel):
     AboutInvoiceNumber: str | None = Field(
         default=None, validation_alias="aboutInvoiceNumber", frozen=True
     )
+    PaymentReference: str = "+++564/5621/00034+++"
     OrderPDF: BillitPDF
 
     @computed_field

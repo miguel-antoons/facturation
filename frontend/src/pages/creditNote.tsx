@@ -174,7 +174,7 @@ const CreditNote = () => {
     const saveButtonInfo = isSaveReady(
       customerId,
       orderTitle,
-      billNumber,
+      cnoteNumber,
       billitSent,
     );
 
