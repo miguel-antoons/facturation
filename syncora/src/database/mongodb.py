@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 @contextlib.contextmanager
-def get_connection() -> Generator[Database[Mapping[str, Any] | Any], Any, None]:
+def get_connection() -> Generator[Database[Mapping[str, Any] | Any]]:
     mongo_uri = (
         f"mongodb://"
         f"{dotenv_values('.env')['MONGO_USER']}:"

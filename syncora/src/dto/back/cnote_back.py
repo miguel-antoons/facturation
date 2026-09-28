@@ -1,29 +1,34 @@
-from typing import TYPE_CHECKING, Any, Self
+from typing import Any, Self, override
 
 from pydantic import Field
 
 from classes import SyncoraUndefined
+from dto.db import CnoteDB
 from dto.pdf import CnotePDF, OrderLinePDF
 from utils.formatters import order_line_string, price_to_string
 
 from .order_back import OrderBack
 
-if TYPE_CHECKING:
-    from dto.db import CnoteDB
 
-
-class CnoteBack(OrderBack):
+class CnoteBack(OrderBack[CnoteDB, tuple[CnotePDF, list[OrderLinePDF]]]):
     aboutInvoiceNumber: str = Field(default=SyncoraUndefined)  # noqa: N815
 
     @classmethod
+    @override
     def from_db(cls, order_db: CnoteDB) -> Self:
         return cls.model_validate(order_db)
 
+    @override
     def to_db(self) -> CnoteDB:
-        return self.model_dump(
-            exclude_unset=True, exclude_computed_fields=True, exclude={"orderId"}
+        return CnoteDB(
+            **self.model_dump(  # pyright: ignore[reportAny]
+                exclude_unset=True,
+                exclude_computed_fields=True,
+                exclude={"orderId"},
+            )
         )
 
+    @override
     def to_front(self) -> dict[str, Any]:  # noqa: ANN401
         return self.model_dump(
             exclude={
@@ -43,6 +48,7 @@ class CnoteBack(OrderBack):
             by_alias=True,
         )
 
+    @override
     def to_pdf(self) -> tuple[CnotePDF, list[OrderLinePDF]]:
         return (
             CnotePDF(

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast, override
 
 from bson import ObjectId
 
@@ -15,17 +15,23 @@ from dto.back import OrderBack
 from utils.generic_error import ItemNotFoundError
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from dto.db import OrderDB
 
 
-class OrderModel[T: OrderBack](SyncoraDBClass):
-    database_name = ""
+class OrderModel[T: OrderBack[Any, Any]](SyncoraDBClass[str, T]):
+    database_name: ClassVar[str] = ""
     UsedDTO: type[T] = cast("type[T]", OrderBack)
 
     @classmethod
+    @override
     def get_one(cls, order_id: str) -> T:
         with get_connection() as db:
-            order: OrderDB = db[cls.database_name].find_one({"_id": ObjectId(order_id)})
+            order = cast(
+                "OrderDB | None",
+                db[cls.database_name].find_one({"_id": ObjectId(order_id)}),
+            )
         if not order:
             raise ItemNotFoundError(
                 cls.database_name, order_id, f"{cls.database_name} database"
@@ -33,34 +39,44 @@ class OrderModel[T: OrderBack](SyncoraDBClass):
         return cls.UsedDTO.from_db(order)
 
     @classmethod
-    def get(cls, condition: dict | None = None) -> list[T]:
+    @override
+    def get(cls, condition: Mapping[str, object] | None = None) -> list[T]:
         with get_connection() as db:
-            orders: list[OrderDB] = list(db[cls.database_name].find(condition or {}))
+            orders = cast(
+                "list[OrderDB]", list(db[cls.database_name].find(condition or {}))
+            )
         return [cls.UsedDTO.from_db(order) for order in orders]
 
     @classmethod
+    @override
     def create(cls, order: T) -> str:
         order.externalId = ORDER_BACK_DEFAULT_EXTERNAL_ID
         order.peppolDeliveryStatus = PEPPOL_DELIVERY_STATUS_NOT_SENT
         with get_connection() as db:
-            result = db[cls.database_name].insert_one(order.to_db())
-        return str(result.inserted_id)
+            result = db[cls.database_name].insert_one(
+                cast("dict[str, object]", order.to_db())
+            )
+        return str(cast("ObjectId", result.inserted_id))
 
     @classmethod
+    @override
     def update(cls, order_id: str, order: T) -> bool:
         with get_connection() as db:
             result = db[cls.database_name].update_one(
-                {"_id": ObjectId(order_id)}, {"$set": order.to_db()}
+                {"_id": ObjectId(order_id)},
+                {"$set": cast("dict[str, object]", order.to_db())},
             )
         return result.modified_count > 0
 
     @classmethod
+    @override
     def delete(cls, order_id: str) -> bool:
         with get_connection() as db:
             result = db[cls.database_name].delete_one({"_id": ObjectId(order_id)})
         return result.deleted_count > 0
 
     @classmethod
+    @override
     def contains(cls, order_number: str) -> bool:
         with get_connection() as db:
             return (

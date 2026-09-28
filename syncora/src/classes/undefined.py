@@ -1,4 +1,4 @@
-from typing import Any, Self
+from typing import Any, Self, override
 
 from pydantic_core import core_schema
 
@@ -13,7 +13,7 @@ class Undefined:
     falsy so ``if not value`` treats "not provided" like emptiness.
     """
 
-    _instance = None
+    _instance: Self | None = None
 
     def __new__(cls) -> Self:
         if cls._instance is None:
@@ -29,9 +29,11 @@ class Undefined:
     def __bool__(self) -> bool:
         return False
 
+    @override
     def __eq__(self, other: object) -> bool:  # noqa: ANN401
         return self is other
 
+    @override
     def __ne__(self, other: object) -> bool:  # noqa: ANN401
         return self is not other
 
@@ -47,8 +49,11 @@ class Undefined:
     def __lt__(self, other: Any) -> bool:  # noqa: ANN401
         raise NotImplementedError
 
+    @override
     def __hash__(self) -> int:
         raise NotImplementedError
 
 
-SyncoraUndefined = Undefined()
+# Typed ``Any`` so the sentinel can stand in as the default of fields of any
+# declared type
+SyncoraUndefined: Any = Undefined()

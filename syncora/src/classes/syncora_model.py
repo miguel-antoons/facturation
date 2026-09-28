@@ -1,13 +1,15 @@
 import warnings
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Self
 
 from pydantic import BaseModel, SerializerFunctionWrapHandler, model_serializer
 
 from classes.undefined import Undefined
 
 
-class SyncoraModel(BaseModel, ABC):
+class SyncoraModel[  # pyright: ignore[reportUnsafeMultipleInheritance]
+    DbT, FrontT, PdfT
+](BaseModel, ABC):
     @model_serializer(mode="wrap")
     def serialize_model(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         with warnings.catch_warnings():
@@ -20,22 +22,22 @@ class SyncoraModel(BaseModel, ABC):
         return {k: v for k, v in dumped.items() if not isinstance(v, Undefined)}
 
     @staticmethod
-    def ret_def(val: Any, alt: Any) -> Any:  # noqa: ANN401
+    def ret_def[T, A](val: object, alt: A) -> Undefined | A:
         return val if isinstance(val, Undefined) else alt
 
     @classmethod
     @abstractmethod
-    def from_db(cls, *args: list, **kwargs: dict) -> SyncoraModel:
-        pass
+    def from_db(cls, db: DbT, /) -> Self:
+        """Build an instance from its raw database representation."""
 
     @abstractmethod
-    def to_db(self) -> dict:
-        pass
+    def to_db(self) -> DbT:
+        """Return the raw database representation of this model."""
 
     @abstractmethod
-    def to_front(self) -> str | dict:
-        pass
+    def to_front(self) -> FrontT:
+        """Return the frontend-facing representation of this model."""
 
     @abstractmethod
-    def to_pdf(self) -> dict:
-        pass
+    def to_pdf(self) -> PdfT:
+        """Return the PDF-facing representation of this model."""
