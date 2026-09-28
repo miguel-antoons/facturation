@@ -1,5 +1,5 @@
-from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Self
+from abc import ABC
+from typing import Any
 
 from bson import ObjectId
 from pydantic import Field, computed_field, field_validator
@@ -11,29 +11,25 @@ from utils.generic_error import Severity, SyncoraError
 
 from .order_line_back import OrderLineBack  # noqa: TC001
 
-if TYPE_CHECKING:
-    from dto.db import OrderDB
-    from dto.pdf import OrderPDF
 
-
-class OrderBack(SyncoraModel):
-    orderId: str = Field(default=SyncoraUndefined, validation_alias="_id")  # noqa: N815
-    customerId: int = Field(default=SyncoraUndefined)  # noqa: N815
-    customerName: str = Field(default=SyncoraUndefined)  # noqa: N815
-    externalId: int = Field(default=SyncoraUndefined)  # noqa: N815
-    orderNumber: str = Field(default=SyncoraUndefined)  # noqa: N815
-    orderDate: str = Field(default=SyncoraUndefined)  # noqa: N815
-    orderTitle: str = Field(default=SyncoraUndefined)  # noqa: N815
-    orderLines: list[OrderLineBack] = Field(default=[])  # noqa: N815
-    expiryDate: str = Field(default=SyncoraUndefined)  # noqa: N815
-    ventilationCode: str = Field(default=SyncoraUndefined)  # noqa: N815
-    peppolDeliveryStatus: int = Field(default=SyncoraUndefined)  # noqa: N815
+class OrderBack[DbT, PdfT](SyncoraModel[DbT, dict[str, Any], PdfT], ABC):
+    orderId: str = Field(default=SyncoraUndefined, validation_alias="_id")
+    customerId: int = Field(default=SyncoraUndefined)
+    customerName: str = Field(default=SyncoraUndefined)
+    externalId: int = Field(default=SyncoraUndefined)
+    orderNumber: str = Field(default=SyncoraUndefined)
+    orderDate: str = Field(default=SyncoraUndefined)
+    orderTitle: str = Field(default=SyncoraUndefined)
+    orderLines: list[OrderLineBack] = Field(default=[])
+    expiryDate: str = Field(default=SyncoraUndefined)
+    ventilationCode: str = Field(default=SyncoraUndefined)
+    peppolDeliveryStatus: int = Field(default=SyncoraUndefined)
     _total_excl: float = None
     _total_incl: float = None
 
     @computed_field(alias="billitSent")
     @property
-    def billit_sent(self) -> bool:
+    def billit_sent(self) -> bool | Undefined:
         return self.ret_def(
             self.externalId, bool(self.externalId) and self.externalId > 0
         )
@@ -108,23 +104,6 @@ class OrderBack(SyncoraModel):
         if isinstance(order_id, ObjectId):
             return str(order_id)
         return order_id
-
-    @classmethod
-    @abstractmethod
-    def from_db(cls, order_db: OrderDB) -> Self:
-        """Build an instance from its raw database document."""
-
-    @abstractmethod
-    def to_db(self) -> OrderDB:
-        """Return the raw database document for this order."""
-
-    @abstractmethod
-    def to_front(self) -> dict[str, Any]:  # noqa: ANN401
-        """Return the frontend-facing representation of this order."""
-
-    @abstractmethod
-    def to_pdf(self) -> OrderPDF:
-        """Return the PDF-facing representation of this order."""
 
     def _calc_totals(self) -> None:
         """Compute order totals using Billit's taxable-amount method.

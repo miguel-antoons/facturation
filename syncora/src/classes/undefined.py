@@ -51,4 +51,6 @@ class Undefined:
         raise NotImplementedError
 
 
-SyncoraUndefined = Undefined()
+# Typed ``Any`` so the sentinel can stand in as the default of fields of any
+# declared type
+SyncoraUndefined: Any = Undefined()

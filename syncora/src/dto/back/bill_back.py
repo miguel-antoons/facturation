@@ -1,19 +1,17 @@
-from typing import TYPE_CHECKING, Any, Self
+from typing import Any, Self, override
 
 from pydantic import Field, field_validator
 
 from classes import SyncoraUndefined
+from dto.db import BillDB
 from dto.pdf import BillPDF, OrderLinePDF
 from utils.formatters import format_date, order_line_string, price_to_string
 
 from .order_back import OrderBack
 
-if TYPE_CHECKING:
-    from dto.db import BillDB
 
-
-class BillBack(OrderBack):
-    deliveryDate: str = Field(default=SyncoraUndefined)  # noqa: N815
+class BillBack(OrderBack[BillDB, tuple[BillPDF, list[OrderLinePDF]]]):
+    deliveryDate: str = Field(default=SyncoraUndefined)
 
     @field_validator("orderNumber")
     @classmethod
@@ -40,14 +38,21 @@ class BillBack(OrderBack):
         return format_date(self.deliveryDate)
 
     @classmethod
+    @override
     def from_db(cls, order_db: BillDB) -> Self:
         return cls.model_validate(order_db)
 
+    @override
     def to_db(self) -> BillDB:
-        return self.model_dump(
-            exclude_unset=True, exclude_computed_fields=True, exclude={"orderId"}
+        return BillDB(
+            **self.model_dump(  # pyright: ignore[reportAny]
+                exclude_unset=True,
+                exclude_computed_fields=True,
+                exclude={"orderId"},
+            )
         )
 
+    @override
     def to_front(self) -> dict[str, Any]:  # noqa: ANN401
         return self.model_dump(
             exclude={
@@ -67,6 +72,7 @@ class BillBack(OrderBack):
             by_alias=True,
         )
 
+    @override
     def to_pdf(self) -> tuple[BillPDF, list[OrderLinePDF]]:
         return (
             BillPDF(

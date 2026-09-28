@@ -1,5 +1,5 @@
 import io
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from jinja2 import Environment, FileSystemLoader
 from pypdf import PdfWriter
@@ -29,8 +29,9 @@ def html_to_pdf(html_content: str) -> bytes:
     font_config = FontConfiguration()
     css = CSS("./src/pdf/pdf.css", font_config=font_config)
 
-    pdf_bytes = HTML(string=html_content).write_pdf(
-        stylesheets=[css], font_config=font_config
+    pdf_bytes: bytes = (
+        HTML(string=html_content).write_pdf(stylesheets=[css], font_config=font_config)
+        or b""
     )
 
     merger = PdfWriter()
@@ -38,13 +39,13 @@ def html_to_pdf(html_content: str) -> bytes:
     merger.append("./src/pdf/verkoopsvoorwaarden.pdf")
 
     output = io.BytesIO()
-    merger.write(output)
+    _ = merger.write(output)
     merger.close()
 
     return output.getvalue()
 
 
-def bill_gen(static_data: dict[str, dict[str, str]], dyn_data: PDF) -> bytes:
+def bill_gen(static_data: dict[str, Any], dyn_data: PDF) -> bytes:
     # Set up Jinja2 environment
     env = Environment(loader=FileSystemLoader("src/pdf/templates"), autoescape=True)
     bill_template = env.get_template("bill_template.html")

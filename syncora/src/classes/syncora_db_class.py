@@ -1,32 +1,44 @@
+from abc import ABC, abstractmethod
 from typing import Any
 
 
-class SyncoraDBClass:
+class SyncoraDBClass[IdT, ItemT](ABC):
 
-    @staticmethod
-    def get_one(item_id: Any) -> Any:  # noqa: ANN401
-        raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def get_one(cls, item_id: IdT, /) -> ItemT:
+        """Return the item identified by ``item_id``."""
 
-    @staticmethod
-    def get(*args: list, **kwargs: dict) -> Any:  # noqa: ANN401
-        raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def get(
+        cls,
+        *args: Any,  # noqa: ANN401 # pyright: ignore[reportAny, reportExplicitAny]
+        **kwargs: Any,  # noqa: ANN401 # pyright: ignore[reportAny, reportExplicitAny]
+    ) -> object:
+        """Return items; the signature is backend specific."""
 
-    @staticmethod
-    def create(item: Any) -> Any:  # noqa: ANN401
-        raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def create(cls, item: ItemT, /) -> IdT:
+        """Store ``item`` and return its id."""
 
-    @staticmethod
-    def update(item_id: Any, item: Any) -> Any:  # noqa: ANN401
-        raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def update(cls, item_id: IdT, item: ItemT, /) -> object:
+        """Update the item identified by ``item_id``."""
 
-    @staticmethod
-    def delete(item_id: Any) -> Any:  # noqa: ANN401
-        raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def delete(cls, item_id: IdT, /) -> object:
+        """Delete the item identified by ``item_id``."""
 
-    @staticmethod
-    def contains(item_id: str | int) -> bool:
-        raise NotImplementedError
+    @classmethod
+    @abstractmethod
+    def contains(cls, item_id: IdT, /) -> bool:
+        """Return whether an item identified by ``item_id`` exists."""
 
-    @staticmethod
-    def size() -> int:
+    @classmethod
+    def size(cls) -> int:
+        """Return the number of stored items."""
         raise NotImplementedError

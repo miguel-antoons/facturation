@@ -48,7 +48,7 @@ def send_peppol(order_id: int) -> Response:
 
 
 def send_billit(
-    order_data: OrderBack,
+    order_data: OrderBack[Any, Any],
     pdf_bytes: bytes,
     customer_data: CustomerBack,
     *,

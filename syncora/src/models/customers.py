@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any, override
 
 from classes.syncora_db_class import SyncoraDBClass
 from constants.customer_fields import (
@@ -18,14 +18,17 @@ from constants.customer_fields import (
 from database import access
 from dto.back import CustomerBack
 
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
-class CustomerModel(SyncoraDBClass):
+
+class CustomerModel(SyncoraDBClass[int, CustomerBack]):
 
     @staticmethod
     def _customer_list(fields: list[str], results: list[Any]) -> list[CustomerBack]:
         customers = []
         for customer in results:
-            customers.append(CustomerBack.from_db(fields, customer))
+            customers.append(CustomerBack.from_db((fields, customer)))
 
         return customers
 
@@ -35,7 +38,7 @@ class CustomerModel(SyncoraDBClass):
     ) -> dict[int, CustomerBack]:
         customer_dict = {}
         for customer in results:
-            customer_class = CustomerBack.from_db(fields, customer)
+            customer_class = CustomerBack.from_db((fields, customer))
             customer_dict[customer_class.id] = customer_class
 
         return customer_dict
@@ -48,8 +51,9 @@ class CustomerModel(SyncoraDBClass):
 
         return result[0] if result and result[0] is not None else 0
 
-    @staticmethod
-    def get_one(customer_id: int) -> CustomerBack:
+    @classmethod
+    @override
+    def get_one(cls, customer_id: int) -> CustomerBack:
         return CustomerModel.get(
             [
                 CUSTOMER_DB_ID,
@@ -68,9 +72,14 @@ class CustomerModel(SyncoraDBClass):
             filters={CUSTOMER_DB_ID: customer_id},
         )[0]
 
-    @staticmethod
+    @classmethod
+    @override
     def get(
-        fields: list[str], *, filters: dict | None = None, by_id: bool = False
+        cls,
+        fields: list[str],
+        *,
+        filters: Mapping[str, object] | None = None,
+        by_id: bool = False,
     ) -> list[CustomerBack] | dict[int, CustomerBack]:
         fields = [CUSTOMER_DB_ID] + fields if CUSTOMER_DB_ID not in fields else fields
         formatted_fields = [f"`{field}`" for field in fields]
@@ -87,8 +96,9 @@ class CustomerModel(SyncoraDBClass):
             return CustomerModel._customer_dict(fields, results)
         return CustomerModel._customer_list(fields, results)
 
-    @staticmethod
-    def create(data: CustomerBack) -> int:
+    @classmethod
+    @override
+    def create(cls, data: CustomerBack) -> int:
         fields, values = data.to_db()
         fields = ", ".join(fields)
         placeholders = ", ".join(["?"] * len(values))
@@ -98,8 +108,9 @@ class CustomerModel(SyncoraDBClass):
 
         return CustomerModel._get_last_id()
 
-    @staticmethod
-    def update(customer_id: int, data: CustomerBack) -> None:
+    @classmethod
+    @override
+    def update(cls, customer_id: int, data: CustomerBack) -> None:
         fields, values = data.to_db()
         set_clauses = ", ".join([f"{field} = ?" for field in fields])
         query = (
@@ -108,8 +119,9 @@ class CustomerModel(SyncoraDBClass):
 
         access.get_connection().execute_query(query, tuple(values) + (customer_id,))
 
-    @staticmethod
-    def contains(customer_id: int) -> bool:
+    @classmethod
+    @override
+    def contains(cls, customer_id: int) -> bool:
         query = f"SELECT 1 FROM Client WHERE {CUSTOMER_DB_ID} = ?"  # noqa: S608
 
         result = access.get_connection().execute_query(
@@ -118,7 +130,8 @@ class CustomerModel(SyncoraDBClass):
 
         return result is not None and len(result) > 0
 
-    @staticmethod
-    def delete(customer_id: int) -> None:
+    @classmethod
+    @override
+    def delete(cls, customer_id: int) -> None:
         query = f"DELETE FROM Client WHERE {CUSTOMER_DB_ID} = ?"  # noqa: S608
         access.get_connection().execute_query(query, (customer_id,))

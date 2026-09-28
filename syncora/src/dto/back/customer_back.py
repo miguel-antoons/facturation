@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, Self, override
 
 from pydantic import Field, computed_field, field_validator, model_validator
 
@@ -22,7 +22,9 @@ from dto.db import CustomerDB
 from dto.pdf import CustomerPDF
 
 
-class CustomerBack(SyncoraModel):
+class CustomerBack(
+    SyncoraModel[tuple[list[str], list[Any]], dict[str, Any], CustomerPDF]
+):
     id: int = Field(default=-1, alias=CUSTOMER_DB_ID)
     name: str | None = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_NAME)
     surname: str | None = Field(default=SyncoraUndefined, alias=CUSTOMER_DB_FIRSTNAME)
@@ -44,13 +46,16 @@ class CustomerBack(SyncoraModel):
         default=SyncoraUndefined, alias=CUSTOMER_DB_SALUTATION
     )
 
-    @staticmethod
-    def from_db(field_names: list[str], data: list) -> CustomerBack:
+    @classmethod
+    @override
+    def from_db(cls, db: tuple[list[str], list[Any]]) -> Self:
+        field_names, data = db
         customer_db = CustomerDB(
             **{field: data[field_names.index(field)] for field in field_names}
         )
-        return CustomerBack.model_validate(customer_db)
+        return cls.model_validate(customer_db)
 
+    @override
     def to_db(self) -> tuple[list[str], list[Any]]:
         mapping = self.model_dump(
             by_alias=True,
@@ -67,6 +72,7 @@ class CustomerBack(SyncoraModel):
 
         return fields, values
 
+    @override
     def to_front(self) -> dict[str, Any]:
         return self.model_dump(
             exclude_defaults=True,
@@ -80,6 +86,7 @@ class CustomerBack(SyncoraModel):
             },
         )
 
+    @override
     def to_pdf(self) -> CustomerPDF:
         return CustomerPDF(
             OfficialCompanyName=self.company or "",
