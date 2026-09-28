@@ -3,7 +3,7 @@ from typing import Any
 from pydantic import BaseModel, Field, computed_field, field_validator, model_validator
 
 from constants.all import COUNTRY_CODE_BE
-from constants.customer_back import ADDRESS_TYPE_INVOICE_ADDRESS, PARTY_TYPE_CUSTOMER
+from constants.billit import ADDRESS_TYPE_INVOICE_ADDRESS, PARTY_TYPE_CUSTOMER
 from utils.generic_error import Severity, SyncoraError
 
 

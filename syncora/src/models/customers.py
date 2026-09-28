@@ -1,7 +1,7 @@
 from typing import Any
 
 from classes.syncora_db_class import SyncoraDBClass
-from constants.customer_back import (
+from constants.customer_fields import (
     CUSTOMER_DB_ADDRESS,
     CUSTOMER_DB_ARCHITECT_NAME,
     CUSTOMER_DB_CITY,
@@ -14,9 +14,9 @@ from constants.customer_back import (
     CUSTOMER_DB_POSTAL_CODE,
     CUSTOMER_DB_SALUTATION,
     CUSTOMER_DB_VAT_NUMBER,
-    CustomerBack,
 )
 from database import access
+from dto.back import CustomerBack
 
 
 class CustomerModel(SyncoraDBClass):

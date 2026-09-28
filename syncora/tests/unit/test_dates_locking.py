@@ -5,8 +5,8 @@ Pure-logic tests on ``OrderBack`` constructed directly (§5.4, §5.5, §2.5.2).
 
 import pytest
 
-from constants.bill_back import BillBack
-from constants.order_back import PEPPOL_DELIVERY_STATUS_NOT_SENT
+from constants.peppol import PEPPOL_DELIVERY_STATUS_NOT_SENT
+from dto.back import BillBack
 from utils.generic_error import SyncoraError
 
 

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from constants.order_back import (
+from constants.peppol import (
     PEPPOL_DELIVERY_STATUS_PENDING,
     PEPPOL_DELIVERY_STATUS_SENT,
 )

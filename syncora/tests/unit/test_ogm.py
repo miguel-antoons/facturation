@@ -8,7 +8,7 @@ taking ``int(first10) % 97`` (97 when 0) and formatting as
 import pytest
 from pydantic import ValidationError
 
-from constants.bill_back import BillBack
+from dto.back import BillBack
 
 
 def ogm_for(number: str) -> str:

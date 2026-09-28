@@ -2,8 +2,7 @@
 
 from typing import Any
 
-from constants.bill_back import BillBack
-from constants.order_back import _OrderLineBack
+from dto.back import BillBack, OrderLineBack
 
 
 def order_with_lines(
@@ -35,8 +34,8 @@ def line(
     price: float = 100.0,
     vat: float = 6.0,
     description: str = "Travaux",
-) -> _OrderLineBack:
-    return _OrderLineBack(
+) -> OrderLineBack:
+    return OrderLineBack(
         description=description,
         quantity=quantity,
         unitPriceExcl=price,

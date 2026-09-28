@@ -1,67 +1,25 @@
 import re
-from typing import Annotated, Any, NotRequired, ReadOnly, TypedDict
+from typing import Any
 
 from pydantic import Field, computed_field, field_validator, model_validator
 
-from constants.all import SyncoraModel, SyncoraUndefined, Undefined
-from constants.order_pdf import CustomerPDF
-
-PARTY_TYPE_CUSTOMER = "Customer"
-ADDRESS_TYPE_INVOICE_ADDRESS = "InvoiceAddress"
-
-# * ------------------------------------------
-# * DATABASE FIELD NAMES FOR CUSTOMER INFORMATION
-# * ------------------------------------------
-CUSTOMER_DB_ID = "Numero"
-CUSTOMER_DB_NAME = "Nom"
-CUSTOMER_DB_FIRSTNAME = "Prenom"
-CUSTOMER_DB_COMPANY = "Societe"
-CUSTOMER_DB_COMMENT = "Commentaire"
-CUSTOMER_DB_ADDRESS = "Adresse"
-CUSTOMER_DB_POSTAL_CODE = "Codepostal"
-CUSTOMER_DB_CITY = "Localite"
-CUSTOMER_DB_VAT_NUMBER = "TVA"
-CUSTOMER_DB_LANGUAGE = "Langue"
-CUSTOMER_DB_ARCHITECT_NAME = "Nom Architecte"
-CUSTOMER_DB_SALUTATION = "Titre"
-
-
-class CustomerFront(TypedDict):
-    id: Annotated[int, ReadOnly]
-    name: str
-    surname: str
-    company: str
-    comment: NotRequired[str]
-    street: NotRequired[str]
-    number: NotRequired[str]
-    postal_code: str
-    city: str
-    vat_number: NotRequired[str]
-    language: NotRequired[str]
-    architect_name: NotRequired[str]
-    salutation: NotRequired[str]
-    phones: NotRequired[list[str]]
-    hasEmail: NotRequired[bool]
-    hasVAT: NotRequired[bool]
-
-
-CustomerDB = TypedDict(
-    "CustomerDB",
-    {
-        CUSTOMER_DB_ID: NotRequired[ReadOnly[int]],
-        CUSTOMER_DB_NAME: NotRequired[str],
-        CUSTOMER_DB_FIRSTNAME: NotRequired[str],
-        CUSTOMER_DB_COMPANY: NotRequired[str],
-        CUSTOMER_DB_COMMENT: NotRequired[str],
-        CUSTOMER_DB_ADDRESS: NotRequired[str],
-        CUSTOMER_DB_POSTAL_CODE: NotRequired[str],
-        CUSTOMER_DB_CITY: NotRequired[str],
-        CUSTOMER_DB_VAT_NUMBER: NotRequired[str],
-        CUSTOMER_DB_LANGUAGE: NotRequired[str],
-        CUSTOMER_DB_ARCHITECT_NAME: NotRequired[str],
-        CUSTOMER_DB_SALUTATION: NotRequired[str],
-    },
+from classes import SyncoraModel, SyncoraUndefined, Undefined
+from constants.customer_fields import (
+    CUSTOMER_DB_ADDRESS,
+    CUSTOMER_DB_ARCHITECT_NAME,
+    CUSTOMER_DB_CITY,
+    CUSTOMER_DB_COMMENT,
+    CUSTOMER_DB_COMPANY,
+    CUSTOMER_DB_FIRSTNAME,
+    CUSTOMER_DB_ID,
+    CUSTOMER_DB_LANGUAGE,
+    CUSTOMER_DB_NAME,
+    CUSTOMER_DB_POSTAL_CODE,
+    CUSTOMER_DB_SALUTATION,
+    CUSTOMER_DB_VAT_NUMBER,
 )
+from dto.db import CustomerDB
+from dto.pdf import CustomerPDF
 
 
 class CustomerBack(SyncoraModel):

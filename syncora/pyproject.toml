@@ -29,6 +29,7 @@ dev = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S108", "S603"]
+"src/dto/**" = ["N815"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -37,3 +38,6 @@ markers = [
     "integration: tests that need real system deps (WeasyPrint/PDF) and are skippable in CI",
     "gap: tests pinning a known-deficient behaviour so regressions are detected",
 ]
+
+[tool.pyright]
+extraPaths = ["src"]

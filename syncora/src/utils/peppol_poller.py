@@ -6,7 +6,7 @@ import requests
 from dotenv import dotenv_values
 from requests import Response
 
-from constants.order_back import (
+from constants.peppol import (
     PEPPOL_DELIVERY_STATUS_PENDING,
     PEPPOL_DELIVERY_STATUS_SENT,
 )

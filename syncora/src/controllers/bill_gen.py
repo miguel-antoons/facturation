@@ -6,12 +6,11 @@ from pypdf import PdfWriter
 from weasyprint import CSS, HTML
 from weasyprint.text.fonts import FontConfiguration
 
-from constants.order_pdf import PDF
+from dto.pdf import PDF
 from pdf.static_data import bill_static
 
 if TYPE_CHECKING:
-    from constants.bill_back import BillBack
-    from constants.customer_back import CustomerBack
+    from dto.back import BillBack, CustomerBack
 
 
 def create_bill_pdf(order_data: BillBack, customer_data: CustomerBack) -> bytes:

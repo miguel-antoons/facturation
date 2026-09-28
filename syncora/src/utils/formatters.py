@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 
 from dateutil import parser
 
-from constants.order_pdf import OrderLinePDF
+from dto.pdf import OrderLinePDF
 
 if TYPE_CHECKING:
-    from constants.order_back import _OrderLineBack
+    from dto.back import OrderLineBack
 
 
 def format_date(date: str) -> str:
@@ -16,7 +16,7 @@ def price_to_string(price: float) -> str:
     return f"{price:.2f}".replace(".", ",")
 
 
-def order_line_string(order_line: _OrderLineBack) -> OrderLinePDF:
+def order_line_string(order_line: OrderLineBack) -> OrderLinePDF:
     return OrderLinePDF(
         Description=order_line.description,
         AmountExcl=price_to_string(order_line.unitPriceExcl),

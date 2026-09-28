@@ -11,9 +11,8 @@ later, §3.1 / TC-BILL-6); credit notes are unaffected (no OGM).
 import pytest
 from pydantic import ValidationError
 
-from constants.all import SyncoraUndefined, Undefined
-from constants.bill_back import BillBack
-from constants.cnote_back import CnoteBack
+from classes import SyncoraUndefined, Undefined
+from dto.back import BillBack, CnoteBack
 
 
 def test_digit_order_number_is_accepted() -> None:

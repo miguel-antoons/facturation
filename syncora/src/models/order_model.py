@@ -1,19 +1,21 @@
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from bson import ObjectId
 
 from classes.syncora_db_class import SyncoraDBClass
-from constants.order_back import (
+from constants.order import (
     ORDER_BACK_DEFAULT_EXTERNAL_ID,
     ORDER_BACK_EXTERNAL_ID,
     ORDER_BACK_ORDER_NUMBER,
     ORDER_BACK_PEPPOL_DELIVERY_STATUS,
-    PEPPOL_DELIVERY_STATUS_NOT_SENT,
-    OrderBack,
-    OrderDB,
 )
+from constants.peppol import PEPPOL_DELIVERY_STATUS_NOT_SENT
 from database.mongodb import get_connection
+from dto.back import OrderBack
 from utils.generic_error import ItemNotFoundError
+
+if TYPE_CHECKING:
+    from dto.db import OrderDB
 
 
 class OrderModel[T: OrderBack](SyncoraDBClass):

@@ -1,15 +1,15 @@
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from pydantic import Field, field_validator
 
-from constants.all import SyncoraUndefined
-from constants.order_back import OrderBack, OrderDB
-from constants.order_pdf import BillPDF, OrderLinePDF
+from classes import SyncoraUndefined
+from dto.pdf import BillPDF, OrderLinePDF
 from utils.formatters import format_date, order_line_string, price_to_string
 
+from .order_back import OrderBack
 
-class BillDB(OrderDB):
-    deliveryDate: str  # noqa: N815
+if TYPE_CHECKING:
+    from dto.db import BillDB
 
 
 class BillBack(OrderBack):

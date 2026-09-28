@@ -5,14 +5,14 @@ import requests
 from dotenv import dotenv_values
 from requests import Response
 
-from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
-from constants.order_billit import BillitPDF, OrderBillit
+from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS
+from dto.external import BillitPDF, OrderBillit
+from dto.front import ResponseMessage
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from constants.customer_back import CustomerBack
-    from constants.order_back import OrderBack
+    from dto.back import CustomerBack, OrderBack
 
 
 def get_headers() -> dict[str, str]:

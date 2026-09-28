@@ -1,4 +1,4 @@
-from constants.cnote_back import CnoteBack
+from dto.back import CnoteBack
 from models.order_model import OrderModel
 
 

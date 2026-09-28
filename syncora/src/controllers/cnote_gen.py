@@ -2,13 +2,12 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader
 
-from constants.order_pdf import PDF
 from controllers.bill_gen import html_to_pdf
+from dto.pdf import PDF
 from pdf.static_data import cnote_static
 
 if TYPE_CHECKING:
-    from constants.cnote_back import CnoteBack
-    from constants.customer_back import CustomerBack
+    from dto.back import CnoteBack, CustomerBack
 
 
 def create_cnote_pdf(order_data: CnoteBack, customer_data: CustomerBack) -> bytes:

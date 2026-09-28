@@ -1,4 +1,4 @@
-from constants.bill_back import BillBack
+from dto.back import BillBack
 from models.order_model import OrderModel
 
 

@@ -1,7 +1,7 @@
 from typing import Any
 
-from constants.all import RESPONSE_SUCCESS, ResponseMessage
-from constants.customer_back import (
+from constants.all import RESPONSE_SUCCESS
+from constants.customer_fields import (
     CUSTOMER_DB_CITY,
     CUSTOMER_DB_COMMENT,
     CUSTOMER_DB_COMPANY,
@@ -10,9 +10,9 @@ from constants.customer_back import (
     CUSTOMER_DB_NAME,
     CUSTOMER_DB_POSTAL_CODE,
     CUSTOMER_DB_VAT_NUMBER,
-    CustomerBack,
-    CustomerFront,
 )
+from dto.back import CustomerBack
+from dto.front import CustomerFront, ResponseMessage
 from models.customers import CustomerModel
 from utils.generic_error import SyncoraError
 

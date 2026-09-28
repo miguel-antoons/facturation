@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from flask import Flask
     from flask.testing import FlaskClient
 
-    from constants.customer_back import CustomerBack
+    from dto.back import CustomerBack
 
 # A fixed environment used in place of the real .env. The values are
 # meaningless but stable; tests reference them (e.g. the Billit base URL).

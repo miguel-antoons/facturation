@@ -7,8 +7,8 @@ model directly; the HTTP contract is covered in ``tests/api/test_customers.py``.
 
 import pytest
 
-from constants.all import Undefined
-from constants.customer_back import CustomerBack
+from classes import Undefined
+from dto.back import CustomerBack
 
 
 def customer(**kwargs: object) -> CustomerBack:

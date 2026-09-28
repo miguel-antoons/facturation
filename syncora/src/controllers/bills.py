@@ -2,23 +2,22 @@ from constants.all import (
     RESPONSE_ERROR,
     RESPONSE_SUCCESS,
     RESPONSE_WARNING,
-    ResponseMessage,
 )
-from constants.bill_back import BillBack
-from constants.customer_back import (
+from constants.customer_fields import (
     CUSTOMER_DB_COMPANY,
     CUSTOMER_DB_FIRSTNAME,
     CUSTOMER_DB_NAME,
 )
-from constants.order_back import (
+from constants.peppol import (
     PEPPOL_DELIVERY_STATUS_PENDING,
     PEPPOL_DELIVERY_STATUS_SENT,
     PEPPOL_DELIVERY_STATUS_UNKNOWN,
 )
-from constants.order_front import OrderFront, OrderFrontShort
 from controllers import billit
 from controllers.bill_gen import create_bill_pdf
 from controllers.billit import send_billit, send_peppol
+from dto.back import BillBack
+from dto.front import OrderFront, OrderFrontShort, ResponseMessage
 from models.bills import BillModel
 from models.customers import CustomerModel
 from utils.peppol_poller import PeppolStatusPoller

@@ -10,15 +10,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from constants.bill_back import BillBack
-from constants.customer_billit import CustomerBillit
-from constants.order_billit import (
+from constants.billit import (
     ORDER_DIRECTION_INCOME,
     ORDER_TYPE_CREDIT_NOTE,
     ORDER_TYPE_INVOICE,
-    OrderBillit,
 )
-from src.constants.cnote_back import CnoteBack
+from dto.back import BillBack, CnoteBack
+from dto.external import CustomerBillit, OrderBillit
 from tests.helpers import make_bill_payload, make_cnote_payload, make_customer_back
 from utils.generic_error import SyncoraError
 

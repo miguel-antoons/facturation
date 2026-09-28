@@ -2,24 +2,22 @@ from constants.all import (
     RESPONSE_ERROR,
     RESPONSE_SUCCESS,
     RESPONSE_WARNING,
-    ResponseMessage,
 )
-from constants.cnote_back import CnoteBack
-from constants.customer_back import (
+from constants.customer_fields import (
     CUSTOMER_DB_COMPANY,
     CUSTOMER_DB_FIRSTNAME,
     CUSTOMER_DB_NAME,
 )
-from constants.order_back import (
-    ORDER_BACK_ORDER_NUMBER,
+from constants.order import ORDER_BACK_ORDER_NUMBER
+from constants.peppol import (
     PEPPOL_DELIVERY_STATUS_PENDING,
     PEPPOL_DELIVERY_STATUS_SENT,
     PEPPOL_DELIVERY_STATUS_UNKNOWN,
 )
-from constants.order_front import OrderFront, OrderFrontShort
 from controllers import billit
-from controllers.billit import send_peppol
 from controllers.cnote_gen import create_cnote_pdf
+from dto.back import CnoteBack
+from dto.front import OrderFront, OrderFrontShort, ResponseMessage
 from models.bills import BillModel
 from models.cnotes import CnoteModel
 from models.customers import CustomerModel
@@ -175,7 +173,7 @@ def send_cnote_peppol(cnote_id: str) -> ResponseMessage:
     order_data: CnoteBack = CnoteModel.get_one(cnote_id)
     if res := pre_peppol_checks(order_data):
         return res
-    response = send_peppol(order_data.externalId)
+    response = billit.send_peppol(order_data.externalId)
     if response.status_code in [200, 201]:
         CnoteModel.set_peppol_status(
             order_data.externalId, PEPPOL_DELIVERY_STATUS_UNKNOWN

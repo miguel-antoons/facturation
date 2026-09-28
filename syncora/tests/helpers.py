@@ -10,7 +10,7 @@ from typing import Any
 
 from bson import ObjectId
 
-from constants.customer_back import CustomerBack
+from dto.back import CustomerBack
 
 # Default line: 1 unit at 100.00 excl, 6% VAT.
 DEFAULT_LINE: dict[str, Any] = {
