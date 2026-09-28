@@ -59,9 +59,9 @@ def test_order_number_uniqueness_is_code_only_no_db_index(
     """TC-GAP-9 / TC-NFR-10 : nothing prevents two bills with the same
     orderNumber coexisting in Mongo (uniqueness is checked in controller code
     only, not via a unique index)."""
-    mongo["bills"].insert_one({"orderNumber": "2026-001", "externalId": 0})
-    mongo["bills"].insert_one({"orderNumber": "2026-001", "externalId": 0})
-    assert mongo["bills"].count_documents({"orderNumber": "2026-001"}) == 2
+    mongo["bills"].insert_one({"orderNumber": "2026001", "externalId": 0})
+    mongo["bills"].insert_one({"orderNumber": "2026001", "externalId": 0})
+    assert mongo["bills"].count_documents({"orderNumber": "2026001"}) == 2
 
 
 @pytest.mark.gap

@@ -182,6 +182,42 @@ def test_pdf_reverse_charge_legal_text_for_code_21(
 
 
 @pytest.mark.integration
+@pytest.mark.parametrize(
+    ("code", "present"),
+    [("2", True), ("4", False)],
+    ids=["code-2-has-certificate", "code-4-no-certificate"],
+)
+@pytest.mark.usefixtures("chdir_repo", "weasyprint")
+def test_pdf_cnote_six_percent_certificate_only_for_code_2(
+    client: FlaskClient,
+    mongo: mongomock.Database,
+    customer_store: FakeCustomerStore,
+    code: str,
+    present: bool,
+) -> None:
+    # TC-PDF-3 / TC-PDF-4 for credit notes
+    _seed_customer(customer_store, language="fr")
+    cnote_id = insert_cnote(mongo, customer_id=1, ventilation_code=code)
+    text = pdf_text(client.get(f"/api/files/cnotes/{cnote_id}").data)
+    # The FR 6% certificate starts with "Taux de TVA"
+    assert ("Taux de TVA" in text) is present
+
+
+@pytest.mark.integration
+@pytest.mark.usefixtures("chdir_repo", "weasyprint")
+def test_pdf_cnote_reverse_charge_legal_text_for_code_21(
+    client: FlaskClient,
+    mongo: mongomock.Database,
+    customer_store: FakeCustomerStore,
+) -> None:
+    # TC-PDF-5 for credit notes
+    _seed_customer(customer_store, language="fr")
+    cnote_id = insert_cnote(mongo, customer_id=1, ventilation_code="21")
+    text = pdf_text(client.get(f"/api/files/cnotes/{cnote_id}").data)
+    assert "Autoliquidation" in text
+
+
+@pytest.mark.integration
 @pytest.mark.usefixtures("chdir_repo", "weasyprint")
 def test_pdf_appends_general_conditions_multiple_pages(
     client: FlaskClient,

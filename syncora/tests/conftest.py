@@ -217,12 +217,17 @@ def billit_fake() -> Generator[responses.RequestsMock]:
 @pytest.fixture
 def fake_pdf(monkeypatch: pytest.MonkeyPatch) -> None:
     """Stub out WeasyPrint PDF generation with deterministic dummy bytes."""
-    monkeypatch.setattr(
-        "controllers.bill_gen.create_bill", lambda *a, **k: b"%PDF-1.4 fake"
-    )
-    monkeypatch.setattr(
-        "controllers.cnote_gen.create_cnote", lambda *a, **k: b"%PDF-1.4 fake"
-    )
+
+    def _fake(*_args: object, **_kwargs: object) -> bytes:
+        return b"%PDF-1.4 fake"
+
+    for target in (
+        "controllers.bills.create_bill_pdf",  # sendBillit (bills)
+        "controllers.cnotes.create_cnote_pdf",  # sendBillit (credit notes)
+        "controllers.files.create_bill_pdf",  # file download
+        "controllers.files.create_cnote_pdf",  # file download
+    ):
+        monkeypatch.setattr(target, _fake)
 
 
 # --------------------------------------------------------------------------- #

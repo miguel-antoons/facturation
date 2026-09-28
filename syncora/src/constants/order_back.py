@@ -1,11 +1,15 @@
-from typing import Any, NotRequired, TypedDict
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Any, NotRequired, Self, TypedDict
 
 from bson import ObjectId
-from dateutil import parser
 from pydantic import BaseModel, Field, computed_field, field_validator
 
 from constants.all import SyncoraModel, SyncoraUndefined, Undefined
+from utils.formatters import format_date
 from utils.generic_error import Severity, SyncoraError
+
+if TYPE_CHECKING:
+    from src.constants.order_pdf import OrderPDF
 
 PEPPOL_DELIVERY_STATUS_NOT_SENT = -1
 PEPPOL_DELIVERY_STATUS_UNKNOWN = 0
@@ -32,16 +36,13 @@ class OrderLineDB(TypedDict):
 
 class OrderDB(TypedDict):
     _id: NotRequired[str]
-    orderId: NotRequired[int]
     customerId: NotRequired[int]
     orderNumber: str
     orderDate: str
     expiryDate: str
-    deliveryDate: str
     orderTitle: str
     orderLines: NotRequired[list[OrderLineDB]]
     ventilationCode: NotRequired[str]
-    aboutInvoiceNumber: NotRequired[str]
     peppolDeliveryStatus: NotRequired[int]
 
 
@@ -85,10 +86,6 @@ def _order_line_total_incl(
     return total_excl + vat_amount
 
 
-def _format_date(date: str) -> str:
-    return parser.parse(date).strftime("%d/%m/%Y") if date else ""
-
-
 class OrderBack(SyncoraModel):
     orderId: str = Field(default=SyncoraUndefined, validation_alias="_id")  # noqa: N815
     customerId: int = Field(default=SyncoraUndefined)  # noqa: N815
@@ -99,9 +96,7 @@ class OrderBack(SyncoraModel):
     orderTitle: str = Field(default=SyncoraUndefined)  # noqa: N815
     orderLines: list[_OrderLineBack] = Field(default=[])  # noqa: N815
     expiryDate: str = Field(default=SyncoraUndefined)  # noqa: N815
-    deliveryDate: str = Field(default=SyncoraUndefined)  # noqa: N815
     ventilationCode: str = Field(default=SyncoraUndefined)  # noqa: N815
-    aboutInvoiceNumber: str = Field(default=SyncoraUndefined)  # noqa: N815
     peppolDeliveryStatus: int = Field(default=SyncoraUndefined)  # noqa: N815
     _total_excl: float = None
     _total_incl: float = None
@@ -148,23 +143,6 @@ class OrderBack(SyncoraModel):
         return round(res, 2)
 
     @property
-    def ogm(self) -> str:
-        if self.is_cnote:
-            return ""
-        ref_numbers = self.orderNumber.ljust(10, "0")
-        check_digit = int(ref_numbers[:10]) % 97
-        if check_digit == 0:
-            check_digit = 97
-        return (
-            f"+++{ref_numbers[0:3]}/{ref_numbers[3:7]}/"
-            f"{ref_numbers[7:10]}{str(check_digit).ljust(2, '0')}+++"
-        )
-
-    @property
-    def is_cnote(self) -> bool:
-        return not isinstance(self.aboutInvoiceNumber, Undefined)
-
-    @property
     def locked(self) -> bool:
         if isinstance(self.billit_sent, Undefined):
             raise SyncoraError(
@@ -188,17 +166,11 @@ class OrderBack(SyncoraModel):
 
     @property
     def formatted_order_date(self) -> str:
-        return _format_date(self.orderDate)
-
-    @property
-    def formatted_delivery_date(self) -> str:
-        if self.is_cnote:
-            return ""
-        return _format_date(self.deliveryDate)
+        return format_date(self.orderDate)
 
     @property
     def formatted_expiry_date(self) -> str:
-        return _format_date(self.expiryDate)
+        return format_date(self.expiryDate)
 
     @field_validator("orderId", mode="before")
     @classmethod
@@ -207,33 +179,22 @@ class OrderBack(SyncoraModel):
             return str(order_id)
         return order_id
 
-    @staticmethod
-    def from_db(order_db: OrderDB) -> OrderBack:
-        return OrderBack.model_validate(order_db)
+    @classmethod
+    @abstractmethod
+    def from_db(cls, order_db: OrderDB) -> Self:
+        """Build an instance from its raw database document."""
 
+    @abstractmethod
     def to_db(self) -> OrderDB:
-        return self.model_dump(
-            exclude_unset=True, exclude_computed_fields=True, exclude={"orderId"}
-        )
+        """Return the raw database document for this order."""
 
+    @abstractmethod
     def to_front(self) -> dict[str, Any]:  # noqa: ANN401
-        return self.model_dump(
-            exclude={
-                "orderId": True,
-                "externalId": True,
-                "total_excl": True,
-                "total_incl": True,
-                "total_vat": True,
-                "orderLines": {
-                    "__all__": {
-                        "total_excl",
-                        "total_incl",
-                        "total_vat",
-                    }
-                },
-            },
-            by_alias=True,
-        )
+        """Return the frontend-facing representation of this order."""
+
+    @abstractmethod
+    def to_pdf(self) -> OrderPDF:
+        """Return the PDF-facing representation of this order."""
 
     def _calc_totals(self) -> None:
         """Compute order totals using Billit's taxable-amount method.

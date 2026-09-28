@@ -37,14 +37,14 @@ def test_error_and_warning_envelopes_have_status_field(
 ) -> None:
     # TC-NFR-5 : every non-success body includes a "status" field
     customer_store.seed(make_customer_back(id=1))
-    insert_bill(mongo, order_number="2026-001")
+    insert_bill(mongo, order_number="2026001")
 
     # error: duplicate order number
     dup = client.post(
         "/api/bills",
         json={
             "customerId": 1,
-            "orderNumber": "2026-001",
+            "orderNumber": "2026001",
             "orderDate": "2026-09-06",
             "expiryDate": "2026-09-20",
             "deliveryDate": "2026-09-06",
@@ -64,7 +64,7 @@ def test_error_and_warning_envelopes_have_status_field(
     assert dup["status"] in ("error", "warning")
 
     # warning: undeletable bill delete
-    undeletable_id = insert_bill(mongo, order_number="2026-002", peppol_status=1)
+    undeletable_id = insert_bill(mongo, order_number="2026002", peppol_status=1)
     warn = client.delete(f"/api/bills/{undeletable_id}").get_json()
     assert "status" in warn
     assert warn["status"] == "warning"
@@ -107,7 +107,7 @@ def test_listing_returns_the_full_collection(
     # TC-NFR-8 : no pagination; all seeded docs are returned
     customer_store.seed(make_customer_back(id=1))
     for i in range(5):
-        insert_bill(mongo, order_number=f"2026-{i:03d}", customer_id=1)
+        insert_bill(mongo, order_number=f"2026{i:03d}", customer_id=1)
     assert len(client.get("/api/bills").get_json()) == 5
 
 

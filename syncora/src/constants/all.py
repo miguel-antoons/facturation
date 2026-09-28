@@ -89,9 +89,9 @@ class SyncoraModel(BaseModel, ABC):
     def ret_def(val: Any, alt: Any) -> Any:  # noqa: ANN401
         return val if isinstance(val, Undefined) else alt
 
-    @staticmethod
+    @classmethod
     @abstractmethod
-    def from_db(*args: list, **kwargs: dict) -> SyncoraModel:
+    def from_db(cls, *args: list, **kwargs: dict) -> SyncoraModel:
         pass
 
     @abstractmethod
@@ -100,4 +100,8 @@ class SyncoraModel(BaseModel, ABC):
 
     @abstractmethod
     def to_front(self) -> str | dict:
+        pass
+
+    @abstractmethod
+    def to_pdf(self) -> dict:
         pass

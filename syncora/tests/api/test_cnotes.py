@@ -38,14 +38,14 @@ def test_create_cnote_persists_about_invoice_number(
     resp = client.post("/api/cnotes", json=make_cnote_payload())
     assert resp.get_json()["status"] == "success"
     doc = mongo["cnotes"].find_one({"_id": ObjectId(resp.get_json()["id"])})
-    assert doc["aboutInvoiceNumber"] == "2026-001"
+    assert doc["aboutInvoiceNumber"] == "2026001"
 
 
 def test_bill_without_about_invoice_number_is_not_a_cnote(
     client: FlaskClient, mongo: mongomock.Database
 ) -> None:
     # TC-CN-2 : a bill's to_front omits aboutInvoiceNumber
-    bill_id = insert_bill(mongo, order_number="2026-001")
+    bill_id = insert_bill(mongo, order_number="2026001")
     body = client.get(f"/api/bills/{bill_id}").get_json()
     assert "aboutInvoiceNumber" not in body
 
@@ -57,20 +57,9 @@ def test_get_cnote_includes_about_invoice_number(
     cnote_id = insert_cnote(mongo, order_number="C2026-001")
     body = client.get(f"/api/cnotes/{cnote_id}").get_json()
     assert set(body.keys()) == CNOTE_FRONT_KEYS
-    assert body["aboutInvoiceNumber"] == "2026-001"
+    assert body["aboutInvoiceNumber"] == "2026001"
     # formatted_delivery_date is a model property (not serialized); see
     # test_cnote_ogm_and_delivery_date_empty for the model-level assertion.
-
-
-def test_cnote_ogm_and_delivery_date_empty(mongo: mongomock.Database) -> None:
-    # TC-CN-4 / TC-CN-5 : credit notes have no OGM and no delivery date
-    from models.cnotes import CnoteModel
-
-    cnote_id = insert_cnote(mongo, order_number="C2026-001")
-    order = CnoteModel.get_one(cnote_id)
-    assert order.ogm == ""
-    assert order.formatted_delivery_date == ""
-    assert order.is_cnote is True
 
 
 @pytest.mark.parametrize("status", [0, 1, 2])
@@ -118,6 +107,6 @@ def test_same_order_number_in_bills_and_cnotes_both_succeed(
     mongo: mongomock.Database,
 ) -> None:
     # TC-CN-9 : uniqueness is per-collection, not cross-collection
-    insert_bill(mongo, order_number="2026-001")
-    resp = client.post("/api/cnotes", json=make_cnote_payload(order_number="2026-001"))
+    insert_bill(mongo, order_number="2026001")
+    resp = client.post("/api/cnotes", json=make_cnote_payload(order_number="2026001"))
     assert resp.get_json()["status"] == "success"

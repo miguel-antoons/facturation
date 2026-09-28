@@ -7,63 +7,12 @@ from requests import Response
 
 from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
 from constants.order_billit import BillitPDF, OrderBillit
-from constants.order_pdf import PDF, CustomerPDF, OrderLinePDF, OrderPDF
-from pdf.static_data import comments
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from constants.customer_back import CustomerBack
-    from constants.order_back import OrderBack, _OrderLineBack
-
-
-def format_dyn_data(
-    order_data: OrderBack,
-    customer_data: CustomerBack,
-    *,
-    set_id: bool = False,
-    number_formatter: Callable[[int | float], str] = lambda n: n,
-    order_lines_formater: Callable[[_OrderLineBack], OrderLinePDF] = lambda d: d,
-) -> PDF:
-    result = PDF(
-        Order=OrderPDF(
-            OrderNumber=order_data.orderNumber,
-            AboutInvoiceNumber=order_data.aboutInvoiceNumber or "",
-            OrderDate=order_data.formatted_order_date,
-            DeliveryDate=order_data.formatted_delivery_date,
-            ExpiryDate=order_data.formatted_expiry_date,
-            OrderTitle=order_data.orderTitle,
-            YourReference=order_data.orderNumber,
-            VAT=number_formatter(order_data.orderLines[0].VATPercentage),
-            TotalExcl=number_formatter(order_data.total_excl),
-            TotalVAT=number_formatter(order_data.total_vat),
-            TotalIncl=number_formatter(order_data.total_incl),
-            Comments="",
-            LegalInfo=comments[customer_data.language.upper()][
-                order_data.ventilationCode
-            ],
-            OGM=order_data.ogm,
-        ),
-        Customer=CustomerPDF(
-            OfficialCompanyName=customer_data.company or "",
-            ContactFullName=(
-                f"{customer_data.name or ''} {customer_data.surname or ''}".strip()
-            ),
-            Salutation=customer_data.salutation,
-            StreetAndNumber=f"{customer_data.street} {customer_data.number}".strip(),
-            ZipCode=customer_data.postal_code,
-            City=customer_data.city,
-            CountryName="",
-            VAT=customer_data.vat_number,
-            Nr=customer_data.id,
-        ),
-        OrderLines=list(map(order_lines_formater, order_data.orderLines)),
-    )
-
-    if set_id:
-        result["id"] = order_data.orderId
-
-    return result
+    from constants.order_back import OrderBack
 
 
 def get_headers() -> dict[str, str]:

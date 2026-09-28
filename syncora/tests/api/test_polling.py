@@ -230,7 +230,7 @@ def test_poll_persists_status_via_callback(
     bill_id = (
         mongo["bills"]
         .insert_one(
-            {"orderNumber": "2026-001", "externalId": 42, "peppolDeliveryStatus": 0}
+            {"orderNumber": "2026001", "externalId": 42, "peppolDeliveryStatus": 0}
         )
         .inserted_id
     )

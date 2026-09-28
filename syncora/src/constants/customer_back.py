@@ -4,6 +4,7 @@ from typing import Annotated, Any, NotRequired, ReadOnly, TypedDict
 from pydantic import Field, computed_field, field_validator, model_validator
 
 from constants.all import SyncoraModel, SyncoraUndefined, Undefined
+from constants.order_pdf import CustomerPDF
 
 PARTY_TYPE_CUSTOMER = "Customer"
 ADDRESS_TYPE_INVOICE_ADDRESS = "InvoiceAddress"
@@ -119,6 +120,19 @@ class CustomerBack(SyncoraModel):
                 "telephoneNumbers",
                 "mobileNumbers",
             },
+        )
+
+    def to_pdf(self) -> CustomerPDF:
+        return CustomerPDF(
+            OfficialCompanyName=self.company or "",
+            ContactFullName=(f"{self.name or ''} {self.surname or ''}".strip()),
+            Salutation=self.salutation or "",
+            StreetAndNumber=f"{self.street} {self.number}".strip(),
+            ZipCode=self.postal_code or "",
+            City=self.city or "",
+            CountryName="",
+            VAT=self.vat_number or "",
+            Nr=self.id,
         )
 
     @computed_field

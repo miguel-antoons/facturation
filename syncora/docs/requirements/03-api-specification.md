@@ -40,7 +40,7 @@ Response envelope (`ResponseMessage`, `constants/all.py`):
   "orderDate": "2026-09-06",    // ISO date
   "expiryDate": "2026-09-20",
   "deliveryDate": "2026-09-06",
-  "orderNumber": "2026-001",    // unique within bills; null/empty allowed on create
+  "orderNumber": "2026001",    // unique within bills; null/empty allowed on create
   "ventilationCode": "2",       // Billit VAT code ("2"|"4"|"21"...)
   "orderLines": [
     { "description": "...", "quantity": 1, "unitPriceExcl": 100.0,
@@ -94,7 +94,7 @@ Mirror of the bills API, paths under `/api/cnotes`. Differences are noted in
   "orderDate": "...",
   "expiryDate": "...",
   "orderNumber": "C2026-001",
-  "aboutInvoiceNumber": "2026-001",   // present ⇒ credit note
+  "aboutInvoiceNumber": "2026001",   // present ⇒ credit note
   "ventilationCode": "2",
   "orderLines": [ ... ]
 }
@@ -157,7 +157,7 @@ Returned by API-BILL-3 / API-CN-3. Field aliases (`by_alias=True`) with
 {
   "customerId": 12,
   "customerName": "Luc Dupont, Acme",   // only if set (list path)
-  "orderNumber": "2026-001",
+  "orderNumber": "2026001",
   "orderDate": "...", "expiryDate": "...", "deliveryDate": "...",
   "orderTitle": "...",
   "ventilationCode": "2",

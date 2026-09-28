@@ -2,8 +2,8 @@ import io
 
 from reportlab.pdfgen.canvas import Canvas
 
-from controllers.bill_gen import create_bill
-from controllers.cnote_gen import create_cnote
+from controllers.bill_gen import create_bill_pdf
+from controllers.cnote_gen import create_cnote_pdf
 from models.bills import BillModel
 from models.cnotes import CnoteModel
 from models.customers import CustomerModel
@@ -36,10 +36,10 @@ def get_customer_file(customer_id: int) -> bytes:
 def get_bill_file(bill_id: str) -> bytes:
     order_data = BillModel.get_one(bill_id)
     customer_data = CustomerModel.get_one(order_data.customerId)
-    return create_bill(order_data, customer_data)
+    return create_bill_pdf(order_data, customer_data)
 
 
 def get_cnote_file(cnote_id: str) -> bytes:
     order_data = CnoteModel.get_one(cnote_id)
     customer_data = CustomerModel.get_one(order_data.customerId)
-    return create_cnote(order_data, customer_data)
+    return create_cnote_pdf(order_data, customer_data)

@@ -19,8 +19,7 @@
                 <td style="vertical-align: bottom;">
                     {{ static_data.Me.OfficialCompanyName }}<br />
                     {{ static_data.Me.StreetAndNumber }}<br />
-                    {{ static_data.Me.ZipCode }}<br />
-                    {{ static_data.Me.City }}<br />
+                    {{ static_data.Me.ZipCode }} {{ static_data.Me.City }}<br />
                     {{ static_data.Me.CountryName }}
                     <div>{{ static_data.Me.VAT }}</div>
                 </td>
@@ -31,8 +30,7 @@
                         {{ dyn_data.Customer.ContactFullName }}
                     </div>
                     {{ dyn_data.Customer.StreetAndNumber }}<br />
-                    {{ dyn_data.Customer.ZipCode }}<br />
-                    {{ dyn_data.Customer.City }}<br />
+                    {{ dyn_data.Customer.ZipCode }} {{ dyn_data.Customer.City }}<br />
                     {{ dyn_data.Customer.CountryName }}
                     <div>{{ dyn_data.Customer.VAT }}</div>
                 </td>
@@ -164,9 +162,9 @@
                 <tr>
                     <td colspan="2" style="width: 70%;">&nbsp;
                         <div><strong>{{ dyn_data.Order.Comments }}</strong></div>
-                        {{ dyn_data.Order.LegalInfo }}
+                        {{ static_data.Label.LegalInfo[dyn_data.Order.VentilationCode] }}
 
-                        <div>{{ static_data.Label.SixPercentVatCertificate }}</div>
+                        <div>{{ static_data.Label.SixPercentVatCertificate[dyn_data.Order.VentilationCode] }}</div>
                         <br />
                         <div>{{ static_data.Label.GeneralConditions }}</div>
                     </td>

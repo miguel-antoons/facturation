@@ -41,30 +41,40 @@ comments = {
 }
 
 six_percent_certificate = {
-    "NL": "Btw-tarief: Bij gebrek aan schriftelijke betwisting binnen een termijn van "
-    "één maand vanaf de ontvangst van de factuur, wordt de klant geacht te "
-    "erkennen dat (1) de werken worden verricht aan een woning waarvan de eerste "
-    "ingebruikneming heeft plaatsgevonden in een kalenderjaar dat ten minste "
-    "tien jaar voorafgaat aan de datum van de eerste factuur met betrekking tot "
-    "die werken, (2) de woning, na uitvoering van die werken, uitsluitend of "
-    "hoofdzakelijk als privé-woning wordt gebruikt en (3) de werken worden "
-    "versterkt en gefactureerd aan een eindverbruiker. Wanneer minstens één van "
-    "die voorwaarden niet is voldaan, zal het normale BTW-tarief van 21 pct. "
-    "van toepassing zijn en is de afnemer ten aanzien van die voorwaarden "
-    "aansprakelijk voor de betaling van de verschuldigde belasting, interesten en"
-    " geldboeten.",
-    "FR": "Taux de TVA: En l'absence de contestation par écrit, dans un délai d'un mois"
-    " à compter de la réception de la facture, le client est présumé reconnaître "
-    "que (1) les travaux sont effectués dans un bâtiment dont la première "
-    "occupation a eu lieu au cours d'une année civile qui précède d'au moins dix "
-    "ans de la date de la première facture realtive à ces travaux, (2) qu'après "
-    "l'exécution de ces travaux, l'habitation est utilisée, soit exclusivement "
-    "soit à titre principal comme logement privé et (3) que ces travaux sont "
-    "fournis et facturés à un consommateur final. Si au moins une de ces "
-    "conditions n'est pas remplie, le taux normal de TVA de 21 p.c. sera "
-    "applicable et le client endossera, par rapport à ces conditions, la "
-    "responsabilité quant au paiement de la taxe, des intérêts et des amendes"
-    " dus.",
+    "NL": {
+        "1": "",
+        "2": "Btw-tarief: Bij gebrek aan schriftelijke betwisting binnen een termijn "
+        "van één maand vanaf de ontvangst van de factuur, wordt de klant geacht te "
+        "erkennen dat (1) de werken worden verricht aan een woning waarvan de eerste "
+        "ingebruikneming heeft plaatsgevonden in een kalenderjaar dat ten minste "
+        "tien jaar voorafgaat aan de datum van de eerste factuur met betrekking tot "
+        "die werken, (2) de woning, na uitvoering van die werken, uitsluitend of "
+        "hoofdzakelijk als privé-woning wordt gebruikt en (3) de werken worden "
+        "versterkt en gefactureerd aan een eindverbruiker. Wanneer minstens één van "
+        "die voorwaarden niet is voldaan, zal het normale BTW-tarief van 21 pct. "
+        "van toepassing zijn en is de afnemer ten aanzien van die voorwaarden "
+        "aansprakelijk voor de betaling van de verschuldigde belasting, interesten en"
+        " geldboeten.",
+        "4": "",
+        "21": "",
+    },
+    "FR": {
+        "1": "",
+        "2": "Taux de TVA: En l'absence de contestation par écrit, dans un délai d'un "
+        "mois à compter de la réception de la facture, le client est présumé "
+        "reconnaître que (1) les travaux sont effectués dans un bâtiment dont la "
+        "première occupation a eu lieu au cours d'une année civile qui précède d'au "
+        "moins dix ans de la date de la première facture realtive à ces travaux, (2) "
+        "qu'après l'exécution de ces travaux, l'habitation est utilisée, soit "
+        "exclusivement soit à titre principal comme logement privé et (3) que ces "
+        "travaux sont fournis et facturés à un consommateur final. Si au moins une de "
+        "ces conditions n'est pas remplie, le taux normal de TVA de 21 p.c. sera "
+        "applicable et le client endossera, par rapport à ces conditions, la "
+        "responsabilité quant au paiement de la taxe, des intérêts et des amendes"
+        " dus.",
+        "4": "",
+        "21": "",
+    },
 }
 
 static_nl = {
@@ -126,29 +136,49 @@ static_fr = {
 }
 
 
-def cnote_static_fr() -> dict[str, dict[str, str]]:
-    static = static_fr.copy()
-    static["Label"]["OrderType"] = "Note de crédit"
-    static["Label"]["OrderNumber"] = "Numéro de note de crédit"
-    return static
+bill_static = {
+    "FR": {
+        **static_fr,
+        "Label": {
+            **static_fr["Label"],
+            "OrderType": "Facture",
+            "OrderNumber": "Numéro de facture",
+            "SixPercentVatCertificate": six_percent_certificate["FR"],
+            "LegalInfo": comments["FR"],
+        },
+    },
+    "NL": {
+        **static_nl,
+        "Label": {
+            **static_nl["Label"],
+            "OrderType": "Factuur",
+            "OrderNumber": "Factuurnummer",
+            "SixPercentVatCertificate": six_percent_certificate["NL"],
+            "LegalInfo": comments["NL"],
+        },
+    },
+}
 
 
-def cnote_static_nl() -> dict[str, dict[str, str]]:
-    static = static_nl.copy()
-    static["Label"]["OrderType"] = "Creditnota"
-    static["Label"]["OrderNumber"] = "Creditnota nummer"
-    return static
-
-
-def bill_static_fr() -> dict[str, dict[str, str]]:
-    static = static_fr.copy()
-    static["Label"]["OrderType"] = "Facture"
-    static["Label"]["OrderNumber"] = "Numéro de facture"
-    return static
-
-
-def bill_static_nl() -> dict[str, dict[str, str]]:
-    static = static_nl.copy()
-    static["Label"]["OrderType"] = "Factuur"
-    static["Label"]["OrderNumber"] = "Factuurnummer"
-    return static
+cnote_static = {
+    "FR": {
+        **static_fr,
+        "Label": {
+            **static_fr["Label"],
+            "OrderType": "Note de crédit",
+            "OrderNumber": "Numéro de note de crédit",
+            "SixPercentVatCertificate": six_percent_certificate["FR"],
+            "LegalInfo": comments["FR"],
+        },
+    },
+    "NL": {
+        **static_nl,
+        "Label": {
+            **static_nl["Label"],
+            "OrderType": "Creditnota",
+            "OrderNumber": "Creditnota nummer",
+            "SixPercentVatCertificate": six_percent_certificate["NL"],
+            "LegalInfo": comments["NL"],
+        },
+    },
+}

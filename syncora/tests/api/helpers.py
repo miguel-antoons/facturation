@@ -17,7 +17,7 @@ CNOTES_PATH = "/api/cnotes"
 def insert_bill(
     mongo: mongomock.Database,
     *,
-    order_number: str = "2026-001",
+    order_number: str = "2026001",
     customer_id: int = 1,
     external_id: int = 0,
     peppol_status: int = -1,
@@ -52,7 +52,7 @@ def insert_cnote(
     customer_id: int = 1,
     external_id: int = 0,
     peppol_status: int = -1,
-    about_invoice_number: str = "2026-001",
+    about_invoice_number: str = "2026001",
     order_lines: list[dict[str, Any]] | None = None,
     ventilation_code: str = "2",
     order_title: str = "Note de crédit",

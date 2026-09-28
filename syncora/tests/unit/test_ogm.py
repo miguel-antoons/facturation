@@ -3,20 +3,16 @@
 The OGM is derived from ``orderNumber`` by left-padding to 10 chars with '0',
 taking ``int(first10) % 97`` (97 when 0) and formatting as
 ``+++ddd/dddd/ddddCC+++``. Credit notes return an empty string.
-
-Note: see ``tests/findings.md`` -- the implementation crashes when the
-orderNumber contains non-digit characters (e.g. the frontend's ``"2026-1"``
-format). The Sunny cases below use digit-only numbers; the crash is pinned
-separately as a known gap.
 """
 
 import pytest
+from pydantic import ValidationError
 
-from constants.order_back import OrderBack
+from constants.bill_back import BillBack
 
 
 def ogm_for(number: str) -> str:
-    order = OrderBack(orderNumber=number)
+    order = BillBack(orderNumber=number)
     return order.ogm
 
 
@@ -41,21 +37,14 @@ def test_ogm_longer_than_ten_chars_drops_overflow() -> None:
     assert ogm_for("12345678901") == "+++123/4567/89020+++"
 
 
-def test_ogm_credit_note_is_empty() -> None:
-    # TC-OGM-5 : credit notes have no OGM
-    order = OrderBack(orderNumber="2026000001", aboutInvoiceNumber="2026-001")
-    assert order.ogm == ""
-    assert order.is_cnote
-
-
-@pytest.mark.gap
-def test_ogm_non_digit_order_number_crashes() -> None:
-    """Pinned gap: OGM raises ValueError for non-digit orderNumbers.
+def test_ogm_non_digit_order_number_unreachable() -> None:
+    """Former findings.md §1 gap, now closed at the model boundary.
 
     The spec's TC-OGM-1 example uses ``"2026-1"`` (the frontend's invoice-number
-    format), but ``int("2026-10000")`` fails because of the hyphen. OGM is
-    therefore broken for any real orderNumber that is not pure digits. See
-    ``tests/findings.md``.
+    format), and ``int("2026-10000")`` would fail because of the hyphen.
+    ``BillBack`` now rejects non-digit orderNumbers at validation time, so
+    ``ogm`` can no longer crash on them. See
+    ``tests/unit/test_order_number_validation.py``.
     """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError, match="numerical digits"):
         _ = ogm_for("2026-1")

@@ -42,7 +42,7 @@ def make_order_line(
 def make_bill_payload(
     *,
     customer_id: int = 1,
-    order_number: str = "2026-001",
+    order_number: str = "2026001",
     order_title: str = "Chantier principal",
     ventilation_code: str = "2",
     order_date: str = "2026-09-06",
@@ -67,7 +67,7 @@ def make_cnote_payload(
     *,
     customer_id: int = 1,
     order_number: str = "C2026-001",
-    about_invoice_number: str = "2026-001",
+    about_invoice_number: str = "2026001",
     order_title: str = "Note de crédit",
     ventilation_code: str = "2",
     order_date: str = "2026-09-06",

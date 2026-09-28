@@ -1,5 +1,7 @@
+from constants.bill_back import BillBack
 from models.order_model import OrderModel
 
 
-class BillModel(OrderModel):
+class BillModel(OrderModel[BillBack]):
     database_name = "bills"
+    UsedDTO = BillBack

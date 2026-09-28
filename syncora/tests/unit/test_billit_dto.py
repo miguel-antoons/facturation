@@ -6,29 +6,29 @@ and assert on the outbound JSON shape -- no Flask, no HTTP. The full send flow
 ``tests/api/test_billit_flow.py``.
 """
 
+from typing import TYPE_CHECKING
+
 import pytest
 
+from constants.bill_back import BillBack
 from constants.customer_billit import CustomerBillit
-from constants.order_back import OrderBack
 from constants.order_billit import (
     ORDER_DIRECTION_INCOME,
     ORDER_TYPE_CREDIT_NOTE,
     ORDER_TYPE_INVOICE,
     OrderBillit,
 )
-from tests.helpers import make_bill_payload, make_customer_back
+from src.constants.cnote_back import CnoteBack
+from tests.helpers import make_bill_payload, make_cnote_payload, make_customer_back
 from utils.generic_error import SyncoraError
 
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
-def _order_billit(
-    *,
-    about_invoice_number: str | None = None,
-    customer: object | None = None,
-) -> OrderBillit:
+
+def _bill_billit(*, customer: BaseModel | None = None) -> OrderBillit:
     payload = dict(make_bill_payload())
-    if about_invoice_number is not None:
-        payload["aboutInvoiceNumber"] = about_invoice_number
-    order = OrderBack.model_validate(payload, by_name=True)
+    order = BillBack.model_validate(payload, by_name=True)
     cust = customer or make_customer_back()
     raw = order.model_dump()
     raw["Customer"] = cust.model_dump()
@@ -36,25 +36,32 @@ def _order_billit(
     return OrderBillit.model_validate(raw, extra="allow")
 
 
+def _cnote_billit(*, customer: BaseModel | None = None) -> OrderBillit:
+    payload = dict(make_cnote_payload())
+    order = CnoteBack.model_validate(payload, by_name=True)
+    cust = customer or make_customer_back()
+    raw = order.model_dump()
+    raw["Customer"] = cust.model_dump()
+    raw["OrderPDF"] = {"FileName": "cnote.pdf", "FileContent": "ZmFrZQ=="}
+    return OrderBillit.model_validate(raw, extra="allow")
+
+
 # --- OrderType / OrderDirection (TC-BILLIT-17, TC-BILLIT-18) ------------- #
 def test_order_type_is_invoice_for_bills() -> None:
-    assert _order_billit().OrderType == ORDER_TYPE_INVOICE
+    assert _bill_billit().OrderType == ORDER_TYPE_INVOICE
 
 
 def test_order_type_is_credit_note_for_cnotes() -> None:
-    assert (
-        _order_billit(about_invoice_number="2026-001").OrderType
-        == ORDER_TYPE_CREDIT_NOTE
-    )
+    assert _cnote_billit().OrderType == ORDER_TYPE_CREDIT_NOTE
 
 
 def test_order_direction_is_always_income() -> None:
-    assert _order_billit().OrderDirection == ORDER_DIRECTION_INCOME
+    assert _bill_billit().OrderDirection == ORDER_DIRECTION_INCOME
 
 
 # --- Credit-note amounts stay positive (TC-BILLIT-22) ------------------- #
 def test_credit_note_totals_are_non_negative() -> None:
-    payload = _order_billit(about_invoice_number="2026-001")
+    payload = _cnote_billit()
     assert payload.TotalExcl >= 0
     assert payload.TotalIncl >= 0
     assert payload.TotalVAT >= 0

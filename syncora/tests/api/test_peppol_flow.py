@@ -45,7 +45,7 @@ def test_send_peppol_success_sets_unknown_and_polls(
     # TC-PEPPOL-1 / TC-BILLIT-DEL-4 / TC-BILLIT-DEL-5
     customer_store.seed(make_customer_back(id=1, vat_number="BE0123456789"))
     bill_id = insert_bill(
-        mongo, order_number="2026-001", customer_id=1, external_id=42, peppol_status=-1
+        mongo, order_number="2026001", customer_id=1, external_id=42, peppol_status=-1
     )
     _register_send_success(billit_fake)
 
@@ -69,7 +69,7 @@ def test_send_peppol_not_registered_is_warning_no_call(
 ) -> None:
     # TC-PEPPOL-2
     bill_id = insert_bill(
-        mongo, order_number="2026-001", external_id=0, peppol_status=-1
+        mongo, order_number="2026001", external_id=0, peppol_status=-1
     )
     resp = client.post(f"/api/bills/sendPeppol/{bill_id}")
     assert resp.get_json()["status"] == "warning"
@@ -99,7 +99,7 @@ def test_send_peppol_customer_without_vat_is_warning_no_call(
     # TC-PEPPOL-5
     customer_store.seed(make_customer_back(id=1, vat_number=""))
     bill_id = insert_bill(
-        mongo, order_number="2026-001", customer_id=1, external_id=42, peppol_status=-1
+        mongo, order_number="2026001", customer_id=1, external_id=42, peppol_status=-1
     )
     resp = client.post(f"/api/bills/sendPeppol/{bill_id}")
     assert resp.get_json()["status"] == "warning"
@@ -115,7 +115,7 @@ def test_send_peppol_non_2xx_forwards_error_and_keeps_status(
     # TC-PEPPOL-6 / TC-NFR-3
     customer_store.seed(make_customer_back(id=1, vat_number="BE0"))
     bill_id = insert_bill(
-        mongo, order_number="2026-001", customer_id=1, external_id=42, peppol_status=-1
+        mongo, order_number="2026001", customer_id=1, external_id=42, peppol_status=-1
     )
     billit_fake.add(billit_fake.POST, SEND_URL, json={"error": "blocked"}, status=400)
 
@@ -139,7 +139,7 @@ def test_send_peppol_non_json_error_body_is_unhandled(
     # TC-PEPPOL-7 / TC-GAP-5
     customer_store.seed(make_customer_back(id=1, vat_number="BE0"))
     bill_id = insert_bill(
-        mongo, order_number="2026-001", customer_id=1, external_id=42, peppol_status=-1
+        mongo, order_number="2026001", customer_id=1, external_id=42, peppol_status=-1
     )
     billit_fake.add(
         billit_fake.POST, SEND_URL, body="oops", content_type="text/plain", status=500
@@ -158,7 +158,7 @@ def test_send_cnote_peppol_referenced_invoice_not_sent_is_warning(
     # TC-PEPPOL-8 : referenced invoice Peppol status != SENT
     customer_store.seed(make_customer_back(id=1, vat_number="BE0"))
     insert_bill(
-        mongo, order_number="2026-001", customer_id=1, external_id=10, peppol_status=0
+        mongo, order_number="2026001", customer_id=1, external_id=10, peppol_status=0
     )
     cnote_id = insert_cnote(
         mongo,
@@ -166,7 +166,7 @@ def test_send_cnote_peppol_referenced_invoice_not_sent_is_warning(
         customer_id=1,
         external_id=42,
         peppol_status=-1,
-        about_invoice_number="2026-001",
+        about_invoice_number="2026001",
     )
     resp = client.post(f"/api/cnotes/sendPeppol/{cnote_id}")
     assert resp.get_json()["status"] == "warning"
@@ -203,7 +203,7 @@ def test_send_cnote_peppol_referenced_invoice_sent_succeeds(
     # TC-PEPPOL-10
     customer_store.seed(make_customer_back(id=1, vat_number="BE0"))
     insert_bill(
-        mongo, order_number="2026-001", customer_id=1, external_id=10, peppol_status=2
+        mongo, order_number="2026001", customer_id=1, external_id=10, peppol_status=2
     )
     cnote_id = insert_cnote(
         mongo,
@@ -211,7 +211,7 @@ def test_send_cnote_peppol_referenced_invoice_sent_succeeds(
         customer_id=1,
         external_id=42,
         peppol_status=-1,
-        about_invoice_number="2026-001",
+        about_invoice_number="2026001",
     )
     _register_send_success(billit_fake)
 

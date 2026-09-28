@@ -6,47 +6,22 @@ from pypdf import PdfWriter
 from weasyprint import CSS, HTML
 from weasyprint.text.fonts import FontConfiguration
 
-from constants.order_pdf import PDF, order_line_string, price_to_string
-from controllers.billit import format_dyn_data
-from pdf.static_data import bill_static_fr, bill_static_nl, six_percent_certificate
+from constants.order_pdf import PDF
+from pdf.static_data import bill_static
 
 if TYPE_CHECKING:
+    from constants.bill_back import BillBack
     from constants.customer_back import CustomerBack
-    from constants.order_back import OrderBack
 
 
-def create_bill(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
-    if customer_data.language.upper() == "FR":
-        return fr_bill(order_data, customer_data)
-    return nl_bill(order_data, customer_data)
-
-
-def nl_bill(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
-    static_data = bill_static_nl()
-    static_data["Label"]["SixPercentVatCertificate"] = (
-        six_percent_certificate["NL"] if order_data.ventilationCode == "2" else ""
-    )
-    dyn_data = format_dyn_data(
-        order_data,
-        customer_data,
-        set_id=True,
-        number_formatter=price_to_string,
-        order_lines_formater=order_line_string,
-    )
-    return bill_gen(static_data, dyn_data)
-
-
-def fr_bill(order_data: OrderBack, customer_data: CustomerBack) -> bytes:
-    static_data = bill_static_fr()
-    static_data["Label"]["SixPercentVatCertificate"] = (
-        six_percent_certificate["FR"] if order_data.ventilationCode == "2" else ""
-    )
-    dyn_data = format_dyn_data(
-        order_data,
-        customer_data,
-        set_id=True,
-        number_formatter=price_to_string,
-        order_lines_formater=order_line_string,
+def create_bill_pdf(order_data: BillBack, customer_data: CustomerBack) -> bytes:
+    language = customer_data.language.upper()
+    static_data = bill_static[language]
+    order, order_lines = order_data.to_pdf()
+    dyn_data = PDF(
+        Order=order,
+        Customer=customer_data.to_pdf(),
+        OrderLines=order_lines,
     )
     return bill_gen(static_data, dyn_data)
 

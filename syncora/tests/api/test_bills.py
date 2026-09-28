@@ -41,8 +41,8 @@ def test_list_bills_short_rows(
 ) -> None:
     # TC-BILL-1
     customer_store.seed(make_customer_back(id=1, name="Dupont", surname="Luc"))
-    insert_bill(mongo, order_number="2026-001", customer_id=1)
-    insert_bill(mongo, order_number="2026-002", customer_id=1)
+    insert_bill(mongo, order_number="2026001", customer_id=1)
+    insert_bill(mongo, order_number="2026002", customer_id=1)
 
     items = client.get("/api/bills").get_json()
     assert len(items) == 2
@@ -60,12 +60,12 @@ def test_list_bills_customer_name_formatting(
     customer_store.seed(
         make_customer_back(id=2, name="Jane", surname="Doe", company="")
     )
-    insert_bill(mongo, order_number="2026-001", customer_id=1)
-    insert_bill(mongo, order_number="2026-002", customer_id=2)
+    insert_bill(mongo, order_number="2026001", customer_id=1)
+    insert_bill(mongo, order_number="2026002", customer_id=2)
 
     items = {b["orderNumber"]: b for b in client.get("/api/bills").get_json()}
-    assert items["2026-001"]["customerName"] == "Luc Dupont, Acme"
-    assert items["2026-002"]["customerName"] == "Jane Doe"
+    assert items["2026001"]["customerName"] == "Luc Dupont, Acme"
+    assert items["2026002"]["customerName"] == "Jane Doe"
 
 
 def test_list_bills_empty(client: FlaskClient) -> None:
@@ -78,7 +78,7 @@ def test_list_bills_unknown_customer_is_unhandled(
     client: FlaskClient, mongo: mongomock.Database
 ) -> None:
     # TC-BILL-4 : bill references a customer not in the store -> KeyError
-    insert_bill(mongo, order_number="2026-001", customer_id=999)
+    insert_bill(mongo, order_number="2026001", customer_id=999)
     with pytest.raises(KeyError):
         client.get("/api/bills")
 
@@ -108,9 +108,9 @@ def test_update_bill_same_order_number(
     client: FlaskClient, mongo: mongomock.Database
 ) -> None:
     # TC-BILL-7
-    bill_id = insert_bill(mongo, order_number="2026-001")
+    bill_id = insert_bill(mongo, order_number="2026001")
     resp = client.put(
-        f"/api/bills/{bill_id}", json=make_bill_payload(order_number="2026-001")
+        f"/api/bills/{bill_id}", json=make_bill_payload(order_number="2026001")
     )
     assert resp.get_json()["status"] == "success"
 
@@ -119,9 +119,9 @@ def test_update_bill_to_free_order_number(
     client: FlaskClient, mongo: mongomock.Database
 ) -> None:
     # TC-BILL-8
-    bill_id = insert_bill(mongo, order_number="2026-001")
+    bill_id = insert_bill(mongo, order_number="2026001")
     resp = client.put(
-        f"/api/bills/{bill_id}", json=make_bill_payload(order_number="2026-999")
+        f"/api/bills/{bill_id}", json=make_bill_payload(order_number="2026999")
     )
     assert resp.get_json()["status"] == "success"
 
@@ -130,8 +130,8 @@ def test_create_bill_duplicate_order_number_rejected(
     client: FlaskClient, mongo: mongomock.Database
 ) -> None:
     # TC-BILL-9
-    insert_bill(mongo, order_number="2026-001")
-    resp = client.post("/api/bills", json=make_bill_payload(order_number="2026-001"))
+    insert_bill(mongo, order_number="2026001")
+    resp = client.post("/api/bills", json=make_bill_payload(order_number="2026001"))
     body = resp.get_json()
     assert body["status"] == "error"
     assert "message" in body
@@ -141,10 +141,10 @@ def test_update_bill_to_used_order_number_rejected(
     client: FlaskClient, mongo: mongomock.Database
 ) -> None:
     # TC-BILL-10
-    insert_bill(mongo, order_number="2026-002")
-    bill_id = insert_bill(mongo, order_number="2026-001")
+    insert_bill(mongo, order_number="2026002")
+    bill_id = insert_bill(mongo, order_number="2026001")
     resp = client.put(
-        f"/api/bills/{bill_id}", json=make_bill_payload(order_number="2026-002")
+        f"/api/bills/{bill_id}", json=make_bill_payload(order_number="2026002")
     )
     assert resp.get_json()["status"] == "error"
 
@@ -154,11 +154,11 @@ def test_update_locked_bill_is_warning_and_unchanged(
 ) -> None:
     # TC-BILL-11
     bill_id = insert_bill(
-        mongo, order_number="2026-001", external_id=5, order_title="Original"
+        mongo, order_number="2026001", external_id=5, order_title="Original"
     )
     resp = client.put(
         f"/api/bills/{bill_id}",
-        json=make_bill_payload(order_number="2026-001", order_title="Changed"),
+        json=make_bill_payload(order_number="2026001", order_title="Changed"),
     )
     assert resp.get_json()["status"] == "warning"
     doc = mongo["bills"].find_one({"_id": ObjectId(bill_id)})
@@ -187,7 +187,7 @@ def test_create_bill_returns_string_id(client: FlaskClient) -> None:
 # --- Get one bill (TC-BILL-15..21) --------------------------------------- #
 def test_get_bill_front_shape(client: FlaskClient, mongo: mongomock.Database) -> None:
     # TC-BILL-15
-    bill_id = insert_bill(mongo, order_number="2026-001")
+    bill_id = insert_bill(mongo, order_number="2026001")
     body = client.get(f"/api/bills/{bill_id}").get_json()
     assert set(body.keys()) == BILL_FRONT_KEYS
     assert "orderId" not in body
@@ -243,7 +243,7 @@ def test_get_bill_response_omits_totals(
 ) -> None:
     # TC-BILL-21 : the spec expects totalExcl/totalVAT/totalIncl in the
     # response, but to_front() excludes them. Pinned here; see findings.md.
-    bill_id = insert_bill(mongo, order_number="2026-001")
+    bill_id = insert_bill(mongo, order_number="2026001")
     body = client.get(f"/api/bills/{bill_id}").get_json()
     for total in ("totalExcl", "totalVAT", "totalIncl"):
         assert total not in body

@@ -51,7 +51,7 @@ def test_send_billit_success_persists_external_id_and_locks(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-1
-    bill_id = insert_bill(mongo, order_number="2026-001", customer_id=1)
+    bill_id = insert_bill(mongo, order_number="2026001", customer_id=1)
     _register_orders_success(billit_fake, body=12345)
 
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
@@ -72,7 +72,7 @@ def test_send_billit_attaches_pdf_and_headers(
     fake_env: dict[str, str],
 ) -> None:
     # TC-BILLIT-16 / TC-NFR-12
-    bill_id = insert_bill(mongo, order_number="2026-001", customer_id=1)
+    bill_id = insert_bill(mongo, order_number="2026001", customer_id=1)
     _register_orders_success(billit_fake)
 
     client.post(f"/api/bills/sendBillit/{bill_id}")
@@ -102,7 +102,7 @@ def test_send_billit_locked_bill_is_warning_no_call(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-2
-    bill_id = insert_bill(mongo, order_number="2026-001", external_id=5)
+    bill_id = insert_bill(mongo, order_number="2026001", external_id=5)
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -128,7 +128,7 @@ def test_send_billit_missing_customer_id_is_warning_no_call(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-4
-    bill_id = insert_bill(mongo, order_number="2026-001", customer_id=0)
+    bill_id = insert_bill(mongo, order_number="2026001", customer_id=0)
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -141,7 +141,7 @@ def test_send_billit_missing_title_is_warning_no_call(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-5
-    bill_id = insert_bill(mongo, order_number="2026-001", order_title="")
+    bill_id = insert_bill(mongo, order_number="2026001", order_title="")
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -154,7 +154,7 @@ def test_send_billit_missing_ventilation_code_is_warning_no_call(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-6
-    bill_id = insert_bill(mongo, order_number="2026-001", ventilation_code="")
+    bill_id = insert_bill(mongo, order_number="2026001", ventilation_code="")
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -167,7 +167,7 @@ def test_send_billit_empty_order_lines_is_warning_no_call(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-7
-    bill_id = insert_bill(mongo, order_number="2026-001", order_lines=[])
+    bill_id = insert_bill(mongo, order_number="2026001", order_lines=[])
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -214,7 +214,7 @@ def test_send_billit_invalid_line_is_warning_no_call(
     billit_fake: responses.RequestsMock,
     bad_line: dict[str, object],
 ) -> None:
-    bill_id = insert_bill(mongo, order_number="2026-001", order_lines=[bad_line])
+    bill_id = insert_bill(mongo, order_number="2026001", order_lines=[bad_line])
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -241,7 +241,7 @@ def test_send_billit_second_line_invalid_is_warning_no_call(
         "unit": "h",
         "VATPercentage": 6.0,
     }
-    bill_id = insert_bill(mongo, order_number="2026-001", order_lines=[good, bad])
+    bill_id = insert_bill(mongo, order_number="2026001", order_lines=[good, bad])
     resp = client.post(f"/api/bills/sendBillit/{bill_id}")
     assert resp.get_json()["status"] == "warning"
     assert len(billit_fake.calls) == 0
@@ -255,7 +255,7 @@ def test_send_billit_non_2xx_forwards_error_and_keeps_external_id(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-13 / TC-NFR-3
-    bill_id = insert_bill(mongo, order_number="2026-001", customer_id=1)
+    bill_id = insert_bill(mongo, order_number="2026001", customer_id=1)
     billit_fake.add(
         billit_fake.POST, BILLIT_ORDERS_URL, json={"error": "nope"}, status=400
     )
@@ -274,7 +274,7 @@ def test_send_billit_non_integer_success_body_is_unhandled(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-14 / TC-GAP-4 : int() on a non-integer body -> ValueError
-    bill_id = insert_bill(mongo, order_number="2026-001", customer_id=1)
+    bill_id = insert_bill(mongo, order_number="2026001", customer_id=1)
     billit_fake.add(billit_fake.POST, BILLIT_ORDERS_URL, json="not-an-int", status=200)
     with pytest.raises(ValueError):
         client.post(f"/api/bills/sendBillit/{bill_id}")
@@ -288,7 +288,7 @@ def test_send_billit_non_json_error_body_is_unhandled(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-15 / TC-GAP-5 : response.json() on a non-JSON error body
-    bill_id = insert_bill(mongo, order_number="2026-001", customer_id=1)
+    bill_id = insert_bill(mongo, order_number="2026001", customer_id=1)
     billit_fake.add(
         billit_fake.POST,
         BILLIT_ORDERS_URL,
@@ -308,9 +308,9 @@ def test_send_cnote_billit_success_order_type_credit_note(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-17 cnote / TC-BILLIT-21
-    insert_bill(mongo, order_number="2026-001", customer_id=1)  # referenced invoice
+    insert_bill(mongo, order_number="2026001", customer_id=1)  # referenced invoice
     cnote_id = insert_cnote(
-        mongo, order_number="C2026-001", customer_id=1, about_invoice_number="2026-001"
+        mongo, order_number="C2026-001", customer_id=1, about_invoice_number="2026001"
     )
     _register_orders_success(billit_fake)
 
@@ -358,9 +358,9 @@ def test_send_cnote_billit_referenced_invoice_local_but_unregistered_passes(
     billit_fake: responses.RequestsMock,
 ) -> None:
     # TC-BILLIT-21 [ASSUMPTION] : local presence is enough; externalId not checked
-    insert_bill(mongo, order_number="2026-001", customer_id=1, external_id=0)
+    insert_bill(mongo, order_number="2026001", customer_id=1, external_id=0)
     cnote_id = insert_cnote(
-        mongo, order_number="C2026-001", customer_id=1, about_invoice_number="2026-001"
+        mongo, order_number="C2026-001", customer_id=1, about_invoice_number="2026001"
     )
     _register_orders_success(billit_fake)
 

@@ -1,10 +1,10 @@
-import controllers.cnote_gen as pdf
 from constants.all import (
     RESPONSE_ERROR,
     RESPONSE_SUCCESS,
     RESPONSE_WARNING,
     ResponseMessage,
 )
+from constants.cnote_back import CnoteBack
 from constants.customer_back import (
     CUSTOMER_DB_COMPANY,
     CUSTOMER_DB_FIRSTNAME,
@@ -15,11 +15,11 @@ from constants.order_back import (
     PEPPOL_DELIVERY_STATUS_PENDING,
     PEPPOL_DELIVERY_STATUS_SENT,
     PEPPOL_DELIVERY_STATUS_UNKNOWN,
-    OrderBack,
 )
 from constants.order_front import OrderFront, OrderFrontShort
 from controllers import billit
 from controllers.billit import send_peppol
+from controllers.cnote_gen import create_cnote_pdf
 from models.bills import BillModel
 from models.cnotes import CnoteModel
 from models.customers import CustomerModel
@@ -27,7 +27,7 @@ from utils.peppol_poller import PeppolStatusPoller
 
 
 def create_cnote(json: OrderFront, db_id: str = "") -> ResponseMessage:
-    cnote = OrderBack.model_validate(json)
+    cnote = CnoteBack.model_validate(json)
     existing = CnoteModel.get_one(db_id) if db_id else None
 
     # Reject a duplicate order number, unless it belongs to the credit note
@@ -127,7 +127,7 @@ def delete_cnote(cnote_id: str) -> ResponseMessage:
     return ResponseMessage(status=RESPONSE_SUCCESS if cnote_deleted else RESPONSE_ERROR)
 
 
-def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
+def pre_peppol_checks(order_data: CnoteBack) -> ResponseMessage | None:
     message = None
     if not order_data.externalId:
         message = (
@@ -172,7 +172,7 @@ def pre_peppol_checks(order_data: OrderBack) -> ResponseMessage | None:
 
 
 def send_cnote_peppol(cnote_id: str) -> ResponseMessage:
-    order_data: OrderBack = CnoteModel.get_one(cnote_id)
+    order_data: CnoteBack = CnoteModel.get_one(cnote_id)
     if res := pre_peppol_checks(order_data):
         return res
     response = send_peppol(order_data.externalId)
@@ -186,7 +186,7 @@ def send_cnote_peppol(cnote_id: str) -> ResponseMessage:
     return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
 
 
-def pre_billit_checks(order_data: OrderBack) -> ResponseMessage | None:  # noqa: C901
+def pre_billit_checks(order_data: CnoteBack) -> ResponseMessage | None:  # noqa: C901
     message = None
     if order_data.locked:
         message = (
@@ -280,7 +280,7 @@ def send_cnote_billit(bill_id: str) -> ResponseMessage:
 
     customer_data = CustomerModel.get_one(order_data.customerId)
 
-    pdf_bytes = pdf.create_cnote(order_data, customer_data)
+    pdf_bytes = create_cnote_pdf(order_data, customer_data)
     return billit.send_billit(
         order_data,
         pdf_bytes,

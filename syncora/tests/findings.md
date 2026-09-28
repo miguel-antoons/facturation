@@ -6,27 +6,6 @@ expectations. Each is pinned by a test (search for the `TC-*` id) so a future
 change is detected. They are **not** part of the contracted behaviour and must
 not be relied upon by the frontend.
 
-## 1. OGM crashes for non-digit order numbers (high impact)
-
-`OrderBack.ogm` (`src/constants/order_back.py:154-161`) does:
-
-```python
-ref_numbers = self.orderNumber.ljust(10, "0")
-check_digit = int(ref_numbers[:10]) % 97
-```
-
-`ljust` only **pads**; it does not strip non-digits. So for the frontend's
-invoice-number format `"2026-1"` (the very example used in TC-OGM-1),
-`int("2026-10000")` raises `ValueError: invalid literal for int()`.
-
-This is not a corner case: **bill PDF generation calls `order_data.ogm`, so any
-bill whose `orderNumber` is not pure digits cannot be printed or sent to
-Billit.** Credit notes are unaffected (`ogm` returns `""` for them).
-
-* Pinned by `tests/unit/test_ogm.py::test_ogm_non_digit_order_number_crashes`
-  (`@pytest.mark.gap`).
-* Worked around in the PDF-content tests by using a digit-only `orderNumber`
-  (`"2026000001"`); the crash itself is the test above.
 
 ## 2. `to_front()` omits the order totals
 

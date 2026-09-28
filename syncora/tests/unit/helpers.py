@@ -2,19 +2,20 @@
 
 from typing import Any
 
-from constants.order_back import OrderBack, _OrderLineBack
+from constants.bill_back import BillBack
+from constants.order_back import _OrderLineBack
 
 
 def order_with_lines(
     lines: list[dict[str, Any]],
     *,
-    order_number: str = "2026-001",
+    order_number: str = "2026001",
     about_invoice_number: str | None = None,
     external_id: int | None = None,
     peppol_status: int | None = None,
     ventilation_code: str = "2",
-) -> OrderBack:
-    """Build an ``OrderBack`` directly from line dicts (no validation round-trip)."""
+) -> BillBack:
+    """Build a ``BillBack`` directly from line dicts (no validation round-trip)."""
     data: dict[str, Any] = {
         "orderNumber": order_number,
         "ventilationCode": ventilation_code,
@@ -26,7 +27,7 @@ def order_with_lines(
         data["externalId"] = external_id
     if peppol_status is not None:
         data["peppolDeliveryStatus"] = peppol_status
-    return OrderBack.model_validate(data, by_name=True)
+    return BillBack.model_validate(data, by_name=True)
 
 
 def line(
