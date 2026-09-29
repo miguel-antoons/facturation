@@ -1,9 +1,8 @@
 from logging.config import dictConfig
 
-FMT = "[%(asctime)s]  %(levelname)s : %(module)s | %(message)s"
+FMT = "[%(asctime)s]  %(levelname)s : %(filename)s | %(message)s"
 
-# for adding a logger in a file import logging and from app import extra
-# then you can use the 5 differents type of log : debug, info, warning, error, critical
+# not used
 
 
 def setup_logging() -> None:
@@ -22,10 +21,10 @@ def setup_logging() -> None:
             },
             "root": {"level": "DEBUG", "handlers": ["console"]},
             "loggers": {
-                "extra": {
+                "syncora_log": {
                     "level": "DEBUG",
                     "handlers": ["console"],
-                    "propagation": False,
+                    "propagate": False,
                 },
             },
         }

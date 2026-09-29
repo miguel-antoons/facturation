@@ -3,10 +3,14 @@ import logging
 from flask import Flask
 
 from routes import blueprints
-from utils.logger import setup_logging
 
-setup_logging()
-extra = logging.getLogger("extra")
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s]  %(levelname)s : %(filename)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+logger = logging.getLogger(__name__)
 
 
 def create_app() -> Flask:

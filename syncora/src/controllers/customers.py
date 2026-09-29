@@ -22,6 +22,10 @@ from utils.generic_error import SyncoraError
 if TYPE_CHECKING:
     from flask.wrappers import Response
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def get_customers() -> Response:
     customers: list[CustomerBack] = CustomerModel.get(

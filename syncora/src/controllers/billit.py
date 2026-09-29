@@ -1,4 +1,5 @@
 import base64
+import logging
 from typing import TYPE_CHECKING, Any
 
 import requests
@@ -6,7 +7,6 @@ from dotenv import dotenv_values
 from flask import jsonify
 from requests import Response
 
-from app import extra
 from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS, ResponseMessage
 from constants.order_billit import BillitPDF, OrderBillit
 from constants.order_pdf import PDF, CustomerPDF, OrderLinePDF, OrderPDF
@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
     from constants.customer_back import CustomerBack
     from constants.order_back import OrderBack, _OrderLineBack
+
+logger = logging.getLogger(__name__)
 
 
 def format_dyn_data(
@@ -82,7 +84,7 @@ def delete_order(order_id: int) -> ResponseMessage | None:
     headers = get_headers()
     response = requests.delete(url, headers=headers)  # noqa: S113
     if response.content != b"true":
-        extra.error(response.text)
+        logger.error(response.text)
     return (
         None
         if response.content == b"true"
@@ -125,5 +127,5 @@ def send_billit(
     if response.status_code in [200, 201]:
         callback(response)
         return jsonify(ResponseMessage(status=RESPONSE_SUCCESS))
-    extra.error(response.text)
+    logger.info(response.text)
     return jsonify(ResponseMessage(status=RESPONSE_ERROR, message=response.json()))
