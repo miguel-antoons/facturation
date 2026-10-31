@@ -8,11 +8,13 @@ To run and lint this project, you will need the following tools:
 
 - **uv**: A Python package installer and resolver. It is used to manage dependencies and run Python scripts.
 - **prek**: A git hook framework written in Rust. It is used for linting and formatting the codebase.
+- **java**: Used to execute the JAR file in the projet.
 
 ## Installation
 
 1. Install `uv` by following the instructions [here](https://github.com/astral-sh/uv).
 2. Install `prek` by following the instructions [here](https://prek.j178.dev).
+3. Install `java` by following the instructions [here](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-22-04).
 
 ## Running the Project
 
@@ -117,7 +119,22 @@ Replace the placeholder values with your actual configuration details.
 To run the MongoDB container, use the following command:
 
 ```bash
-docker run --name facturation_test --rm -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=secret mongodb/mongodb-community-server:latest
+docker run --name facturation_test --rm -e MONGODB_INITDB_ROOT_USERNAME=admin -e MONGODB_INITDB_ROOT_PASSWORD=secret mongodb/mongodb-community-server:latest
+```
+
+## Logging
+
+Logging is configured once at startup in `src/app.py` via `setup_logging()` (console only).
+
+To log in a module, get a named logger and use lazy `%s` formatting:
+
+```python
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+logger.info("Fetched bill %s", bill_id)
+logger.error("Peppol send failed (HTTP %s): %s", status_code, response.text)
 ```
 
 ## Additional Information

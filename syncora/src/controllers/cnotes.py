@@ -21,7 +21,10 @@ from dto.front import OrderFront, OrderFrontShort, ResponseMessage
 from models.bills import BillModel
 from models.cnotes import CnoteModel
 from models.customers import CustomerModel
+from utils.logger import get_logger
 from utils.peppol_poller import PeppolStatusPoller
+
+logger = get_logger(__name__)
 
 
 def create_cnote(json: OrderFront, db_id: str = "") -> ResponseMessage:
@@ -68,6 +71,7 @@ def get_cnote(cnote_id: str) -> dict:
     ):
         PeppolStatusPoller(CnoteModel.set_peppol_status)(order_back.externalId)
 
+    logger.info("Fetched credit note %s (%s)", cnote_id, order_back.orderNumber)
     return order_back.to_front()
 
 
@@ -121,7 +125,7 @@ def delete_cnote(cnote_id: str) -> ResponseMessage:
         return res
     cnote_deleted = CnoteModel.delete(cnote_id)
     if not cnote_deleted:
-        print("ERROR: Credit note not deleted from local DB")
+        logger.error("Credit note %s not deleted from local DB", cnote_id)
     return ResponseMessage(status=RESPONSE_SUCCESS if cnote_deleted else RESPONSE_ERROR)
 
 
@@ -180,7 +184,12 @@ def send_cnote_peppol(cnote_id: str) -> ResponseMessage:
         )
         PeppolStatusPoller(CnoteModel.set_peppol_status)(order_data.externalId)
         return ResponseMessage(status=RESPONSE_SUCCESS)
-    print(response.text)
+    logger.error(
+        "Peppol send failed for credit note %s (HTTP %s): %s",
+        cnote_id,
+        response.status_code,
+        response.text,
+    )
     return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
 
 

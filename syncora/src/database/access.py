@@ -6,6 +6,10 @@ from pathlib import Path
 import jaydebeapi
 from dotenv import dotenv_values
 
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 _db = None
 
 
@@ -54,11 +58,11 @@ class SmartAccessConnector:
             reason = "File Changed" if is_file_changed else "Connection Stale"
 
             if self.conn:
-                print(f"Reloading DB ({reason})...")
+                logger.info("Reloading DB connection (%s)", reason)
                 with contextlib.suppress(BaseException):
                     self.conn.close()
             else:
-                print("Initializing DB connection...")
+                logger.info("Initializing DB connection")
 
             self.conn = self._connect()
             self.last_load_time = current_db_mtime

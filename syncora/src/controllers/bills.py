@@ -20,7 +20,10 @@ from dto.back import BillBack
 from dto.front import OrderFront, OrderFrontShort, ResponseMessage
 from models.bills import BillModel
 from models.customers import CustomerModel
+from utils.logger import get_logger
 from utils.peppol_poller import PeppolStatusPoller
+
+logger = get_logger(__name__)
 
 
 def create_bill(json: OrderFront, db_id: str = "") -> ResponseMessage:
@@ -65,6 +68,7 @@ def get_bill(bill_id: str) -> dict:
         or order_back.peppolDeliveryStatus == PEPPOL_DELIVERY_STATUS_UNKNOWN
     ):
         PeppolStatusPoller(BillModel.set_peppol_status)(order_back.externalId)
+    logger.info("Fetched bill %s (%s)", bill_id, order_back.orderNumber)
     return order_back.to_front()
 
 
@@ -113,7 +117,7 @@ def delete_bill(bill_id: str) -> ResponseMessage:
         return res
     bill_deleted = BillModel.delete(bill_id)
     if not bill_deleted:
-        print("ERROR: Bill not deleted from local DB")
+        logger.error("Bill %s not deleted from local DB", bill_id)
     return ResponseMessage(status=RESPONSE_SUCCESS if bill_deleted else RESPONSE_ERROR)
 
 
@@ -161,7 +165,12 @@ def send_bill_peppol(bill_id: str) -> ResponseMessage:
         )
         PeppolStatusPoller(BillModel.set_peppol_status)(order_data.externalId)
         return ResponseMessage(status=RESPONSE_SUCCESS)
-    print(response.text)
+    logger.error(
+        "Peppol send failed for bill %s (HTTP %s): %s",
+        bill_id,
+        response.status_code,
+        response.text,
+    )
     return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
 
 

@@ -11,9 +11,12 @@ from constants.peppol import (
     PEPPOL_DELIVERY_STATUS_SENT,
 )
 from controllers.billit import get_headers
+from utils.logger import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+logger = get_logger(__name__)
 
 
 class PeppolStatusPoller:
@@ -76,7 +79,12 @@ class PeppolStatusPoller:
         ):
             response: Response = requests.get(url, headers=headers, timeout=20)
             if response.status_code not in [200, 201]:
-                print(response.text)
+                logger.warning(
+                    "Peppol status poll failed for order %s (HTTP %s): %s",
+                    order_id,
+                    response.status_code,
+                    response.text,
+                )
                 no_errors += 1
                 await asyncio.sleep(self._poll_interval)
             else:
@@ -98,5 +106,18 @@ class PeppolStatusPoller:
                     self._callback(order_id, PEPPOL_DELIVERY_STATUS_PENDING)
                 else:
                     await asyncio.sleep(self._poll_interval)
+
+        if not peppol_delivered:
+            if no_errors >= self._max_errors:
+                logger.error(
+                    "Peppol polling aborted for order %s: too many API errors",
+                    order_id,
+                )
+            else:
+                logger.error(
+                    "Peppol polling timed out for order %s after %ss",
+                    order_id,
+                    self._timeout,
+                )
 
         self._current_tasks.remove(order_id)

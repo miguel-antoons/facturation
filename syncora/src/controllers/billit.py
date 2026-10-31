@@ -8,11 +8,14 @@ from requests import Response
 from constants.all import RESPONSE_ERROR, RESPONSE_SUCCESS
 from dto.external import BillitPDF, OrderBillit
 from dto.front import ResponseMessage
+from utils.logger import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from dto.back import CustomerBack, OrderBack
+
+logger = get_logger(__name__)
 
 
 def get_headers() -> dict[str, str]:
@@ -29,7 +32,12 @@ def delete_order(order_id: int) -> ResponseMessage | None:
     headers = get_headers()
     response = requests.delete(url, headers=headers)  # noqa: S113
     if response.content != b"true":
-        print(response.text)
+        logger.error(
+            "Billit delete failed for order %s (HTTP %s): %s",
+            order_id,
+            response.status_code,
+            response.text,
+        )
     return (
         None
         if response.content == b"true"
@@ -72,5 +80,10 @@ def send_billit(
     if response.status_code in [200, 201]:
         callback(response)
         return ResponseMessage(status=RESPONSE_SUCCESS)
-    print(response.text)
+    logger.error(
+        "Billit send failed for order %s (HTTP %s): %s",
+        order_data.orderNumber,
+        response.status_code,
+        response.text,
+    )
     return ResponseMessage(status=RESPONSE_ERROR, message=response.json())
